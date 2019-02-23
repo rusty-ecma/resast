@@ -13,7 +13,7 @@ pub enum Pat {
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum ArrayPatPart {
-    Patt(Pat),
+    Pat(Pat),
     Expr(Expr),
 }
 
