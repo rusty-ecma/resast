@@ -1,0 +1,12 @@
+[package]
+name = "resast"
+version = "0.1.0"
+authors = ["rfm <r@robertmasen.pizza>"]
+edition = "2018"
+descripton = "Rusty-ECMAScript Abstract Syntax Tree"
+repository = "https://github.com/FreeMasen/resast"
+license = "MIT"
+keywords = ["JavaScript", "parsing", "JS", "ES", "ECMA"]
+categories = ["parsing", "text-processing", "web-programming"]
+
+[dependencies]
