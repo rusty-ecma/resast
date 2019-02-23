@@ -1,44 +1,44 @@
-pub mod declaration;
-pub mod expression;
-pub mod pattern;
-pub mod statement;
-use declaration::Declaration;
-use expression::{Expression, Property, Literal};
-use statement::Statement;
-use pattern::Pattern;
+pub mod decl;
+pub mod expr;
+pub mod pat;
+pub mod stmt;
+use decl::Decl;
+use expr::{Expr, Property, Literal};
+use stmt::Stmt;
+use pat::Pat;
 
 pub type Identifier = String;
 /// A fully parsed javascript program.
 ///
 /// It is essentially a collection of `ProgramPart`s
 /// with a flag denoting if the representation is
-/// a ES6 Module or a Script.
+/// a ES6 Mod or a Script.
 #[derive(PartialEq, Debug)]
 pub enum Program {
-    /// An ES6 Module
-    Module(Vec<ProgramPart>),
-    /// Not an ES6 Module
+    /// An ES6 Mod
+    Mod(Vec<ProgramPart>),
+    /// Not an ES6 Mod
     Script(Vec<ProgramPart>),
 }
 
 /// A single part of a Javascript program.
-/// This will be either a Directive, Declaration or a Statement
+/// This will be either a Directive, Decl or a Stmt
 #[derive(PartialEq, Debug, Clone)]
 pub enum ProgramPart {
     /// A Directive like `'use strict';`
-    Directive(Directive),
+    Dir(Dir),
     /// A variable, function or module declaration
-    Decl(Declaration),
+    Decl(Decl),
     /// Any other kind of statement
-    Statement(Statement),
+    Stmt(Stmt),
 }
 
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
 #[derive(PartialEq, Debug, Clone)]
-pub struct Directive {
-    pub expression: Literal,
-    pub directive: String,
+pub struct Dir {
+    pub expr: Literal,
+    pub dir: String,
 }
 
 /// A function, this will be part of either a function
@@ -63,8 +63,8 @@ pub struct Function {
 /// A single function argument from a function signature
 #[derive(PartialEq, Debug, Clone)]
 pub enum FunctionArg {
-    Expr(Expression),
-    Pattern(Pattern),
+    Expr(Expr),
+    Pat(Pat),
 }
 
 /// The block statement that makes up the function's body
@@ -98,7 +98,7 @@ pub type FunctionBody = Vec<ProgramPart>;
 #[derive(PartialEq, Debug, Clone)]
 pub struct Class {
     pub id: Option<Identifier>,
-    pub super_class: Option<Box<Expression>>,
+    pub super_class: Option<Box<Expr>>,
     pub body: Vec<Property>,
 }
 

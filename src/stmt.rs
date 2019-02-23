@@ -1,14 +1,14 @@
 use crate::{ProgramPart, Identifier};
-use crate::expression::Expression;
-use crate::pattern::Pattern;
-use crate::declaration::{VariableDecl, VariableKind};
+use crate::expr::Expr;
+use crate::pat::Pat;
+use crate::decl::{VariableDecl, VariableKind};
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(PartialEq, Debug, Clone)]
-pub enum Statement {
+pub enum Stmt {
     /// Any expression
-    Expr(Expression),
+    Expr(Expr),
     /// A collection of program parts wrapped in curly braces
-    Block(BlockStatement),
+    Block(BlockStmt),
     /// A single semi-colon
     Empty,
     /// The contextual keyword `debugger`
@@ -26,7 +26,7 @@ pub enum Statement {
     /// }
     /// //rand !== 0
     /// ```
-    With(WithStatement),
+    With(WithStmt),
     /// A return statement
     /// ```js
     /// function thing() {
@@ -35,14 +35,14 @@ pub enum Statement {
     /// function stuff() {
     ///     return;
     /// }
-    Return(Option<Expression>),
+    Return(Option<Expr>),
     /// A labeled statement
     /// ```js
     /// label: {
     ///     break label;
     /// }
     /// ```
-    Labeled(LabeledStatement),
+    Labeled(LabeledStmt),
     /// A break statement
     /// ```js
     /// label: {
@@ -72,7 +72,7 @@ pub enum Statement {
     ///     console.log('Never true');
     /// }
     /// ```
-    If(IfStatement),
+    If(IfStmt),
     /// A switch statement
     /// ```js
     /// switch (Math.floor(Math.random()) * 10) {
@@ -87,7 +87,7 @@ pub enum Statement {
     ///         return true;
     /// }
     /// ```
-    Switch(SwitchStatement),
+    Switch(SwitchStmt),
     /// A statement that throws an error
     /// ```js
     /// function error() {
@@ -98,7 +98,7 @@ pub enum Statement {
     ///     throw new Error('hohoho');
     /// }
     /// ```
-    Throw(Expression),
+    Throw(Expr),
     /// A try/catch block
     /// ```js
     /// try {
@@ -109,7 +109,7 @@ pub enum Statement {
     ///
     /// }
     /// ```
-    Try(TryStatement),
+    Try(TryStmt),
     /// A while loop
     /// ```js
     /// while (false) {
@@ -124,14 +124,14 @@ pub enum Statement {
     ///     }
     /// }
     /// ```
-    While(WhileStatement),
+    While(WhileStmt),
     /// A while loop that executes its body first
     /// ```js
     /// do {
     ///     console.log('at least once')
     /// } while (Math.floor(Math.random() * 100) < 75)
     /// ```
-    DoWhile(DoWhileStatement),
+    DoWhile(DoWhileStmt),
     /// A "c-style" for loop
     /// ```js
     /// for (var i = 0; i < 100; i++) console.log(i);
@@ -139,7 +139,7 @@ pub enum Statement {
     ///     console.log('forever!');
     /// }
     /// ```
-    For(ForStatement),
+    For(ForStmt),
     /// A for in statement, this kind of for statement
     /// will extract each key from an indexable thing
     /// ```js
@@ -152,7 +152,7 @@ pub enum Statement {
     /// }
     /// //prints a, b
     /// ```
-    ForIn(ForInStatement),
+    ForIn(ForInStmt),
     /// A for of statement, this kind of for statement
     /// will extract the value from a generator or iterator
     /// ```js
@@ -161,7 +161,7 @@ pub enum Statement {
     /// }
     /// //prints 2, 3, 4, 5, 6
     /// ```
-    ForOf(ForOfStatement),
+    ForOf(ForOfStmt),
     /// A var statement
     /// ```js
     /// var x;
@@ -184,9 +184,9 @@ pub enum Statement {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct WithStatement {
-    pub object: Expression,
-    pub body: Box<Statement>,
+pub struct WithStmt {
+    pub object: Expr,
+    pub body: Box<Stmt>,
 }
 
 /// A break statement
@@ -199,9 +199,9 @@ pub struct WithStatement {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct LabeledStatement {
+pub struct LabeledStmt {
     pub label: Identifier,
-    pub body: Box<Statement>,
+    pub body: Box<Stmt>,
 }
 
 /// An if statement
@@ -213,10 +213,10 @@ pub struct LabeledStatement {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct IfStatement {
-    pub test: Expression,
-    pub consequent: Box<Statement>,
-    pub alternate: Option<Box<Statement>>,
+pub struct IfStmt {
+    pub test: Expr,
+    pub consequent: Box<Stmt>,
+    pub alternate: Option<Box<Stmt>>,
 }
 
 /// A switch statement
@@ -234,20 +234,20 @@ pub struct IfStatement {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct SwitchStatement {
-    pub discriminant: Expression,
+pub struct SwitchStmt {
+    pub discriminant: Expr,
     pub cases: Vec<SwitchCase>,
 }
 
 /// A single case part of a switch statement
 #[derive(PartialEq, Debug, Clone)]
 pub struct SwitchCase {
-    pub test: Option<Expression>,
+    pub test: Option<Expr>,
     pub consequent: Vec<ProgramPart>,
 }
 
 /// A collection of program parts wrapped in curly braces
-pub type BlockStatement = Vec<ProgramPart>;
+pub type BlockStmt = Vec<ProgramPart>;
 
 /// A try/catch block
 /// ```js
@@ -260,17 +260,17 @@ pub type BlockStatement = Vec<ProgramPart>;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct TryStatement {
-    pub block: BlockStatement,
+pub struct TryStmt {
+    pub block: BlockStmt,
     pub handler: Option<CatchClause>,
-    pub finalizer: Option<BlockStatement>,
+    pub finalizer: Option<BlockStmt>,
 }
 
-/// The error handling part of a `TryStatement`
+/// The error handling part of a `TryStmt`
 #[derive(PartialEq, Debug, Clone)]
 pub struct CatchClause {
-    pub param: Option<Pattern>,
-    pub body: BlockStatement,
+    pub param: Option<Pat>,
+    pub body: BlockStmt,
 }
 
 /// A while loop
@@ -288,9 +288,9 @@ pub struct CatchClause {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct WhileStatement {
-    pub test: Expression,
-    pub body: Box<Statement>,
+pub struct WhileStmt {
+    pub test: Expr,
+    pub body: Box<Stmt>,
 }
 
 /// A while loop that executes its body first
@@ -300,9 +300,9 @@ pub struct WhileStatement {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct DoWhileStatement {
-    pub test: Expression,
-    pub body: Box<Statement>,
+pub struct DoWhileStmt {
+    pub test: Expr,
+    pub body: Box<Stmt>,
 }
 
 /// A "c-style" for loop
@@ -313,11 +313,11 @@ pub struct DoWhileStatement {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ForStatement {
+pub struct ForStmt {
     pub init: Option<LoopInit>,
-    pub test: Option<Expression>,
-    pub update: Option<Expression>,
-    pub body: Box<Statement>,
+    pub test: Option<Expr>,
+    pub update: Option<Expr>,
+    pub body: Box<Stmt>,
 }
 
 /// The left most triple of a for loops parenthetical
@@ -327,7 +327,7 @@ pub struct ForStatement {
 #[derive(PartialEq, Debug, Clone)]
 pub enum LoopInit {
     Variable(VariableKind, Vec<VariableDecl>),
-    Expr(Expression),
+    Expr(Expr),
 }
 
 /// A for in statement, this kind of for statement
@@ -343,10 +343,10 @@ pub enum LoopInit {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ForInStatement {
+pub struct ForInStmt {
     pub left: LoopLeft,
-    pub right: Expression,
-    pub body: Box<Statement>,
+    pub right: Expr,
+    pub body: Box<Stmt>,
 }
 
 /// A for of statement, this kind of for statement
@@ -358,10 +358,10 @@ pub struct ForInStatement {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ForOfStatement {
+pub struct ForOfStmt {
     pub left: LoopLeft,
-    pub right: Expression,
-    pub body: Box<Statement>,
+    pub right: Expr,
+    pub body: Box<Stmt>,
     pub is_await: bool,
 }
 
@@ -369,7 +369,7 @@ pub struct ForOfStatement {
 /// in a for in or for of loop
 #[derive(PartialEq, Debug, Clone)]
 pub enum LoopLeft {
-    Expr(Expression),
+    Expr(Expr),
     Variable(VariableKind, VariableDecl),
-    Pattern(Pattern),
+    Pat(Pat),
 }

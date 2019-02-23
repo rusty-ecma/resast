@@ -1,10 +1,10 @@
 use crate::{Function, Class, Identifier};
-use crate::expression::{Expression, Literal};
-use crate::pattern::Pattern;
+use crate::expr::{Expr, Literal};
+use crate::pat::Pat;
 
 /// The declaration of a variable, function, class, import or export
 #[derive(PartialEq, Debug, Clone)]
-pub enum Declaration {
+pub enum Decl {
     /// A variable declaration
     /// ```js
     /// var x, b;
@@ -27,19 +27,19 @@ pub enum Declaration {
     /// import * as moment from 'moment';
     /// import Thing, {thing} from 'stuff';
     /// ```
-    Import(Box<ModuleImport>),
+    Import(Box<ModImport>),
     /// An export declaration
     /// ```js
     /// export function thing() {}
     /// ```
-    Export(Box<ModuleExport>),
+    Export(Box<ModExport>),
 }
 
 /// The identifier and optional value of a variable declaration
 #[derive(PartialEq, Debug, Clone)]
 pub struct VariableDecl {
-    pub id: Pattern,
-    pub init: Option<Expression>,
+    pub id: Pat,
+    pub init: Option<Expr>,
 }
 
 /// The kind of variable being defined (`var`/`let`/`const`)
@@ -51,12 +51,12 @@ pub enum VariableKind {
 }
 
 /// A module declaration, This would only be available
-/// in an ES Module, it would be either an import or
+/// in an ES Mod, it would be either an import or
 /// export at the top level
 #[derive(PartialEq, Debug, Clone)]
-pub enum ModuleDecl {
-    Import(ModuleImport),
-    Export(ModuleExport),
+pub enum ModDecl {
+    Import(ModImport),
+    Export(ModExport),
 }
 
 /// A declaration that imports exported
@@ -66,7 +66,7 @@ pub enum ModuleDecl {
 /// import {Thing} from './stuff.js';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ModuleImport {
+pub struct ModImport {
     pub specifiers: Vec<ImportSpecifier>,
     pub source: Literal,
 }
@@ -100,7 +100,7 @@ pub enum ImportSpecifier {
 
 /// Something exported from this module
 #[derive(PartialEq, Debug, Clone)]
-pub enum ModuleExport {
+pub enum ModExport {
     /// ```js
     /// export default function() {};
     /// //or
@@ -130,7 +130,7 @@ pub enum ModuleExport {
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone)]
 pub enum NamedExportDecl {
-    Decl(Declaration),
+    Decl(Decl),
     Specifier(Vec<ExportSpecifier>, Option<Literal>),
 }
 /// A default export
@@ -139,8 +139,8 @@ pub enum NamedExportDecl {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub enum DefaultExportDecl {
-    Decl(Declaration),
-    Expr(Expression),
+    Decl(Decl),
+    Expr(Expr),
 }
 /// The name of the thing being exported
 /// this might include an alias

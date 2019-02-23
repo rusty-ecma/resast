@@ -1,11 +1,11 @@
-use crate::pattern::Pattern;
+use crate::pat::Pat;
 use crate::{Class, Function, FunctionArg, FunctionBody, Identifier};
 
 /// A slightly more granular program part that a statement
 #[derive(PartialEq, Debug, Clone)]
-pub enum Expression {
+pub enum Expr {
     /// `[0,,]`
-    Array(ArrayExpression),
+    Array(ArrayExpr),
     /// An arrow function
     /// ```js
     /// () => console.log();
@@ -13,7 +13,7 @@ pub enum Expression {
     ///     return x;
     /// }
     /// ```
-    ArrowFunction(ArrowFunctionExpression),
+    ArrowFunction(ArrowFunctionExpr),
     /// Used for resolving possible sequence expressions
     /// that are arrow parameters
     ArrowParamPlaceHolder(Vec<FunctionArg>, bool),
@@ -22,35 +22,35 @@ pub enum Expression {
     /// a = 0
     /// b += 1
     /// ```
-    Assignment(AssignmentExpression),
-    /// The `await` keyword followed by another `Expression`
-    Await(Box<Expression>),
+    Assignment(AssignmentExpr),
+    /// The `await` keyword followed by another `Expr`
+    Await(Box<Expr>),
     /// An operation that has two arguments
-    Binary(BinaryExpression),
+    Binary(BinaryExpr),
     /// A class expression see `Class`
     Class(Class),
     /// Calling a function or method
-    Call(CallExpression),
+    Call(CallExpr),
     /// A ternery expression
-    Conditional(ConditionalExpression),
+    Conditional(ConditionalExpr),
     /// see `Function`
     Function(Function),
     /// An identifier
     Ident(Identifier),
     /// A literal value, see `Literal`
     Literal(Literal),
-    /// A specialized `BinaryExpression` for logical evaluation
+    /// A specialized `BinaryExpr` for logical evaluation
     /// ```js
     /// true && true
     /// false || true
     /// ```
-    Logical(LogicalExpression),
+    Logical(LogicalExpr),
     /// Accessing the member of a value
     /// ```js
     /// b['thing'];
     /// c.stuff;
     /// ```
-    Member(MemberExpression),
+    Member(MemberExpr),
     /// currently just `new.target`
     MetaProperty(MetaProperty),
     /// ```js
@@ -58,43 +58,43 @@ pub enum Expression {
     /// ```
     /// `{}`
     /// Calling a constructor
-    New(NewExpression),
-    Object(ObjectExpression),
+    New(NewExpr),
+    Object(ObjectExpr),
     /// Any sequence of expressions separated with a comma
-    Sequence(SequenceExpression),
-    /// `...` followed by an `Expression`
-    Spread(Box<Expression>),
+    Sequence(SequenceExpr),
+    /// `...` followed by an `Expr`
+    Spread(Box<Expr>),
     /// `super`
-    SuperExpression,
+    SuperExpr,
     /// A template literal preceded by a tag function identifier
-    TaggedTemplate(TaggedTemplateExpression),
+    TaggedTemplate(TaggedTemplateExpr),
     /// `this`
-    ThisExpression,
+    ThisExpr,
     /// An operation that has one argument
     /// ```js
     /// typeof 'a';
     /// +9;
     /// ```
-    Unary(UnaryExpression),
+    Unary(UnaryExpr),
     /// Increment or decrement
     /// ```js
     /// 1++
     /// --2
     /// ```
-    Update(UpdateExpression),
+    Update(UpdateExpr),
     /// yield a value from inside of a generator function
-    Yield(YieldExpression),
+    Yield(YieldExpr),
 }
 
 /// `[a, b, c]`
-pub type ArrayExpression = Vec<Option<Expression>>;
+pub type ArrayExpr = Vec<Option<Expr>>;
 /// `{a: 'b', c, ...d}`
-pub type ObjectExpression = Vec<ObjectProperty>;
+pub type ObjectExpr = Vec<ObjectProperty>;
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone)]
 pub enum ObjectProperty {
     Property(Property),
-    Spread(Box<Expression>),
+    Spread(Box<Expr>),
 }
 
 /// A single part of an object literal or class
@@ -111,14 +111,14 @@ pub struct Property {
 #[derive(PartialEq, Debug, Clone)]
 pub enum PropertyKey {
     Literal(Literal),
-    Expr(Expression),
-    Pattern(Pattern),
+    Expr(Expr),
+    Pat(Pat),
 }
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone)]
 pub enum PropertyValue {
-    Expr(Expression),
-    Pattern(Pattern),
+    Expr(Expr),
+    Pat(Pat),
     None,
 }
 
@@ -138,10 +138,10 @@ pub enum PropertyKind {
 }
 /// An operation that takes one argument
 #[derive(PartialEq, Debug, Clone)]
-pub struct UnaryExpression {
+pub struct UnaryExpr {
     pub operator: UnaryOperator,
     pub prefix: bool,
-    pub argument: Box<Expression>,
+    pub argument: Box<Expr>,
 }
 
 /// The allowed operators for an expression
@@ -159,9 +159,9 @@ pub enum UnaryOperator {
 
 /// Increment or decrementing a value
 #[derive(PartialEq, Debug, Clone)]
-pub struct UpdateExpression {
+pub struct UpdateExpr {
     pub operator: UpdateOperator,
-    pub argument: Box<Expression>,
+    pub argument: Box<Expr>,
     pub prefix: bool,
 }
 
@@ -174,10 +174,10 @@ pub enum UpdateOperator {
 
 /// An operation that requires 2 arguments
 #[derive(PartialEq, Debug, Clone)]
-pub struct BinaryExpression {
+pub struct BinaryExpr {
     pub operator: BinaryOperator,
-    pub left: Box<Expression>,
-    pub right: Box<Expression>,
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
 }
 
 /// The available operations for `Binary` expressions
@@ -209,17 +209,17 @@ pub enum BinaryOperator {
 
 /// An assignment or update + assignment operation
 #[derive(PartialEq, Debug, Clone)]
-pub struct AssignmentExpression {
+pub struct AssignmentExpr {
     pub operator: AssignmentOperator,
     pub left: AssignmentLeft,
-    pub right: Box<Expression>,
+    pub right: Box<Expr>,
 }
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
 pub enum AssignmentLeft {
-    Pattern(Pattern),
-    Expr(Box<Expression>),
+    Pat(Pat),
+    Expr(Box<Expr>),
 }
 
 /// The available operators for assignment expressions
@@ -240,16 +240,16 @@ pub enum AssignmentOperator {
     PowerOfEqual,
 }
 
-/// A specialized `BinaryExpression` for logical evaluation
+/// A specialized `BinaryExpr` for logical evaluation
 /// ```js
 /// true && true
 /// false || true
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct LogicalExpression {
+pub struct LogicalExpr {
     pub operator: LogicalOperator,
-    pub left: Box<Expression>,
-    pub right: Box<Expression>,
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
 }
 
 /// The available logical operators
@@ -265,9 +265,9 @@ pub enum LogicalOperator {
 /// c.stuff;
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct MemberExpression {
-    pub object: Box<Expression>,
-    pub property: Box<Expression>,
+pub struct MemberExpr {
+    pub object: Box<Expr>,
+    pub property: Box<Expr>,
     pub computed: bool,
 }
 
@@ -276,10 +276,10 @@ pub struct MemberExpression {
 /// var a = true ? 'stuff' : 'things';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ConditionalExpression {
-    pub test: Box<Expression>,
-    pub alternate: Box<Expression>,
-    pub consequent: Box<Expression>,
+pub struct ConditionalExpr {
+    pub test: Box<Expr>,
+    pub alternate: Box<Expr>,
+    pub consequent: Box<Expr>,
 }
 
 /// Calling a function or method
@@ -287,9 +287,9 @@ pub struct ConditionalExpression {
 /// Math.random()
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct CallExpression {
-    pub callee: Box<Expression>,
-    pub arguments: Vec<Expression>,
+pub struct CallExpr {
+    pub callee: Box<Expr>,
+    pub arguments: Vec<Expr>,
 }
 
 /// Calling a constructor
@@ -297,13 +297,13 @@ pub struct CallExpression {
 /// new Uint8Array(32);
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct NewExpression {
-    pub callee: Box<Expression>,
-    pub arguments: Vec<Expression>,
+pub struct NewExpr {
+    pub callee: Box<Expr>,
+    pub arguments: Vec<Expr>,
 }
 
-/// A collection of `Expressions` separated by commas
-pub type SequenceExpression = Vec<Expression>;
+/// A collection of `Exprs` separated by commas
+pub type SequenceExpr = Vec<Expr>;
 
 /// An arrow function
 /// ```js
@@ -313,7 +313,7 @@ pub type SequenceExpression = Vec<Expression>;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ArrowFunctionExpression {
+pub struct ArrowFunctionExpr {
     pub id: Option<String>,
     pub params: Vec<FunctionArg>,
     pub body: ArrowFunctionBody,
@@ -326,7 +326,7 @@ pub struct ArrowFunctionExpression {
 #[derive(PartialEq, Debug, Clone)]
 pub enum ArrowFunctionBody {
     FunctionBody(FunctionBody),
-    Expr(Box<Expression>),
+    Expr(Box<Expr>),
 }
 
 /// yield a value from inside of a generator function
@@ -338,16 +338,16 @@ pub enum ArrowFunctionBody {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct YieldExpression {
-    pub argument: Option<Box<Expression>>,
+pub struct YieldExpr {
+    pub argument: Option<Box<Expr>>,
     pub delegate: bool,
 }
 
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]
-pub struct TaggedTemplateExpression {
-    pub tag: Box<Expression>,
+pub struct TaggedTemplateExpr {
+    pub tag: Box<Expr>,
     pub quasi: TemplateLiteral,
 }
 
@@ -358,7 +358,7 @@ pub struct TaggedTemplateExpression {
 #[derive(PartialEq, Debug, Clone)]
 pub struct TemplateLiteral {
     pub quasis: Vec<TemplateElement>,
-    pub expressions: Vec<Expression>,
+    pub expressions: Vec<Expr>,
 }
 
 /// The text part of a `TemplateLiteral`
