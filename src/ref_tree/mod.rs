@@ -2,44 +2,43 @@ pub mod decl;
 pub mod expr;
 pub mod pat;
 pub mod stmt;
-pub mod ref_tree;
-use decl::Decl;
-use expr::{Expr, Property, Literal};
-use stmt::Stmt;
-use pat::Pat;
+use self::decl::Decl;
+use self::expr::{Expr, Property, Literal};
+use self::stmt::Stmt;
+use self::pat::Pat;
 
-pub type Identifier = String;
+pub type Identifier<'a> = &'a str;
 /// A fully parsed javascript program.
 ///
 /// It is essentially a collection of `ProgramPart`s
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
 #[derive(PartialEq, Debug)]
-pub enum Program {
+pub enum Program<'a> {
     /// An ES6 Mod
-    Mod(Vec<ProgramPart>),
+    Mod(Vec<ProgramPart<'a>>),
     /// Not an ES6 Mod
-    Script(Vec<ProgramPart>),
+    Script(Vec<ProgramPart<'a>>),
 }
 
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
 #[derive(PartialEq, Debug, Clone)]
-pub enum ProgramPart {
+pub enum ProgramPart<'a> {
     /// A Directive like `'use strict';`
-    Dir(Dir),
+    Dir(Dir<'a>),
     /// A variable, function or module declaration
-    Decl(Decl),
+    Decl(Decl<'a>),
     /// Any other kind of statement
-    Stmt(Stmt),
+    Stmt(Stmt<'a>),
 }
 
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
 #[derive(PartialEq, Debug, Clone)]
-pub struct Dir {
-    pub expr: Literal,
-    pub dir: String,
+pub struct Dir<'a> {
+    pub expr: Literal<'a>,
+    pub dir: &'a str,
 }
 
 /// A function, this will be part of either a function
@@ -53,23 +52,23 @@ pub struct Dir {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct Function {
-    pub id: Option<String>,
-    pub params: Vec<FunctionArg>,
-    pub body: FunctionBody,
+pub struct Function<'a> {
+    pub id: Option<Identifier<'a>>,
+    pub params: Vec<FunctionArg<'a>>,
+    pub body: FunctionBody<'a>,
     pub generator: bool,
     pub is_async: bool,
 }
 
 /// A single function argument from a function signature
 #[derive(PartialEq, Debug, Clone)]
-pub enum FunctionArg {
-    Expr(Expr),
-    Pat(Pat),
+pub enum FunctionArg<'a> {
+    Expr(Expr<'a>),
+    Pat(Pat<'a>),
 }
 
 /// The block statement that makes up the function's body
-pub type FunctionBody = Vec<ProgramPart>;
+pub type FunctionBody<'a> = Vec<ProgramPart<'a>>;
 /// A way to declare object templates
 /// ```js
 /// class Thing {
@@ -97,10 +96,10 @@ pub type FunctionBody = Vec<ProgramPart>;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct Class {
-    pub id: Option<Identifier>,
-    pub super_class: Option<Box<Expr>>,
-    pub body: Vec<Property>,
+pub struct Class<'a> {
+    pub id: Option<Identifier<'a>>,
+    pub super_class: Option<Box<Expr<'a>>>,
+    pub body: Vec<Property<'a>>,
 }
 
 #[cfg(test)]
