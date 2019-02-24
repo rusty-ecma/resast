@@ -1,6 +1,6 @@
-use crate::{Function, Class, Identifier};
 use crate::expr::{Expr, Literal};
 use crate::pat::Pat;
+use crate::{Class, Function, Identifier};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(PartialEq, Debug, Clone)]

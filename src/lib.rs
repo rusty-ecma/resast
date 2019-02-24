@@ -1,12 +1,12 @@
 pub mod decl;
 pub mod expr;
 pub mod pat;
-pub mod stmt;
 pub mod ref_tree;
+pub mod stmt;
 use decl::Decl;
-use expr::{Expr, Property, Literal};
-use stmt::Stmt;
+use expr::{Expr, Literal, Property};
 use pat::Pat;
+use stmt::Stmt;
 
 pub type Identifier = String;
 /// A fully parsed javascript program.

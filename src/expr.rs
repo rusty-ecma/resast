@@ -65,11 +65,11 @@ pub enum Expr {
     /// `...` followed by an `Expr`
     Spread(Box<Expr>),
     /// `super`
-    SuperExpr,
+    Super,
     /// A template literal preceded by a tag function identifier
     TaggedTemplate(TaggedTemplateExpr),
     /// `this`
-    ThisExpr,
+    This,
     /// An operation that has one argument
     /// ```js
     /// typeof 'a';
@@ -123,7 +123,7 @@ pub enum PropertyValue {
 }
 
 /// A flag for determining what kind of property
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum PropertyKind {
     /// A property with a value
     Init,
@@ -253,7 +253,7 @@ pub struct LogicalExpr {
 }
 
 /// The available logical operators
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum LogicalOperator {
     Or,
     And,

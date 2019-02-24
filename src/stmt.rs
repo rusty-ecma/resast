@@ -1,7 +1,7 @@
-use crate::{ProgramPart, Identifier};
+use crate::decl::{VariableDecl, VariableKind};
 use crate::expr::Expr;
 use crate::pat::Pat;
-use crate::decl::{VariableDecl, VariableKind};
+use crate::{Identifier, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(PartialEq, Debug, Clone)]
 pub enum Stmt {

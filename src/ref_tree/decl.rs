@@ -1,6 +1,7 @@
-use crate::ref_tree::{Function, Class, Identifier};
+use crate::decl::VariableKind;
 use crate::ref_tree::expr::{Expr, Literal};
 use crate::ref_tree::pat::Pat;
+use crate::ref_tree::{AsConcrete, Class, Function, Identifier};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(PartialEq, Debug, Clone)]
@@ -35,6 +36,18 @@ pub enum Decl<'a> {
     Export(Box<ModExport<'a>>),
 }
 
+impl<'a> AsConcrete<crate::decl::Decl> for Decl<'a> {
+    fn as_concrete(&self) -> crate::decl::Decl {
+        match self {
+            Decl::Class(ref c) => crate::decl::Decl::Class(c.as_concrete()),
+            Decl::Export(ref e) => crate::decl::Decl::Export(Box::new(e.as_concrete())),
+            Decl::Function(ref f) => crate::decl::Decl::Function(f.as_concrete()),
+            Decl::Import(ref i) => crate::decl::Decl::Import(Box::new(i.as_concrete())),
+            Decl::Variable(k, ref v) => crate::decl::Decl::Variable(*k, v.as_concrete()),
+        }
+    }
+}
+
 /// The identifier and optional value of a variable declaration
 #[derive(PartialEq, Debug, Clone)]
 pub struct VariableDecl<'a> {
@@ -42,12 +55,18 @@ pub struct VariableDecl<'a> {
     pub init: Option<Expr<'a>>,
 }
 
-/// The kind of variable being defined (`var`/`let`/`const`)
-#[derive(PartialEq, Clone, Debug, Copy)]
-pub enum VariableKind {
-    Var,
-    Let,
-    Const,
+impl<'a> AsConcrete<crate::decl::VariableDecl> for VariableDecl<'a> {
+    fn as_concrete(&self) -> crate::decl::VariableDecl {
+        let init = if let Some(ref i) = self.init {
+            Some(i.as_concrete())
+        } else {
+            None
+        };
+        crate::decl::VariableDecl {
+            id: self.id.as_concrete(),
+            init,
+        }
+    }
 }
 
 /// A module declaration, This would only be available
@@ -57,6 +76,15 @@ pub enum VariableKind {
 pub enum ModDecl<'a> {
     Import(ModImport<'a>),
     Export(ModExport<'a>),
+}
+
+impl<'a> AsConcrete<crate::decl::ModDecl> for ModDecl<'a> {
+    fn as_concrete(&self) -> crate::decl::ModDecl {
+        match self {
+            ModDecl::Import(ref i) => crate::decl::ModDecl::Import(i.as_concrete()),
+            ModDecl::Export(ref e) => crate::decl::ModDecl::Export(e.as_concrete()),
+        }
+    }
 }
 
 /// A declaration that imports exported
@@ -69,6 +97,15 @@ pub enum ModDecl<'a> {
 pub struct ModImport<'a> {
     pub specifiers: Vec<ImportSpecifier<'a>>,
     pub source: Literal<'a>,
+}
+
+impl<'a> AsConcrete<crate::decl::ModImport> for ModImport<'a> {
+    fn as_concrete(&self) -> crate::decl::ModImport {
+        crate::decl::ModImport {
+            specifiers: self.specifiers.as_concrete(),
+            source: self.source.as_concrete(),
+        }
+    }
 }
 
 /// The name of the thing being imported
@@ -98,6 +135,23 @@ pub enum ImportSpecifier<'a> {
     Namespace(Identifier<'a>),
 }
 
+impl<'a> AsConcrete<crate::decl::ImportSpecifier> for ImportSpecifier<'a> {
+    fn as_concrete(&self) -> crate::decl::ImportSpecifier {
+        match self {
+            ImportSpecifier::Default(ref d) => crate::decl::ImportSpecifier::Default(String::from(*d)),
+            ImportSpecifier::Namespace(ref n) => crate::decl::ImportSpecifier::Namespace(String::from(*n)),
+            ImportSpecifier::Normal(ref n, ref i) => {
+                let import = if let Some(ref i) = i {
+                    Some(String::from(*i))
+                } else {
+                    None
+                };
+                crate::decl::ImportSpecifier::Normal(String::from(*n), import)
+            },
+        }
+    }
+}
+
 /// Something exported from this module
 #[derive(PartialEq, Debug, Clone)]
 pub enum ModExport<'a> {
@@ -124,6 +178,16 @@ pub enum ModExport<'a> {
     All(Literal<'a>),
 }
 
+impl<'a> AsConcrete<crate::decl::ModExport> for ModExport<'a> {
+    fn as_concrete(&self) -> crate::decl::ModExport {
+        match self {
+            ModExport::All(ref a) => crate::decl::ModExport::All(a.as_concrete()),
+            ModExport::Default(ref d) => crate::decl::ModExport::Default(d.as_concrete()),
+            ModExport::Named(ref n) => crate::decl::ModExport::Named(n.as_concrete()),
+        }
+    }
+}
+
 /// An export that has a name
 /// ```js
 /// export function thing() {}
@@ -133,6 +197,23 @@ pub enum NamedExportDecl<'a> {
     Decl(Decl<'a>),
     Specifier(Vec<ExportSpecifier<'a>>, Option<Literal<'a>>),
 }
+
+impl<'a> AsConcrete<crate::decl::NamedExportDecl> for NamedExportDecl<'a> {
+    fn as_concrete(&self) -> crate::decl::NamedExportDecl {
+        match self {
+            NamedExportDecl::Decl(ref d) => crate::decl::NamedExportDecl::Decl(d.as_concrete()),
+            NamedExportDecl::Specifier(ref s, ref l) => {
+                let lit = if let Some(ref lit) = l {
+                    Some(lit.as_concrete())
+                } else {
+                    None
+                };
+                let specs = s.as_concrete();
+                crate::decl::NamedExportDecl::Specifier(specs, lit)
+            },
+        }
+    }
+}
 /// A default export
 /// ```js
 /// export default class Thing {}
@@ -141,6 +222,15 @@ pub enum NamedExportDecl<'a> {
 pub enum DefaultExportDecl<'a> {
     Decl(Decl<'a>),
     Expr(Expr<'a>),
+}
+
+impl<'a> AsConcrete<crate::decl::DefaultExportDecl> for DefaultExportDecl<'a> {
+    fn as_concrete(&self) -> crate::decl::DefaultExportDecl {
+        match self {
+            DefaultExportDecl::Decl(ref d) => crate::decl::DefaultExportDecl::Decl(d.as_concrete()),
+            DefaultExportDecl::Expr(ref e) => crate::decl::DefaultExportDecl::Expr(e.as_concrete()),
+        }
+    }
 }
 /// The name of the thing being exported
 /// this might include an alias
@@ -154,4 +244,18 @@ pub enum DefaultExportDecl<'a> {
 pub struct ExportSpecifier<'a> {
     pub local: Identifier<'a>,
     pub exported: Option<Identifier<'a>>,
+}
+
+impl<'a> AsConcrete<crate::decl::ExportSpecifier> for ExportSpecifier<'a> {
+    fn as_concrete(&self) -> crate::decl::ExportSpecifier {
+        let exported = if let Some(ref ident) = self.exported {
+            Some(String::from(*ident))
+        } else {
+            None
+        };
+        crate::decl::ExportSpecifier {
+            local: String::from(self.local),
+            exported,
+        }
+    }
 }
