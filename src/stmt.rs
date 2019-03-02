@@ -170,6 +170,18 @@ pub enum Stmt {
     Var(Vec<VariableDecl>),
 }
 
+impl Stmt {
+    pub fn with(object: Expr, body: Stmt) -> Self {
+        Stmt::With(WithStmt::new(object, body))
+    }
+    pub fn while_stmt(test: Expr, body: Stmt) -> Self {
+        Stmt::While(WhileStmt::new(test, body))
+    }
+    pub fn if_stmt(test: Expr, consequent: Stmt, alt: Option<Stmt>) -> Self {
+        Stmt::If(IfStmt::new(test, consequent, alt))
+    }
+}
+
 /// A with statement, this puts one object at the top of
 /// the identifier search tree.
 /// > note: this cannot be used in a strict context
@@ -187,6 +199,15 @@ pub enum Stmt {
 pub struct WithStmt {
     pub object: Expr,
     pub body: Box<Stmt>,
+}
+
+impl WithStmt {
+    pub fn new(object: Expr, body: Stmt) -> Self {
+        WithStmt {
+            object,
+            body: Box::new(body),
+        }
+    }
 }
 
 /// A break statement
@@ -217,6 +238,16 @@ pub struct IfStmt {
     pub test: Expr,
     pub consequent: Box<Stmt>,
     pub alternate: Option<Box<Stmt>>,
+}
+
+impl IfStmt {
+    pub fn new(test: Expr, consequent: Stmt, alternate: Option<Stmt>) -> Self {
+        IfStmt {
+            test,
+            consequent: Box::new(consequent),
+            alternate: alternate.map(|a| Box::new(a)),
+        }
+    }
 }
 
 /// A switch statement
@@ -291,6 +322,14 @@ pub struct CatchClause {
 pub struct WhileStmt {
     pub test: Expr,
     pub body: Box<Stmt>,
+}
+impl WhileStmt {
+    pub fn new(test: Expr, body: Stmt) -> Self {
+        WhileStmt {
+            test,
+            body: Box::new(body),
+        }
+    }
 }
 
 /// A while loop that executes its body first

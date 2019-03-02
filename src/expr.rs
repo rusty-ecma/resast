@@ -14,7 +14,7 @@ pub enum Expr {
     /// }
     /// ```
     ArrowFunction(ArrowFunctionExpr),
-    /// Used for resolving possible sequence expressions
+    /// Used for resolving possible sequence Exprs
     /// that are arrow parameters
     ArrowParamPlaceHolder(Vec<FunctionArg>, bool),
     /// Assignment or update assignment
@@ -27,11 +27,11 @@ pub enum Expr {
     Await(Box<Expr>),
     /// An operation that has two arguments
     Binary(BinaryExpr),
-    /// A class expression see `Class`
+    /// A class Expr see `Class`
     Class(Class),
     /// Calling a function or method
     Call(CallExpr),
-    /// A ternery expression
+    /// A ternery Expr
     Conditional(ConditionalExpr),
     /// see `Function`
     Function(Function),
@@ -60,7 +60,7 @@ pub enum Expr {
     /// Calling a constructor
     New(NewExpr),
     Object(ObjectExpr),
-    /// Any sequence of expressions separated with a comma
+    /// Any sequence of Exprs separated with a comma
     Sequence(SequenceExpr),
     /// `...` followed by an `Expr`
     Spread(Box<Expr>),
@@ -86,6 +86,73 @@ pub enum Expr {
     Yield(YieldExpr),
 }
 
+impl Expr {
+    pub fn ident(name: &str) -> Self {
+        Expr::Ident(name.to_string())
+    }
+
+    pub fn string(val: &str) -> Self {
+        Expr::Literal(Literal::string(val))
+    }
+
+    pub fn number(val: &str) -> Self {
+        Expr::Literal(Literal::number(val))
+    }
+
+    pub fn boolean(val: bool) -> Self {
+        Expr::Literal(Literal::Boolean(val))
+    }
+
+    pub fn regex(pattern: &str, flags: &str) -> Self {
+        Expr::Literal(Literal::regex(pattern, flags))
+    }
+
+    pub fn binary(left: Expr, operator: BinaryOperator, right: Expr) -> Self {
+        Expr::Binary(BinaryExpr::new(left, operator, right))
+    }
+
+    pub fn call(callee: Expr, arguments: Vec<Expr>) -> Self {
+        Expr::Call(CallExpr::new(callee, arguments))
+    }
+
+    pub fn member(object: Expr, property: Expr, computed: bool) -> Self {
+        Expr::Member(MemberExpr::new(object, property, computed))
+    }
+
+    pub fn logical(left: Expr, operator: LogicalOperator, right: Expr) -> Self {
+        Expr::Logical(LogicalExpr::new(operator, left, right))
+    }
+
+    pub fn function(
+        id: Option<String>,
+        params: Vec<FunctionArg>,
+        body: FunctionBody,
+        generator: bool,
+        is_async: bool,
+    ) -> Self {
+        Expr::Function(Function {
+            id,
+            params,
+            body,
+            generator,
+            is_async,
+        })
+    }
+
+    pub fn yield_expr(arg: Option<Expr>, delegate: bool) -> Self {
+        Expr::Yield(YieldExpr::new(arg, delegate))
+    }
+
+    pub fn yield_with_arg(arg: Expr, delegate: bool) -> Self {
+        Expr::Yield(YieldExpr::new(Some(arg), delegate))
+    }
+
+    pub fn empty_yield(delegate: bool) -> Self {
+        Expr::Yield(YieldExpr::new(None, delegate))
+    }
+    
+}
+
 /// `[a, b, c]`
 pub type ArrayExpr = Vec<Option<Expr>>;
 /// `{a: 'b', c, ...d}`
@@ -97,6 +164,16 @@ pub enum ObjectProperty {
     Spread(Box<Expr>),
 }
 
+impl ObjectProperty {
+    pub fn number(id: &str, value: &str) -> Self {
+        let id = PropertyKey::Expr(
+            Expr::ident(id)
+        );
+        let init = PropertyValue::Expr(Expr::Literal(Literal::Number(String::from(value))));
+        ObjectProperty::Property(Property::new(id, init, PropertyKind::Init, false, false, false))
+    }
+}
+
 /// A single part of an object literal or class
 #[derive(PartialEq, Debug, Clone)]
 pub struct Property {
@@ -106,6 +183,19 @@ pub struct Property {
     pub method: bool,
     pub computed: bool,
     pub short_hand: bool,
+}
+
+impl Property {
+    pub fn new(key: PropertyKey, value: PropertyValue, kind: PropertyKind, method: bool, computed: bool, short_hand: bool) -> Self {
+        Self {
+            key,
+            value,
+            kind,
+            method,
+            computed,
+            short_hand
+        }
+    }
 }
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone)]
@@ -144,7 +234,17 @@ pub struct UnaryExpr {
     pub argument: Box<Expr>,
 }
 
-/// The allowed operators for an expression
+impl UnaryExpr {
+    pub fn new(operator: UnaryOperator, prefix: bool, argument: Expr) -> Self {
+        Self {
+            operator,
+            prefix,
+            argument: Box::new(argument),
+        }
+    }
+}
+
+/// The allowed operators for an Expr
 /// to be `Unary`
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum UnaryOperator {
@@ -165,6 +265,16 @@ pub struct UpdateExpr {
     pub prefix: bool,
 }
 
+impl UpdateExpr {
+    pub fn new(operator: UpdateOperator, arg: Expr, prefix: bool) -> Self {
+        Self {
+            operator,
+            argument: Box::new(arg),
+            prefix,
+        }
+    }
+}
+
 /// `++` or `--`
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum UpdateOperator {
@@ -180,7 +290,17 @@ pub struct BinaryExpr {
     pub right: Box<Expr>,
 }
 
-/// The available operations for `Binary` expressions
+impl BinaryExpr {
+    pub fn new(left: Expr, operator: BinaryOperator, right: Expr) -> Self {
+        Self {
+            operator,
+            left: Box::new(left),
+            right: Box::new(right),
+        }
+    }
+}
+
+/// The available operations for `Binary` Exprs
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum BinaryOperator {
     Equal,
@@ -215,6 +335,16 @@ pub struct AssignmentExpr {
     pub right: Box<Expr>,
 }
 
+impl AssignmentExpr {
+    pub fn new(operator: AssignmentOperator, left: AssignmentLeft, right: Expr) -> Self {
+        AssignmentExpr {
+            operator,
+            left,
+            right: Box::new(right),
+        }
+    }
+}
+
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
 pub enum AssignmentLeft {
@@ -222,7 +352,13 @@ pub enum AssignmentLeft {
     Expr(Box<Expr>),
 }
 
-/// The available operators for assignment expressions
+impl AssignmentLeft {
+    pub fn expr(expr: Expr) -> Self {
+        AssignmentLeft::Expr(Box::new(expr))
+    }
+}
+
+/// The available operators for assignment Exprs
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum AssignmentOperator {
     Equal,
@@ -252,6 +388,16 @@ pub struct LogicalExpr {
     pub right: Box<Expr>,
 }
 
+impl LogicalExpr {
+    pub fn new(operator: LogicalOperator, left: Expr, right: Expr) -> Self {
+        Self {
+            operator,
+            left: Box::new(left),
+            right: Box::new(right),
+        }
+    }
+}
+
 /// The available logical operators
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum LogicalOperator {
@@ -271,7 +417,17 @@ pub struct MemberExpr {
     pub computed: bool,
 }
 
-/// A ternery expression
+impl MemberExpr {
+    pub fn new(obj: Expr, prop: Expr, computed: bool) -> Self {
+        MemberExpr {
+            object: Box::new(obj),
+            property: Box::new(prop),
+            computed,
+        }
+    }
+}
+
+/// A ternery Expr
 /// ```js
 /// var a = true ? 'stuff' : 'things';
 /// ```
@@ -280,6 +436,16 @@ pub struct ConditionalExpr {
     pub test: Box<Expr>,
     pub alternate: Box<Expr>,
     pub consequent: Box<Expr>,
+}
+
+impl ConditionalExpr {
+    pub fn new(test: Expr, alternate: Expr, consequent: Expr) -> Self {
+        ConditionalExpr {
+            test: Box::new(test),
+            alternate: Box::new(alternate),
+            consequent: Box::new(consequent),
+        }
+    }
 }
 
 /// Calling a function or method
@@ -292,6 +458,15 @@ pub struct CallExpr {
     pub arguments: Vec<Expr>,
 }
 
+impl CallExpr {
+    pub fn new(callee: Expr, arguments: Vec<Expr>) -> Self {
+        CallExpr {
+            callee: Box::new(callee),
+            arguments
+        }
+    }
+}
+
 /// Calling a constructor
 /// ```js
 /// new Uint8Array(32);
@@ -300,6 +475,15 @@ pub struct CallExpr {
 pub struct NewExpr {
     pub callee: Box<Expr>,
     pub arguments: Vec<Expr>,
+}
+
+impl NewExpr {
+    pub fn new(callee: Expr, arguments: Vec<Expr>) -> Self {
+        NewExpr {
+            callee: Box::new(callee),
+            arguments,
+        }
+    }
 }
 
 /// A collection of `Exprs` separated by commas
@@ -322,11 +506,33 @@ pub struct ArrowFunctionExpr {
     pub is_async: bool,
 }
 
-/// The body portion of an arrow function can be either an expression or a block of statements
+impl ArrowFunctionExpr {
+    pub fn new(id: Option<String>, params: Vec<FunctionArg>, body: ArrowFunctionBody, expression: bool, generator: bool, is_async: bool) -> Self {
+        ArrowFunctionExpr {
+            id,
+            params,
+            body,
+            expression,
+            generator,
+            is_async,
+        }
+    }
+}
+
+/// The body portion of an arrow function can be either an Expr or a block of statements
 #[derive(PartialEq, Debug, Clone)]
 pub enum ArrowFunctionBody {
     FunctionBody(FunctionBody),
     Expr(Box<Expr>),
+}
+
+impl ArrowFunctionBody {
+    pub fn function_body(bod: FunctionBody) -> Self {
+        ArrowFunctionBody::FunctionBody(bod)
+    }
+    pub fn expr(expr: Expr) -> Self {
+        ArrowFunctionBody::Expr(Box::new(expr))
+    }
 }
 
 /// yield a value from inside of a generator function
@@ -343,12 +549,30 @@ pub struct YieldExpr {
     pub delegate: bool,
 }
 
+impl YieldExpr {
+    pub fn new(argument: Option<Expr>, delegate: bool) -> YieldExpr {
+        YieldExpr {
+            argument: argument.map(|a| Box::new(a)),
+            delegate
+        }
+    }
+}
+
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]
 pub struct TaggedTemplateExpr {
     pub tag: Box<Expr>,
     pub quasi: TemplateLiteral,
+}
+
+impl TaggedTemplateExpr {
+    pub fn new(tag: Expr, quasi: TemplateLiteral) -> Self {
+        TaggedTemplateExpr {
+            tag: Box::new(tag),
+            quasi,
+        }
+    }
 }
 
 /// A template string literal
@@ -361,6 +585,15 @@ pub struct TemplateLiteral {
     pub expressions: Vec<Expr>,
 }
 
+impl TemplateLiteral {
+    pub fn new(quasis: Vec<TemplateElement>, expressions: Vec<Expr>) -> Self {
+        TemplateLiteral {
+            quasis,
+            expressions,
+        }
+    }
+}
+
 /// The text part of a `TemplateLiteral`
 #[derive(PartialEq, Debug, Clone)]
 pub struct TemplateElement {
@@ -369,6 +602,16 @@ pub struct TemplateElement {
     pub cooked: String,
     /// The quoted version
     pub raw: String,
+}
+
+impl TemplateElement {
+    pub fn new(tail: bool, cooked: String, raw: String) -> Self {
+        TemplateElement {
+            tail,
+            cooked,
+            raw,
+        }
+    }
 }
 
 /// pretty much just `new.target`
@@ -385,6 +628,15 @@ pub struct TemplateElement {
 pub struct MetaProperty {
     pub meta: Identifier,
     pub property: Identifier,
+}
+
+impl MetaProperty {
+    pub fn new(meta: Identifier, property: Identifier) -> Self {
+        MetaProperty {
+            meta,
+            property,
+        }
+    }
 }
 
 /// A literal value
@@ -415,9 +667,33 @@ pub enum Literal {
     Template(TemplateLiteral),
 }
 
-/// A regular expression literal
+impl Literal {
+    pub fn string(string: &str) -> Self {
+        Literal::String(string.to_string())
+    }
+
+    pub fn number(num: &str) -> Self {
+        Literal::Number(num.to_string())
+    }
+
+    pub fn regex(pattern: &str, flags: &str) -> Self {
+        let inner = RegEx::new(pattern, flags);
+        Literal::RegEx(inner)
+    }
+}
+
+/// A regular Expr literal
 #[derive(PartialEq, Debug, Clone)]
 pub struct RegEx {
     pub pattern: String,
     pub flags: String,
+}
+
+impl RegEx {
+    pub fn new(body: &str, flags: &str) -> Self {
+        RegEx {
+            pattern: String::from(body),
+            flags: String::from(flags),
+        }
+    }
 }

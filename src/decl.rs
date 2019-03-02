@@ -1,5 +1,5 @@
-use crate::expr::{Expr, Literal};
-use crate::pat::Pat;
+use crate::expr::{Expr, Literal, PropertyKey, PropertyKind, PropertyValue, Property, ObjectExpr};
+use crate::pat::{Pat, ObjectPatPart};
 use crate::{Class, Function, Identifier};
 
 /// The declaration of a variable, function, class, import or export
@@ -35,11 +35,96 @@ pub enum Decl {
     Export(Box<ModExport>),
 }
 
+impl Decl {
+    pub fn variable(kind: VariableKind, decls: Vec<VariableDecl>) -> Self {
+        Decl::Variable(kind, decls)
+    }
+    pub fn function(f: Function) -> Self {
+        Decl::Function(f)
+    }
+    pub fn class(class: Class) -> Self {
+        Decl::Class(class)
+    }
+    pub fn import(imp: ModImport) -> Self {
+        Decl::Import(Box::new(imp))
+    }
+    pub fn export(exp: ModExport) -> Self {
+        Decl::Export(Box::new(exp))
+    }
+}
+
 /// The identifier and optional value of a variable declaration
 #[derive(PartialEq, Debug, Clone)]
 pub struct VariableDecl {
     pub id: Pat,
     pub init: Option<Expr>,
+}
+
+impl VariableDecl {
+    pub fn new(id: Pat, init: Option<Expr>) -> Self {
+        VariableDecl {
+            id,
+            init,
+        }
+    }
+
+    pub fn uninitialized(name: &str) -> Self {
+        Self {
+            id: Pat::Identifier(String::from(name)),
+            init: None,
+        }
+    }
+
+    pub fn with_value(name: &str, value: Expr) -> Self {
+        Self {
+            id: Pat::Identifier(String::from(name)),
+            init: Some(value),
+        }
+    }
+
+    pub fn destructed(names: &[&str], value: ObjectExpr) -> Self {
+        let id = Pat::Object(
+            names
+                .iter()
+                .map(|name| {
+                    ObjectPatPart::Assignment(Property {
+                        key: PropertyKey::Expr(Expr::ident(&name.to_string())),
+                        value: PropertyValue::None,
+                        kind: PropertyKind::Init,
+                        method: false,
+                        short_hand: true,
+                        computed: false,
+                    })
+                })
+                .collect(),
+        );
+        Self {
+            id,
+            init: Some(Expr::Object(value)),
+        }
+    }
+
+    pub fn destructed_with_rest(names: &[&str], rest: &str, value: ObjectExpr) -> Self {
+        let mut props: Vec<ObjectPatPart> = names
+            .iter()
+            .map(|name| {
+                ObjectPatPart::Assignment(Property {
+                    key: PropertyKey::Expr(Expr::Ident(String::from(*name))),
+                    value: PropertyValue::None,
+                    kind: PropertyKind::Init,
+                    computed: false,
+                    method: false,
+                    short_hand: true,
+                })
+            })
+            .collect();
+        props.push(ObjectPatPart::Rest(Box::new(Pat::RestElement(
+            Box::new(Pat::Identifier(String::from(rest))),
+        ))));
+        let id = Pat::Object(props);
+        let init = Some(Expr::Object(value));
+        Self { id, init }
+    }
 }
 
 /// The kind of variable being defined (`var`/`let`/`const`)
@@ -59,6 +144,15 @@ pub enum ModDecl {
     Export(ModExport),
 }
 
+impl ModDecl {
+    pub fn import(inner: ModImport) -> Self {
+        ModDecl::Import(inner)
+    }
+    pub fn export(inner: ModExport) -> Self {
+        ModDecl::Export(inner)
+    }
+}
+
 /// A declaration that imports exported
 /// members of another module
 ///
@@ -69,6 +163,15 @@ pub enum ModDecl {
 pub struct ModImport {
     pub specifiers: Vec<ImportSpecifier>,
     pub source: Literal,
+}
+
+impl ModImport {
+    pub fn new(specs: Vec<ImportSpecifier>, source: String) -> Self {
+        Self {
+            specifiers: specs,
+            source: Literal::String(source),
+        }
+    }
 }
 
 /// The name of the thing being imported
@@ -98,6 +201,18 @@ pub enum ImportSpecifier {
     Namespace(Identifier),
 }
 
+impl ImportSpecifier {
+    pub fn normal(ident: Identifier, module: Option<Identifier>) -> Self {
+        ImportSpecifier::Normal(ident, module)
+    }
+    pub fn default(ident: Identifier) -> Self {
+        ImportSpecifier::Default(ident)
+    }
+    pub fn namespace(ident: Identifier) -> Self {
+        ImportSpecifier::Namespace(ident)
+    }
+}
+
 /// Something exported from this module
 #[derive(PartialEq, Debug, Clone)]
 pub enum ModExport {
@@ -124,6 +239,19 @@ pub enum ModExport {
     All(Literal),
 }
 
+impl ModExport {
+    pub fn default(default: DefaultExportDecl) -> Self {
+        ModExport::Default(default)
+    }
+
+    pub fn named(named: NamedExportDecl) -> Self {
+        ModExport::Named(named)
+    }
+    pub fn all(lit: Literal) -> Self {
+        ModExport::All(lit)
+    }
+}
+
 /// An export that has a name
 /// ```js
 /// export function thing() {}
@@ -133,6 +261,16 @@ pub enum NamedExportDecl {
     Decl(Decl),
     Specifier(Vec<ExportSpecifier>, Option<Literal>),
 }
+
+impl NamedExportDecl {
+    pub fn decl(decl: Decl) -> Self {
+        NamedExportDecl::Decl(decl)
+    }
+    pub fn specifier(exports: Vec<ExportSpecifier>, path: Option<Literal>) -> Self {
+        NamedExportDecl::Specifier(exports, path)
+    }
+}
+
 /// A default export
 /// ```js
 /// export default class Thing {}
@@ -142,6 +280,16 @@ pub enum DefaultExportDecl {
     Decl(Decl),
     Expr(Expr),
 }
+
+impl DefaultExportDecl {
+    pub fn decl(decl: Decl) -> Self {
+        DefaultExportDecl::Decl(decl)
+    }
+    pub fn expr(expr: Expr) -> Self {
+        DefaultExportDecl::Expr(expr)
+    }
+}
+
 /// The name of the thing being exported
 /// this might include an alias
 /// ```js
@@ -154,4 +302,13 @@ pub enum DefaultExportDecl {
 pub struct ExportSpecifier {
     pub local: Identifier,
     pub exported: Option<Identifier>,
+}
+
+impl ExportSpecifier {
+    pub fn new(local: Identifier, exported: Option<Identifier>) -> ExportSpecifier {
+        ExportSpecifier {
+            local,
+            exported,
+        }
+    }
 }
