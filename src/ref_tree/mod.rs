@@ -270,6 +270,15 @@ pub mod prelude {
             ForInStmt,
             ForOfStmt,
             LoopLeft,
+            CatchClause,
         },
+    };
+    pub use crate::prelude::{
+        BinaryOperator,
+        LogicalOperator,
+        AssignmentOperator,
+        UnaryOperator,
+        UpdateOperator,
+        PropertyKind,
     };
 }
