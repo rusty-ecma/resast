@@ -161,6 +161,7 @@ pub struct Property<'a> {
     pub method: bool,
     pub computed: bool,
     pub short_hand: bool,
+    pub is_static: bool,
 }
 
 impl<'a> AsConcrete<crate::expr::Property> for Property<'a> {
@@ -172,6 +173,7 @@ impl<'a> AsConcrete<crate::expr::Property> for Property<'a> {
             method: self.method,
             computed: self.computed,
             short_hand: self.short_hand,
+            is_static: self.is_static,
         }
     }
 }

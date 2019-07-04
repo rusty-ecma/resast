@@ -94,6 +94,7 @@ impl VariableDecl {
                         method: false,
                         short_hand: true,
                         computed: false,
+                        is_static: false,
                     })
                 })
                 .collect(),
@@ -115,6 +116,7 @@ impl VariableDecl {
                     computed: false,
                     method: false,
                     short_hand: true,
+                    is_static: false,
                 })
             })
             .collect();

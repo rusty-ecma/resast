@@ -170,7 +170,7 @@ impl ObjectProperty {
             Expr::ident(id)
         );
         let init = PropertyValue::Expr(Expr::Literal(Literal::Number(String::from(value))));
-        ObjectProperty::Property(Property::new(id, init, PropertyKind::Init, false, false, false))
+        ObjectProperty::Property(Property::new(id, init, PropertyKind::Init, false, false, false, false))
     }
 }
 
@@ -183,17 +183,19 @@ pub struct Property {
     pub method: bool,
     pub computed: bool,
     pub short_hand: bool,
+    pub is_static: bool,
 }
 
 impl Property {
-    pub fn new(key: PropertyKey, value: PropertyValue, kind: PropertyKind, method: bool, computed: bool, short_hand: bool) -> Self {
+    pub fn new(key: PropertyKey, value: PropertyValue, kind: PropertyKind, method: bool, computed: bool, short_hand: bool, is_static: bool) -> Self {
         Self {
             key,
             value,
             kind,
             method,
             computed,
-            short_hand
+            short_hand,
+            is_static,
         }
     }
 }

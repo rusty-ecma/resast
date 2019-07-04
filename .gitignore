@@ -5,3 +5,4 @@
 **/*.rs.bk
 Cargo.lock
 .vscode/settings.json
+/node_modules
