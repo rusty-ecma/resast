@@ -1,11 +1,16 @@
+use std::borrow::Cow;
+use crate::{
+    AssignOp, BinaryOp, LogicalOp, PropKind, UnaryOp,
+    UpdateOp,
+};
 use crate::pat::Pat;
-use crate::{Class, Function, FunctionArg, FunctionBody, Identifier};
-
+use crate::{Class, Func, FuncArg, FuncBody, Ident};
 /// A slightly more granular program part that a statement
-#[derive(PartialEq, Debug, Clone)]
-pub enum Expr {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Expr<'a> {
     /// `[0,,]`
-    Array(ArrayExpr),
+    Array(ArrayExpr<'a>),
     /// An arrow function
     /// ```js
     /// () => console.log();
@@ -13,61 +18,61 @@ pub enum Expr {
     ///     return x;
     /// }
     /// ```
-    ArrowFunction(ArrowFunctionExpr),
-    /// Used for resolving possible sequence Exprs
+    ArrowFunc(ArrowFuncExpr<'a>),
+    /// Used for resolving possible sequence expressions
     /// that are arrow parameters
-    ArrowParamPlaceHolder(Vec<FunctionArg>, bool),
+    ArrowParamPlaceHolder(Vec<FuncArg<'a>>, bool),
     /// Assignment or update assignment
     /// ```js
     /// a = 0
     /// b += 1
     /// ```
-    Assignment(AssignmentExpr),
+    Assign(AssignExpr<'a>),
     /// The `await` keyword followed by another `Expr`
-    Await(Box<Expr>),
+    Await(Box<Expr<'a>>),
     /// An operation that has two arguments
-    Binary(BinaryExpr),
-    /// A class Expr see `Class`
-    Class(Class),
+    Binary(BinaryExpr<'a>),
+    /// A class expression see `Class`
+    Class(Class<'a>),
     /// Calling a function or method
-    Call(CallExpr),
-    /// A ternery Expr
-    Conditional(ConditionalExpr),
+    Call(CallExpr<'a>),
+    /// A ternery expression
+    Conditional(ConditionalExpr<'a>),
     /// see `Function`
-    Function(Function),
+    Func(Func<'a>),
     /// An identifier
-    Ident(Identifier),
+    Ident(Ident<'a>),
     /// A literal value, see `Literal`
-    Literal(Literal),
+    Lit(Lit<'a>),
     /// A specialized `BinaryExpr` for logical evaluation
     /// ```js
     /// true && true
     /// false || true
     /// ```
-    Logical(LogicalExpr),
+    Logical(LogicalExpr<'a>),
     /// Accessing the member of a value
     /// ```js
     /// b['thing'];
     /// c.stuff;
     /// ```
-    Member(MemberExpr),
+    Member(MemberExpr<'a>),
     /// currently just `new.target`
-    MetaProperty(MetaProperty),
+    MetaProp(MetaProp<'a>),
     /// ```js
     /// var a = true ? 'stuff' : 'things';
     /// ```
     /// `{}`
     /// Calling a constructor
-    New(NewExpr),
-    Object(ObjectExpr),
-    /// Any sequence of Exprs separated with a comma
-    Sequence(SequenceExpr),
+    New(NewExpr<'a>),
+    Obj(ObjExpr<'a>),
+    /// Any sequence of expressions separated with a comma
+    Sequence(SequenceExpr<'a>),
     /// `...` followed by an `Expr`
-    Spread(Box<Expr>),
+    Spread(Box<Expr<'a>>),
     /// `super`
     Super,
     /// A template literal preceded by a tag function identifier
-    TaggedTemplate(TaggedTemplateExpr),
+    TaggedTemplate(TaggedTemplateExpr<'a>),
     /// `this`
     This,
     /// An operation that has one argument
@@ -75,307 +80,110 @@ pub enum Expr {
     /// typeof 'a';
     /// +9;
     /// ```
-    Unary(UnaryExpr),
+    Unary(UnaryExpr<'a>),
     /// Increment or decrement
     /// ```js
     /// 1++
     /// --2
     /// ```
-    Update(UpdateExpr),
+    Update(UpdateExpr<'a>),
     /// yield a value from inside of a generator function
-    Yield(YieldExpr),
+    Yield(YieldExpr<'a>),
 }
 
-impl Expr {
-    pub fn ident(name: &str) -> Self {
-        Expr::Ident(name.to_string())
+impl<'a> Expr<'a> {
+    pub fn ident_from(s: &'a str) -> Self {
+        Expr::Ident(
+            Ident::from(s)
+        )
     }
-
-    pub fn string(val: &str) -> Self {
-        Expr::Literal(Literal::string(val))
-    }
-
-    pub fn number(val: &str) -> Self {
-        Expr::Literal(Literal::number(val))
-    }
-
-    pub fn boolean(val: bool) -> Self {
-        Expr::Literal(Literal::Boolean(val))
-    }
-
-    pub fn regex(pattern: &str, flags: &str) -> Self {
-        Expr::Literal(Literal::regex(pattern, flags))
-    }
-
-    pub fn binary(left: Expr, operator: BinaryOperator, right: Expr) -> Self {
-        Expr::Binary(BinaryExpr::new(left, operator, right))
-    }
-
-    pub fn call(callee: Expr, arguments: Vec<Expr>) -> Self {
-        Expr::Call(CallExpr::new(callee, arguments))
-    }
-
-    pub fn member(object: Expr, property: Expr, computed: bool) -> Self {
-        Expr::Member(MemberExpr::new(object, property, computed))
-    }
-
-    pub fn logical(left: Expr, operator: LogicalOperator, right: Expr) -> Self {
-        Expr::Logical(LogicalExpr::new(operator, left, right))
-    }
-
-    pub fn function(
-        id: Option<String>,
-        params: Vec<FunctionArg>,
-        body: FunctionBody,
-        generator: bool,
-        is_async: bool,
-    ) -> Self {
-        Expr::Function(Function {
-            id,
-            params,
-            body,
-            generator,
-            is_async,
-        })
-    }
-
-    pub fn yield_expr(arg: Option<Expr>, delegate: bool) -> Self {
-        Expr::Yield(YieldExpr::new(arg, delegate))
-    }
-
-    pub fn yield_with_arg(arg: Expr, delegate: bool) -> Self {
-        Expr::Yield(YieldExpr::new(Some(arg), delegate))
-    }
-
-    pub fn empty_yield(delegate: bool) -> Self {
-        Expr::Yield(YieldExpr::new(None, delegate))
-    }
-    
 }
 
 /// `[a, b, c]`
-pub type ArrayExpr = Vec<Option<Expr>>;
+pub type ArrayExpr<'a> = Vec<Option<Expr<'a>>>;
 /// `{a: 'b', c, ...d}`
-pub type ObjectExpr = Vec<ObjectProperty>;
+pub type ObjExpr<'a> = Vec<ObjProp<'a>>;
 /// A single part of an object literal
-#[derive(PartialEq, Debug, Clone)]
-pub enum ObjectProperty {
-    Property(Property),
-    Spread(Box<Expr>),
-}
-
-impl ObjectProperty {
-    pub fn number(id: &str, value: &str) -> Self {
-        let id = PropertyKey::Expr(
-            Expr::ident(id)
-        );
-        let init = PropertyValue::Expr(Expr::Literal(Literal::Number(String::from(value))));
-        ObjectProperty::Property(Property::new(id, init, PropertyKind::Init, false, false, false, false))
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ObjProp<'a> {
+    Prop(Prop<'a>),
+    Spread(Expr<'a>),
 }
 
 /// A single part of an object literal or class
-#[derive(PartialEq, Debug, Clone)]
-pub struct Property {
-    pub key: PropertyKey,
-    pub value: PropertyValue,
-    pub kind: PropertyKind,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Prop<'a> {
+    pub key: PropKey<'a>,
+    pub value: PropValue<'a>,
+    pub kind: PropKind,
     pub method: bool,
     pub computed: bool,
     pub short_hand: bool,
     pub is_static: bool,
 }
 
-impl Property {
-    pub fn new(key: PropertyKey, value: PropertyValue, kind: PropertyKind, method: bool, computed: bool, short_hand: bool, is_static: bool) -> Self {
-        Self {
-            key,
-            value,
-            kind,
-            method,
-            computed,
-            short_hand,
-            is_static,
-        }
-    }
-}
 /// An object literal or class property identifier
-#[derive(PartialEq, Debug, Clone)]
-pub enum PropertyKey {
-    Literal(Literal),
-    Expr(Expr),
-    Pat(Pat),
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PropKey<'a> {
+    Lit(Lit<'a>),
+    Expr(Expr<'a>),
+    Pat(Pat<'a>),
 }
+
 /// The value of an object literal or class property
-#[derive(PartialEq, Debug, Clone)]
-pub enum PropertyValue {
-    Expr(Expr),
-    Pat(Pat),
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PropValue<'a> {
+    Expr(Expr<'a>),
+    Pat(Pat<'a>),
     None,
 }
 
-/// A flag for determining what kind of property
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum PropertyKind {
-    /// A property with a value
-    Init,
-    /// A method with the get keyword
-    Get,
-    /// A method with the set keyword
-    Set,
-    /// A constructor
-    Ctor,
-    /// A standard method
-    Method,
-}
 /// An operation that takes one argument
-#[derive(PartialEq, Debug, Clone)]
-pub struct UnaryExpr {
-    pub operator: UnaryOperator,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnaryExpr<'a> {
+    pub operator: UnaryOp,
     pub prefix: bool,
-    pub argument: Box<Expr>,
-}
-
-impl UnaryExpr {
-    pub fn new(operator: UnaryOperator, prefix: bool, argument: Expr) -> Self {
-        Self {
-            operator,
-            prefix,
-            argument: Box::new(argument),
-        }
-    }
-}
-
-/// The allowed operators for an Expr
-/// to be `Unary`
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum UnaryOperator {
-    Minus,
-    Plus,
-    Not,
-    Tilde,
-    TypeOf,
-    Void,
-    Delete,
+    pub argument: Box<Expr<'a>>,
 }
 
 /// Increment or decrementing a value
-#[derive(PartialEq, Debug, Clone)]
-pub struct UpdateExpr {
-    pub operator: UpdateOperator,
-    pub argument: Box<Expr>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateExpr<'a> {
+    pub operator: UpdateOp,
+    pub argument: Box<Expr<'a>>,
     pub prefix: bool,
 }
 
-impl UpdateExpr {
-    pub fn new(operator: UpdateOperator, arg: Expr, prefix: bool) -> Self {
-        Self {
-            operator,
-            argument: Box::new(arg),
-            prefix,
-        }
-    }
-}
-
-/// `++` or `--`
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum UpdateOperator {
-    Increment,
-    Decrement,
-}
-
 /// An operation that requires 2 arguments
-#[derive(PartialEq, Debug, Clone)]
-pub struct BinaryExpr {
-    pub operator: BinaryOperator,
-    pub left: Box<Expr>,
-    pub right: Box<Expr>,
-}
-
-impl BinaryExpr {
-    pub fn new(left: Expr, operator: BinaryOperator, right: Expr) -> Self {
-        Self {
-            operator,
-            left: Box::new(left),
-            right: Box::new(right),
-        }
-    }
-}
-
-/// The available operations for `Binary` Exprs
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum BinaryOperator {
-    Equal,
-    NotEqual,
-    StrictEqual,
-    StrictNotEqual,
-    LessThan,
-    GreaterThan,
-    LessThanEqual,
-    GreaterThanEqual,
-    LeftShift,
-    RightShift,
-    UnsignedRightShift,
-    Plus,
-    Minus,
-    Times,
-    Over,
-    Mod,
-    Or,
-    XOr,
-    And,
-    In,
-    InstanceOf,
-    PowerOf,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BinaryExpr<'a> {
+    pub operator: BinaryOp,
+    pub left: Box<Expr<'a>>,
+    pub right: Box<Expr<'a>>,
 }
 
 /// An assignment or update + assignment operation
-#[derive(PartialEq, Debug, Clone)]
-pub struct AssignmentExpr {
-    pub operator: AssignmentOperator,
-    pub left: AssignmentLeft,
-    pub right: Box<Expr>,
-}
-
-impl AssignmentExpr {
-    pub fn new(operator: AssignmentOperator, left: AssignmentLeft, right: Expr) -> Self {
-        AssignmentExpr {
-            operator,
-            left,
-            right: Box::new(right),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AssignExpr<'a> {
+    pub operator: AssignOp,
+    pub left: AssignLeft<'a>,
+    pub right: Box<Expr<'a>>,
 }
 
 /// The value being assigned to
-#[derive(PartialEq, Debug, Clone)]
-pub enum AssignmentLeft {
-    Pat(Pat),
-    Expr(Box<Expr>),
-}
-
-impl AssignmentLeft {
-    pub fn expr(expr: Expr) -> Self {
-        AssignmentLeft::Expr(Box::new(expr))
-    }
-}
-
-/// The available operators for assignment Exprs
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum AssignmentOperator {
-    Equal,
-    PlusEqual,
-    MinusEqual,
-    TimesEqual,
-    DivEqual,
-    ModEqual,
-    LeftShiftEqual,
-    RightShiftEqual,
-    UnsignedRightShiftEqual,
-    OrEqual,
-    XOrEqual,
-    AndEqual,
-    PowerOfEqual,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AssignLeft<'a> {
+    Pat(Pat<'a>),
+    Expr(Box<Expr<'a>>),
 }
 
 /// A specialized `BinaryExpr` for logical evaluation
@@ -383,28 +191,12 @@ pub enum AssignmentOperator {
 /// true && true
 /// false || true
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct LogicalExpr {
-    pub operator: LogicalOperator,
-    pub left: Box<Expr>,
-    pub right: Box<Expr>,
-}
-
-impl LogicalExpr {
-    pub fn new(operator: LogicalOperator, left: Expr, right: Expr) -> Self {
-        Self {
-            operator,
-            left: Box::new(left),
-            right: Box::new(right),
-        }
-    }
-}
-
-/// The available logical operators
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum LogicalOperator {
-    Or,
-    And,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogicalExpr<'a> {
+    pub operator: LogicalOp,
+    pub left: Box<Expr<'a>>,
+    pub right: Box<Expr<'a>>,
 }
 
 /// Accessing the member of a value
@@ -412,84 +204,50 @@ pub enum LogicalOperator {
 /// b['thing'];
 /// c.stuff;
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct MemberExpr {
-    pub object: Box<Expr>,
-    pub property: Box<Expr>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemberExpr<'a> {
+    pub object: Box<Expr<'a>>,
+    pub property: Box<Expr<'a>>,
     pub computed: bool,
 }
 
-impl MemberExpr {
-    pub fn new(obj: Expr, prop: Expr, computed: bool) -> Self {
-        MemberExpr {
-            object: Box::new(obj),
-            property: Box::new(prop),
-            computed,
-        }
-    }
-}
-
-/// A ternery Expr
+/// A ternery expression
 /// ```js
 /// var a = true ? 'stuff' : 'things';
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ConditionalExpr {
-    pub test: Box<Expr>,
-    pub alternate: Box<Expr>,
-    pub consequent: Box<Expr>,
-}
-
-impl ConditionalExpr {
-    pub fn new(test: Expr, alternate: Expr, consequent: Expr) -> Self {
-        ConditionalExpr {
-            test: Box::new(test),
-            alternate: Box::new(alternate),
-            consequent: Box::new(consequent),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConditionalExpr<'a> {
+    pub test: Box<Expr<'a>>,
+    pub alternate: Box<Expr<'a>>,
+    pub consequent: Box<Expr<'a>>,
 }
 
 /// Calling a function or method
 /// ```js
 /// Math.random()
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct CallExpr {
-    pub callee: Box<Expr>,
-    pub arguments: Vec<Expr>,
-}
-
-impl CallExpr {
-    pub fn new(callee: Expr, arguments: Vec<Expr>) -> Self {
-        CallExpr {
-            callee: Box::new(callee),
-            arguments
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CallExpr<'a> {
+    pub callee: Box<Expr<'a>>,
+    pub arguments: Vec<Expr<'a>>,
 }
 
 /// Calling a constructor
 /// ```js
 /// new Uint8Array(32);
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct NewExpr {
-    pub callee: Box<Expr>,
-    pub arguments: Vec<Expr>,
-}
-
-impl NewExpr {
-    pub fn new(callee: Expr, arguments: Vec<Expr>) -> Self {
-        NewExpr {
-            callee: Box::new(callee),
-            arguments,
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewExpr<'a> {
+    pub callee: Box<Expr<'a>>,
+    pub arguments: Vec<Expr<'a>>,
 }
 
 /// A collection of `Exprs` separated by commas
-pub type SequenceExpr = Vec<Expr>;
+pub type SequenceExpr<'a> = Vec<Expr<'a>>;
 
 /// An arrow function
 /// ```js
@@ -498,43 +256,23 @@ pub type SequenceExpr = Vec<Expr>;
 ///     return x + 1;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ArrowFunctionExpr {
-    pub id: Option<String>,
-    pub params: Vec<FunctionArg>,
-    pub body: ArrowFunctionBody,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArrowFuncExpr<'a> {
+    pub id: Option<Ident<'a>>,
+    pub params: Vec<FuncArg<'a>>,
+    pub body: ArrowFuncBody<'a>,
     pub expression: bool,
     pub generator: bool,
     pub is_async: bool,
 }
 
-impl ArrowFunctionExpr {
-    pub fn new(id: Option<String>, params: Vec<FunctionArg>, body: ArrowFunctionBody, expression: bool, generator: bool, is_async: bool) -> Self {
-        ArrowFunctionExpr {
-            id,
-            params,
-            body,
-            expression,
-            generator,
-            is_async,
-        }
-    }
-}
-
-/// The body portion of an arrow function can be either an Expr or a block of statements
-#[derive(PartialEq, Debug, Clone)]
-pub enum ArrowFunctionBody {
-    FunctionBody(FunctionBody),
-    Expr(Box<Expr>),
-}
-
-impl ArrowFunctionBody {
-    pub fn function_body(bod: FunctionBody) -> Self {
-        ArrowFunctionBody::FunctionBody(bod)
-    }
-    pub fn expr(expr: Expr) -> Self {
-        ArrowFunctionBody::Expr(Box::new(expr))
-    }
+/// The body portion of an arrow function can be either an expression or a block of statements
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ArrowFuncBody<'a> {
+    FuncBody(FuncBody<'a>),
+    Expr(Box<Expr<'a>>),
 }
 
 /// yield a value from inside of a generator function
@@ -545,73 +283,50 @@ impl ArrowFunctionBody {
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct YieldExpr {
-    pub argument: Option<Box<Expr>>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct YieldExpr<'a> {
+    pub argument: Option<Box<Expr<'a>>>,
     pub delegate: bool,
-}
-
-impl YieldExpr {
-    pub fn new(argument: Option<Expr>, delegate: bool) -> YieldExpr {
-        YieldExpr {
-            argument: argument.map(|a| Box::new(a)),
-            delegate
-        }
-    }
 }
 
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
-#[derive(PartialEq, Debug, Clone)]
-pub struct TaggedTemplateExpr {
-    pub tag: Box<Expr>,
-    pub quasi: TemplateLiteral,
-}
-
-impl TaggedTemplateExpr {
-    pub fn new(tag: Expr, quasi: TemplateLiteral) -> Self {
-        TaggedTemplateExpr {
-            tag: Box::new(tag),
-            quasi,
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TaggedTemplateExpr<'a> {
+    pub tag: Box<Expr<'a>>,
+    pub quasi: TemplateLit<'a>,
 }
 
 /// A template string literal
 /// ```js
 /// `I own ${0} birds`;
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct TemplateLiteral {
-    pub quasis: Vec<TemplateElement>,
-    pub expressions: Vec<Expr>,
-}
-
-impl TemplateLiteral {
-    pub fn new(quasis: Vec<TemplateElement>, expressions: Vec<Expr>) -> Self {
-        TemplateLiteral {
-            quasis,
-            expressions,
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateLit<'a> {
+    pub quasis: Vec<TemplateElement<'a>>,
+    pub expressions: Vec<Expr<'a>>,
 }
 
 /// The text part of a `TemplateLiteral`
-#[derive(PartialEq, Debug, Clone)]
-pub struct TemplateElement {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateElement<'a> {
     pub tail: bool,
     /// The non-quoted version
-    pub cooked: String,
+    pub cooked: Cow<'a, str>,
     /// The quoted version
-    pub raw: String,
+    pub raw: Cow<'a, str>,
 }
 
-impl TemplateElement {
-    pub fn new(tail: bool, cooked: String, raw: String) -> Self {
-        TemplateElement {
+impl<'a> TemplateElement<'a> {
+    pub fn from(tail: bool, cooked: &'a str, raw: &'a str) -> TemplateElement<'a> {
+        Self {
             tail,
-            cooked,
-            raw,
+            cooked: Cow::Borrowed(cooked),
+            raw: Cow::Borrowed(raw),
         }
     }
 }
@@ -626,29 +341,22 @@ impl TemplateElement {
 ///     this.two = two;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct MetaProperty {
-    pub meta: Identifier,
-    pub property: Identifier,
-}
-
-impl MetaProperty {
-    pub fn new(meta: Identifier, property: Identifier) -> Self {
-        MetaProperty {
-            meta,
-            property,
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetaProp<'a> {
+    pub meta: Ident<'a>,
+    pub property: Ident<'a>,
 }
 
 /// A literal value
-#[derive(PartialEq, Debug, Clone)]
-pub enum Literal {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Lit<'a> {
     /// `null`
     Null,
     /// `"string"`
     /// `'string'`
-    String(String),
+    String(StringLit<'a>),
     /// `0`
     /// `0.0`
     /// `.0`
@@ -657,45 +365,79 @@ pub enum Literal {
     /// `0xf`
     /// `0o7`
     /// `0b1`
-    Number(String),
+    Number(Cow<'a, str>),
     /// `true`
     /// `false`
     Boolean(bool),
     /// `/.+/g`
-    RegEx(RegEx),
+    RegEx(RegEx<'a>),
     /// ```js
     /// `I have ${0} apples`
     /// ```
-    Template(TemplateLiteral),
+    Template(TemplateLit<'a>),
 }
 
-impl Literal {
-    pub fn string(string: &str) -> Self {
-        Literal::String(string.to_string())
+impl<'a> Lit<'a> {
+    pub fn number_from(s: &'a str) -> Self {
+        Lit::Number(
+            Cow::Borrowed(s)
+        )
     }
-
-    pub fn number(num: &str) -> Self {
-        Literal::Number(num.to_string())
+    pub fn single_string_from(s: &'a str) -> Self {
+        Lit::String(
+            StringLit::single_from(s)
+        )
     }
-
-    pub fn regex(pattern: &str, flags: &str) -> Self {
-        let inner = RegEx::new(pattern, flags);
-        Literal::RegEx(inner)
+    pub fn double_string_from(s: &'a str) -> Self {
+        Lit::String(
+            StringLit::double_from(s)
+        )
     }
 }
 
-/// A regular Expr literal
-#[derive(PartialEq, Debug, Clone)]
-pub struct RegEx {
-    pub pattern: String,
-    pub flags: String,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub enum StringLit<'a> {
+    Double(Cow<'a, str>),
+    Single(Cow<'a, str>),
 }
 
-impl RegEx {
-    pub fn new(body: &str, flags: &str) -> Self {
+impl<'a> StringLit<'a> {
+    pub fn double_from(s: &'a str) -> StringLit<'a> {
+        StringLit::Double(
+            Cow::Borrowed(s)
+        )
+    }
+    pub fn single_from(s: &'a str) -> StringLit<'a> {
+        StringLit::Single(
+            Cow::Borrowed(s)
+        )
+    }
+    pub fn clone_inner(&self) -> Cow<'a, str> {
+        match self {
+            StringLit::Single(ref s) => s.clone(),
+            StringLit::Double(ref s) => s.clone(),
+        }
+    }
+    pub fn inner_matches(&self, o: &str) -> bool {
+        match self {
+            StringLit::Single(ref s) => s == o,
+            StringLit::Double(ref d) => d == o,
+        }
+    }
+}
+/// A regular expression literal
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegEx<'a> {
+    pub pattern: Cow<'a, str>,
+    pub flags: Cow<'a, str>,
+}
+
+impl<'a> RegEx<'a> {
+    pub fn from(p: &'a str, f: &'a str) -> Self {
         RegEx {
-            pattern: String::from(body),
-            flags: String::from(flags),
+            pattern: Cow::Borrowed(p),
+            flags: Cow::Borrowed(f),
         }
     }
 }

@@ -1,80 +1,91 @@
+#[macro_use]
+extern crate serde_derive;
+
+use std::borrow::Cow;
+
 pub mod decl;
 pub mod expr;
 pub mod pat;
-pub mod ref_tree;
 pub mod stmt;
+pub mod serde;
+
 use decl::Decl;
-use expr::{Expr, Literal, Property};
+use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
-pub type Identifier = String;
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Ident<'a> {
+    pub name: Cow<'a, str>,
+}
+
+impl<'a> Ident<'a> {
+    pub fn new(s: String) -> Self {
+        Ident {
+            name: Cow::Owned(s)
+        }
+    }
+    pub fn from(s: &'a str) -> Self {
+        Ident {
+            name: Cow::Borrowed(s)
+        }
+    }
+}
+
 /// A fully parsed javascript program.
 ///
 /// It is essentially a collection of `ProgramPart`s
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
-#[derive(PartialEq, Debug)]
-pub enum Program {
+#[derive(PartialEq, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "sourceType", content: "body")]
+pub enum Program<'a> {
     /// An ES6 Mod
-    Mod(Vec<ProgramPart>),
+    Mod(Vec<ProgramPart<'a>>),
     /// Not an ES6 Mod
-    Script(Vec<ProgramPart>),
+    Script(Vec<ProgramPart<'a>>),
 }
 
-impl Program {
-    pub fn module(parts: Vec<ProgramPart>) -> Self {
+impl<'a> Program<'a> {
+    pub fn module(parts: Vec<ProgramPart<'a>>) -> Self {
         Program::Mod(parts)
     }
-    pub fn script(parts: Vec<ProgramPart>) -> Self {
+    pub fn script(parts: Vec<ProgramPart<'a>>) -> Self {
         Program::Script(parts)
     }
 }
 
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
-#[derive(PartialEq, Debug, Clone)]
-pub enum ProgramPart {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)] 
+pub enum ProgramPart<'a> {
     /// A Directive like `'use strict';`
-    Dir(Dir),
+    Dir(Dir<'a>),
     /// A variable, function or module declaration
-    Decl(Decl),
+    Decl(Decl<'a>),
     /// Any other kind of statement
-    Stmt(Stmt),
+    Stmt(Stmt<'a>),
 }
 
-impl ProgramPart {
-    pub fn use_strict(double_quotes: bool) -> Self {
-        let dir = if double_quotes {
-            r#""use strict""#
-        } else {
-            "'use strict'"
-        };
-        ProgramPart::Dir(Dir::new(String::from(dir)))
-    }
-    pub fn decl(inner: Decl) -> Self {
+impl<'a> ProgramPart<'a> {
+    pub fn decl(inner: Decl<'a>) -> Self {
         ProgramPart::Decl(inner)
     }
-    pub fn stmt(inner: Stmt) -> Self {
+    pub fn stmt(inner: Stmt<'a>) -> Self {
         ProgramPart::Stmt(inner)
     }
 }
 
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
-#[derive(PartialEq, Debug, Clone)]
-pub struct Dir {
-    pub expr: Literal,
-    pub dir: String,
-}
-
-impl Dir {
-    pub fn new(orig: String) -> Self {
-        Self {
-            dir: orig.trim_matches(|c| c == '\'' || c == '"').to_string(),
-            expr: Literal::String(orig),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Dir<'a> {
+    pub expr: Lit<'a>,
+    pub dir: Cow<'a, str>,
 }
 
 /// A function, this will be part of either a function
@@ -87,18 +98,25 @@ impl Dir {
 /// var x = function() {}
 /// let y = function q() {}
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct Function {
-    pub id: Option<Identifier>,
-    pub params: Vec<FunctionArg>,
-    pub body: FunctionBody,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Func<'a> {
+    pub id: Option<Ident<'a>>,
+    pub params: Vec<FuncArg<'a>>,
+    pub body: FuncBody<'a>,
     pub generator: bool,
     pub is_async: bool,
 }
 
-impl Function {
-    pub fn new(id: Option<Identifier>, params: Vec<FunctionArg>, body: FunctionBody, generator: bool, is_async: bool) -> Self {
-        Self {
+impl<'a> Func<'a> {
+    pub fn new(
+        id: Option<Ident<'a>>, 
+        params: Vec<FuncArg<'a>>, 
+        body: FuncBody<'a>, 
+        generator: bool, 
+        is_async: bool
+    ) -> Self {
+        Func {
             id,
             params,
             body,
@@ -109,27 +127,25 @@ impl Function {
 }
 
 /// A single function argument from a function signature
-#[derive(PartialEq, Debug, Clone)]
-pub enum FunctionArg {
-    Expr(Expr),
-    Pat(Pat),
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FuncArg<'a> {
+    Expr(Expr<'a>),
+    Pat(Pat<'a>),
 }
 
-impl FunctionArg {
-    pub fn expr(expr: Expr) -> FunctionArg {
-        FunctionArg::Expr(expr)
+impl<'a> FuncArg<'a> {
+    pub fn expr(expr: Expr) -> FuncArg {
+        FuncArg::Expr(expr)
     }
-    pub fn pat(pat: Pat) -> FunctionArg {
-        FunctionArg::Pat(pat)
-    }
-
-    pub fn ident(name: &str) -> Self {
-        FunctionArg::Pat(Pat::Identifier(String::from(name)))
+    pub fn pat(pat: Pat) -> FuncArg {
+        FuncArg::Pat(pat)
     }
 }
 
 /// The block statement that makes up the function's body
-pub type FunctionBody = Vec<ProgramPart>;
+#[derive(PartialEq, Debug, Clone, Deserialize)]
+pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 /// A way to declare object templates
 /// ```js
 /// class Thing {
@@ -156,104 +172,213 @@ pub type FunctionBody = Vec<ProgramPart>;
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct Class {
-    pub id: Option<Identifier>,
-    pub super_class: Option<Box<Expr>>,
-    pub body: Vec<Property>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Class<'a> {
+    pub id: Option<Ident<'a>>,
+    pub super_class: Option<Box<Expr<'a>>>,
+    pub body: Vec<Prop<'a>>,
 }
 
-impl Class {
-    pub fn new(id: Option<Identifier>, super_class: Option<Expr>, body: Vec<Property>) -> Class {
+impl<'a> Class<'a> {
+    pub fn new(id: Option<Ident<'a>>, super_class: Option<Expr<'a>>, body: Vec<Prop<'a>>) -> Class<'a> {
         Class {
             id,
-            super_class: super_class.map(|e| Box::new(e)),
+            super_class: super_class.map(Box::new),
             body,
         }
     }
 }
 
+/// The kind of variable being defined (`var`/`let`/`const`)
+#[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", untagged)]
+pub enum VarKind {
+    Var,
+    Let,
+    Const,
+}
+
+
+/// The available operators for assignment Exprs
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AssignOp {
+    Equal,
+    PlusEqual,
+    MinusEqual,
+    TimesEqual,
+    DivEqual,
+    ModEqual,
+    LeftShiftEqual,
+    RightShiftEqual,
+    UnsignedRightShiftEqual,
+    OrEqual,
+    XOrEqual,
+    AndEqual,
+    PowerOfEqual,
+}
+
+
+/// The available logical operators
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LogicalOp {
+    Or,
+    And,
+}
+
+
+/// The available operations for `Binary` Exprs
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum BinaryOp {
+    Equal,
+    NotEqual,
+    StrictEqual,
+    StrictNotEqual,
+    LessThan,
+    GreaterThan,
+    LessThanEqual,
+    GreaterThanEqual,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+    Plus,
+    Minus,
+    Times,
+    Over,
+    Mod,
+    Or,
+    XOr,
+    And,
+    In,
+    InstanceOf,
+    PowerOf,
+}
+
+
+/// `++` or `--`
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UpdateOp {
+    Increment,
+    Decrement,
+}
+
+/// The allowed operators for an Expr
+/// to be `Unary`
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UnaryOp {
+    Minus,
+    Plus,
+    Not,
+    Tilde,
+    TypeOf,
+    Void,
+    Delete,
+}
+
+
+/// A flag for determining what kind of property
+#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PropKind {
+    /// A property with a value
+    Init,
+    /// A method with the get keyword
+    Get,
+    /// A method with the set keyword
+    Set,
+    /// A constructor
+    Ctor,
+    /// A standard method
+    Method,
+}
+
 pub mod prelude {
     pub use crate::{
-        decl::{
-            Decl,
-            DefaultExportDecl,
-            ExportSpecifier,
-            ImportSpecifier,
-            ModDecl,
-            ModExport,
-            ModImport,
-            NamedExportDecl,
-            VariableDecl,
-            VariableKind,
-        },
-        expr::{
-            Expr,
-            ArrayExpr,
-            ObjectExpr,
-            ObjectProperty,
-            Property,
-            PropertyKey,
-            PropertyValue,
-            PropertyKind,
-            UnaryExpr,
-            UnaryOperator,
-            UpdateExpr,
-            UpdateOperator,
-            BinaryExpr,
-            BinaryOperator,
-            AssignmentExpr,
-            AssignmentLeft,
-            AssignmentOperator,
-            LogicalExpr,
-            LogicalOperator,
-            MemberExpr,
-            ConditionalExpr,
-            CallExpr,
-            NewExpr,
-            SequenceExpr,
-            ArrowFunctionExpr,
-            ArrowFunctionBody,
-            YieldExpr,
-            TaggedTemplateExpr,
-            TemplateLiteral,
-            TemplateElement,
-            MetaProperty,
-            Literal,
-            RegEx,
-        },
-        pat::{
-            Pat,
-            ArrayPatPart,
-            ObjectPat,
-            ObjectPatPart,
-            AssignmentPat,
-        },
-        stmt::{
-            Stmt,
-            WithStmt,
-            LabeledStmt,
-            IfStmt,
-            SwitchStmt,
-            SwitchCase,
-            BlockStmt,
-            TryStmt,
-            WhileStmt,
-            DoWhileStmt,
-            ForStmt,
-            LoopInit,
-            ForInStmt,
-            ForOfStmt,
-            LoopLeft,
-            CatchClause,
-        },
-        Identifier,
+        AssignOp,
+        BinaryOp,
+        Class,
+        Dir,
+        Func,
+        FuncArg,
+        FuncBody,
+        Ident,
+        LogicalOp,
         Program,
         ProgramPart,
-        Dir,
-        Function,
-        FunctionArg,
-        FunctionBody,
-        Class,
+        PropKind,
+        UnaryOp,
+        UpdateOp,
+        VarKind,
+    };
+    pub use crate::expr::{
+        ArrayExpr,
+        ArrowFuncBody,
+        ArrowFuncExpr,
+        AssignExpr,
+        AssignLeft,
+        BinaryExpr,
+        CallExpr,
+        ConditionalExpr,
+        Expr,
+        Lit,
+        LogicalExpr,
+        MemberExpr,
+        MetaProp,
+        NewExpr,
+        ObjExpr,
+        ObjProp,
+        Prop,
+        PropKey,
+        PropValue,
+        RegEx,
+        StringLit,
+        TaggedTemplateExpr,
+        TemplateElement,
+        TemplateLit,
+        UnaryExpr,
+        UpdateExpr,
+        YieldExpr,
+    };
+    pub use crate::decl::{
+        Decl,
+        VarDecl,
+        ModDecl,
+        ModImport,
+        ImportSpecifier,
+        ModExport,
+        NamedExportDecl,
+        DefaultExportDecl,
+        ExportSpecifier,
+        NormalImportSpec
+    };
+    pub use crate::stmt::{
+        Stmt,
+        WithStmt,
+        LabeledStmt,
+        IfStmt,
+        SwitchStmt,
+        SwitchCase,
+        BlockStmt,
+        TryStmt,
+        CatchClause,
+        WhileStmt,
+        DoWhileStmt,
+        ForStmt,
+        LoopInit,
+        ForInStmt,
+        ForOfStmt,
+        LoopLeft,
+    };
+    pub use crate::pat::{
+        ArrayPatPart,
+        AssignPat,
+        ObjPat,
+        ObjPatPart,
+        Pat,
     };
 }

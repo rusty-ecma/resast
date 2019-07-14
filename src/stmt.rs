@@ -1,14 +1,16 @@
-use crate::decl::{VariableDecl, VariableKind};
+use crate::VarKind;
+use crate::decl::VarDecl;
 use crate::expr::Expr;
 use crate::pat::Pat;
-use crate::{Identifier, ProgramPart};
+use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
-#[derive(PartialEq, Debug, Clone)]
-pub enum Stmt {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Stmt<'a> {
     /// Any expression
-    Expr(Expr),
+    Expr(Expr<'a>),
     /// A collection of program parts wrapped in curly braces
-    Block(BlockStmt),
+    Block(BlockStmt<'a>),
     /// A single semi-colon
     Empty,
     /// The contextual keyword `debugger`
@@ -26,7 +28,7 @@ pub enum Stmt {
     /// }
     /// //rand !== 0
     /// ```
-    With(WithStmt),
+    With(WithStmt<'a>),
     /// A return statement
     /// ```js
     /// function thing() {
@@ -35,14 +37,14 @@ pub enum Stmt {
     /// function stuff() {
     ///     return;
     /// }
-    Return(Option<Expr>),
+    Return(Option<Expr<'a>>),
     /// A labeled statement
     /// ```js
     /// label: {
     ///     break label;
     /// }
     /// ```
-    Labeled(LabeledStmt),
+    Labeled(LabeledStmt<'a>),
     /// A break statement
     /// ```js
     /// label: {
@@ -52,7 +54,7 @@ pub enum Stmt {
     ///     break;
     /// }
     /// ```
-    Break(Option<Identifier>),
+    Break(Option<Ident<'a>>),
     /// A short circuit continuation of a loop
     /// ```js
     /// label: while (true) {
@@ -63,7 +65,7 @@ pub enum Stmt {
     ///     }
     /// }
     /// ```
-    Continue(Option<Identifier>),
+    Continue(Option<Ident<'a>>),
     /// An if statement
     /// ```js
     /// if (1 < 2) {
@@ -72,7 +74,7 @@ pub enum Stmt {
     ///     console.log('Never true');
     /// }
     /// ```
-    If(IfStmt),
+    If(IfStmt<'a>),
     /// A switch statement
     /// ```js
     /// switch (Math.floor(Math.random()) * 10) {
@@ -87,7 +89,7 @@ pub enum Stmt {
     ///         return true;
     /// }
     /// ```
-    Switch(SwitchStmt),
+    Switch(SwitchStmt<'a>),
     /// A statement that throws an error
     /// ```js
     /// function error() {
@@ -98,7 +100,7 @@ pub enum Stmt {
     ///     throw new Error('hohoho');
     /// }
     /// ```
-    Throw(Expr),
+    Throw(Expr<'a>),
     /// A try/catch block
     /// ```js
     /// try {
@@ -109,7 +111,7 @@ pub enum Stmt {
     ///
     /// }
     /// ```
-    Try(TryStmt),
+    Try(TryStmt<'a>),
     /// A while loop
     /// ```js
     /// while (false) {
@@ -124,14 +126,14 @@ pub enum Stmt {
     ///     }
     /// }
     /// ```
-    While(WhileStmt),
+    While(WhileStmt<'a>),
     /// A while loop that executes its body first
     /// ```js
     /// do {
     ///     console.log('at least once')
     /// } while (Math.floor(Math.random() * 100) < 75)
     /// ```
-    DoWhile(DoWhileStmt),
+    DoWhile(DoWhileStmt<'a>),
     /// A "c-style" for loop
     /// ```js
     /// for (var i = 0; i < 100; i++) console.log(i);
@@ -139,7 +141,7 @@ pub enum Stmt {
     ///     console.log('forever!');
     /// }
     /// ```
-    For(ForStmt),
+    For(ForStmt<'a>),
     /// A for in statement, this kind of for statement
     /// will extract each key from an indexable thing
     /// ```js
@@ -152,7 +154,7 @@ pub enum Stmt {
     /// }
     /// //prints a, b
     /// ```
-    ForIn(ForInStmt),
+    ForIn(ForInStmt<'a>),
     /// A for of statement, this kind of for statement
     /// will extract the value from a generator or iterator
     /// ```js
@@ -161,25 +163,13 @@ pub enum Stmt {
     /// }
     /// //prints 2, 3, 4, 5, 6
     /// ```
-    ForOf(ForOfStmt),
+    ForOf(ForOfStmt<'a>),
     /// A var statement
     /// ```js
     /// var x;
     /// var x, y = 'huh?';
     /// ```
-    Var(Vec<VariableDecl>),
-}
-
-impl Stmt {
-    pub fn with(object: Expr, body: Stmt) -> Self {
-        Stmt::With(WithStmt::new(object, body))
-    }
-    pub fn while_stmt(test: Expr, body: Stmt) -> Self {
-        Stmt::While(WhileStmt::new(test, body))
-    }
-    pub fn if_stmt(test: Expr, consequent: Stmt, alt: Option<Stmt>) -> Self {
-        Stmt::If(IfStmt::new(test, consequent, alt))
-    }
+    Var(Vec<VarDecl<'a>>),
 }
 
 /// A with statement, this puts one object at the top of
@@ -195,19 +185,11 @@ impl Stmt {
 /// }
 /// //rand !== 0
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct WithStmt {
-    pub object: Expr,
-    pub body: Box<Stmt>,
-}
-
-impl WithStmt {
-    pub fn new(object: Expr, body: Stmt) -> Self {
-        WithStmt {
-            object,
-            body: Box::new(body),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WithStmt<'a> {
+    pub object: Expr<'a>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// A break statement
@@ -219,10 +201,11 @@ impl WithStmt {
 ///     break;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct LabeledStmt {
-    pub label: Identifier,
-    pub body: Box<Stmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LabeledStmt<'a> {
+    pub label: Ident<'a>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// An if statement
@@ -233,21 +216,12 @@ pub struct LabeledStmt {
 ///     console.log('Never true');
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct IfStmt {
-    pub test: Expr,
-    pub consequent: Box<Stmt>,
-    pub alternate: Option<Box<Stmt>>,
-}
-
-impl IfStmt {
-    pub fn new(test: Expr, consequent: Stmt, alternate: Option<Stmt>) -> Self {
-        IfStmt {
-            test,
-            consequent: Box::new(consequent),
-            alternate: alternate.map(|a| Box::new(a)),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IfStmt<'a> {
+    pub test: Expr<'a>,
+    pub consequent: Box<Stmt<'a>>,
+    pub alternate: Option<Box<Stmt<'a>>>,
 }
 
 /// A switch statement
@@ -264,21 +238,23 @@ impl IfStmt {
 ///         return true;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct SwitchStmt {
-    pub discriminant: Expr,
-    pub cases: Vec<SwitchCase>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwitchStmt<'a> {
+    pub discriminant: Expr<'a>,
+    pub cases: Vec<SwitchCase<'a>>,
 }
 
 /// A single case part of a switch statement
-#[derive(PartialEq, Debug, Clone)]
-pub struct SwitchCase {
-    pub test: Option<Expr>,
-    pub consequent: Vec<ProgramPart>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwitchCase<'a> {
+    pub test: Option<Expr<'a>>,
+    pub consequent: Vec<ProgramPart<'a>>,
 }
 
 /// A collection of program parts wrapped in curly braces
-pub type BlockStmt = Vec<ProgramPart>;
+pub type BlockStmt<'a> = Vec<ProgramPart<'a>>;
 
 /// A try/catch block
 /// ```js
@@ -290,18 +266,20 @@ pub type BlockStmt = Vec<ProgramPart>;
 ///
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct TryStmt {
-    pub block: BlockStmt,
-    pub handler: Option<CatchClause>,
-    pub finalizer: Option<BlockStmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TryStmt<'a> {
+    pub block: BlockStmt<'a>,
+    pub handler: Option<CatchClause<'a>>,
+    pub finalizer: Option<BlockStmt<'a>>,
 }
 
 /// The error handling part of a `TryStmt`
-#[derive(PartialEq, Debug, Clone)]
-pub struct CatchClause {
-    pub param: Option<Pat>,
-    pub body: BlockStmt,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatchClause<'a> {
+    pub param: Option<Pat<'a>>,
+    pub body: BlockStmt<'a>,
 }
 
 /// A while loop
@@ -318,18 +296,11 @@ pub struct CatchClause {
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct WhileStmt {
-    pub test: Expr,
-    pub body: Box<Stmt>,
-}
-impl WhileStmt {
-    pub fn new(test: Expr, body: Stmt) -> Self {
-        WhileStmt {
-            test,
-            body: Box::new(body),
-        }
-    }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WhileStmt<'a> {
+    pub test: Expr<'a>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// A while loop that executes its body first
@@ -338,10 +309,11 @@ impl WhileStmt {
 ///     console.log('at least once')
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct DoWhileStmt {
-    pub test: Expr,
-    pub body: Box<Stmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DoWhileStmt<'a> {
+    pub test: Expr<'a>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// A "c-style" for loop
@@ -351,22 +323,24 @@ pub struct DoWhileStmt {
 ///     console.log('forever!');
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ForStmt {
-    pub init: Option<LoopInit>,
-    pub test: Option<Expr>,
-    pub update: Option<Expr>,
-    pub body: Box<Stmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForStmt<'a> {
+    pub init: Option<LoopInit<'a>>,
+    pub test: Option<Expr<'a>>,
+    pub update: Option<Expr<'a>>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// The left most triple of a for loops parenthetical
 /// ```js
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
-#[derive(PartialEq, Debug, Clone)]
-pub enum LoopInit {
-    Variable(VariableKind, Vec<VariableDecl>),
-    Expr(Expr),
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LoopInit<'a> {
+    Variable(VarKind, Vec<VarDecl<'a>>),
+    Expr(Expr<'a>),
 }
 
 /// A for in statement, this kind of for statement
@@ -381,11 +355,12 @@ pub enum LoopInit {
 /// }
 /// //prints a, b
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ForInStmt {
-    pub left: LoopLeft,
-    pub right: Expr,
-    pub body: Box<Stmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForInStmt<'a> {
+    pub left: LoopLeft<'a>,
+    pub right: Expr<'a>,
+    pub body: Box<Stmt<'a>>,
 }
 
 /// A for of statement, this kind of for statement
@@ -396,19 +371,21 @@ pub struct ForInStmt {
 /// }
 /// //prints 2, 3, 4, 5, 6
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ForOfStmt {
-    pub left: LoopLeft,
-    pub right: Expr,
-    pub body: Box<Stmt>,
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForOfStmt<'a> {
+    pub left: LoopLeft<'a>,
+    pub right: Expr<'a>,
+    pub body: Box<Stmt<'a>>,
     pub is_await: bool,
 }
 
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
-#[derive(PartialEq, Debug, Clone)]
-pub enum LoopLeft {
-    Expr(Expr),
-    Variable(VariableKind, VariableDecl),
-    Pat(Pat),
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LoopLeft<'a> {
+    Expr(Expr<'a>),
+    Variable(VarKind, VarDecl<'a>),
+    Pat(Pat<'a>),
 }
