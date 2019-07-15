@@ -5,7 +5,6 @@ use crate::{Class, Func, Ident};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(PartialEq, Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum Decl<'a> {
     /// A variable declaration
     /// ```js
@@ -38,8 +37,7 @@ pub enum Decl<'a> {
 }
 
 /// The identifier and optional value of a variable declaration
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct VarDecl<'a> {
     pub id: Pat<'a>,
     pub init: Option<Expr<'a>>,
@@ -49,7 +47,6 @@ pub struct VarDecl<'a> {
 /// in an ES Mod, it would be either an import or
 /// export at the top level
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ModDecl<'a> {
     Import(ModImport<'a>),
     Export(ModExport<'a>),
@@ -62,7 +59,6 @@ pub enum ModDecl<'a> {
 /// import {Thing} from './stuff.js';
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ModImport<'a> {
     pub specifiers: Vec<ImportSpecifier<'a>>,
     pub source: Lit<'a>,
@@ -70,7 +66,6 @@ pub struct ModImport<'a> {
 
 /// The name of the thing being imported
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ImportSpecifier<'a> {
     /// A specifier in curly braces, this might
     /// have a local alias
@@ -96,7 +91,6 @@ pub enum ImportSpecifier<'a> {
     Namespace(Ident<'a>),
 }
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct NormalImportSpec<'a> {
     pub local: Ident<'a>,
     pub imported: Ident<'a>,
@@ -104,7 +98,6 @@ pub struct NormalImportSpec<'a> {
 
 /// Something exported from this module
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ModExport<'a> {
     /// ```js
     /// export default function() {};
@@ -139,7 +132,6 @@ pub enum ModExport<'a> {
 /// export function thing() {}
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum NamedExportDecl<'a> {
     Decl(Decl<'a>),
     Specifier(Vec<ExportSpecifier<'a>>, Option<Lit<'a>>),
@@ -150,7 +142,6 @@ pub enum NamedExportDecl<'a> {
 /// export default class Thing {}
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum DefaultExportDecl<'a> {
     Decl(Decl<'a>),
     Expr(Expr<'a>),
@@ -165,7 +156,6 @@ pub enum DefaultExportDecl<'a> {
 /// export {Stuff as NewThing} from 'place'
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ExportSpecifier<'a> {
     pub local: Ident<'a>,
     pub exported: Ident<'a>,

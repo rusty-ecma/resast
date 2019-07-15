@@ -3,7 +3,7 @@ use crate::{Ident};
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
 pub enum Pat<'a> {
     Ident(Ident<'a>),
     Obj(ObjPat<'a>),
@@ -21,7 +21,6 @@ impl<'a> Pat<'a> {
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ArrayPatPart<'a> {
     Pat(Pat<'a>),
     Expr(Expr<'a>),
@@ -31,7 +30,6 @@ pub enum ArrayPatPart<'a> {
 pub type ObjPat<'a> = Vec<ObjPatPart<'a>>;
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ObjPatPart<'a> {
     Assign(Prop<'a>),
     Rest(Box<Pat<'a>>),
@@ -39,7 +37,6 @@ pub enum ObjPatPart<'a> {
 
 /// An assignment as a pattern
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct AssignPat<'a> {
     pub left: Box<Pat<'a>>,
     pub right: Box<Expr<'a>>,

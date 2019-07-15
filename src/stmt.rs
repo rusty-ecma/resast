@@ -5,7 +5,6 @@ use crate::pat::Pat;
 use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(PartialEq, Debug, Clone, Deserialize)]
-#[serde(untagged)]
 pub enum Stmt<'a> {
     /// Any expression
     Expr(Expr<'a>),
@@ -186,7 +185,6 @@ pub enum Stmt<'a> {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct WithStmt<'a> {
     pub object: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -202,7 +200,6 @@ pub struct WithStmt<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct LabeledStmt<'a> {
     pub label: Ident<'a>,
     pub body: Box<Stmt<'a>>,
@@ -217,7 +214,6 @@ pub struct LabeledStmt<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct IfStmt<'a> {
     pub test: Expr<'a>,
     pub consequent: Box<Stmt<'a>>,
@@ -239,7 +235,6 @@ pub struct IfStmt<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct SwitchStmt<'a> {
     pub discriminant: Expr<'a>,
     pub cases: Vec<SwitchCase<'a>>,
@@ -247,7 +242,6 @@ pub struct SwitchStmt<'a> {
 
 /// A single case part of a switch statement
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct SwitchCase<'a> {
     pub test: Option<Expr<'a>>,
     pub consequent: Vec<ProgramPart<'a>>,
@@ -267,7 +261,6 @@ pub type BlockStmt<'a> = Vec<ProgramPart<'a>>;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TryStmt<'a> {
     pub block: BlockStmt<'a>,
     pub handler: Option<CatchClause<'a>>,
@@ -276,7 +269,6 @@ pub struct TryStmt<'a> {
 
 /// The error handling part of a `TryStmt`
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct CatchClause<'a> {
     pub param: Option<Pat<'a>>,
     pub body: BlockStmt<'a>,
@@ -297,7 +289,6 @@ pub struct CatchClause<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct WhileStmt<'a> {
     pub test: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -310,7 +301,6 @@ pub struct WhileStmt<'a> {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct DoWhileStmt<'a> {
     pub test: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -324,7 +314,6 @@ pub struct DoWhileStmt<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ForStmt<'a> {
     pub init: Option<LoopInit<'a>>,
     pub test: Option<Expr<'a>>,
@@ -337,7 +326,6 @@ pub struct ForStmt<'a> {
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum LoopInit<'a> {
     Variable(VarKind, Vec<VarDecl<'a>>),
     Expr(Expr<'a>),
@@ -356,7 +344,6 @@ pub enum LoopInit<'a> {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ForInStmt<'a> {
     pub left: LoopLeft<'a>,
     pub right: Expr<'a>,
@@ -372,7 +359,6 @@ pub struct ForInStmt<'a> {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ForOfStmt<'a> {
     pub left: LoopLeft<'a>,
     pub right: Expr<'a>,
@@ -383,7 +369,6 @@ pub struct ForOfStmt<'a> {
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum LoopLeft<'a> {
     Expr(Expr<'a>),
     Variable(VarKind, VarDecl<'a>),

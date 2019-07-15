@@ -105,7 +105,6 @@ pub type ArrayExpr<'a> = Vec<Option<Expr<'a>>>;
 pub type ObjExpr<'a> = Vec<ObjProp<'a>>;
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ObjProp<'a> {
     Prop(Prop<'a>),
     Spread(Expr<'a>),
@@ -113,7 +112,6 @@ pub enum ObjProp<'a> {
 
 /// A single part of an object literal or class
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Prop<'a> {
     pub key: PropKey<'a>,
     pub value: PropValue<'a>,
@@ -126,7 +124,6 @@ pub struct Prop<'a> {
 
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum PropKey<'a> {
     Lit(Lit<'a>),
     Expr(Expr<'a>),
@@ -135,7 +132,6 @@ pub enum PropKey<'a> {
 
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum PropValue<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
@@ -144,7 +140,6 @@ pub enum PropValue<'a> {
 
 /// An operation that takes one argument
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct UnaryExpr<'a> {
     pub operator: UnaryOp,
     pub prefix: bool,
@@ -153,7 +148,6 @@ pub struct UnaryExpr<'a> {
 
 /// Increment or decrementing a value
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct UpdateExpr<'a> {
     pub operator: UpdateOp,
     pub argument: Box<Expr<'a>>,
@@ -162,7 +156,6 @@ pub struct UpdateExpr<'a> {
 
 /// An operation that requires 2 arguments
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct BinaryExpr<'a> {
     pub operator: BinaryOp,
     pub left: Box<Expr<'a>>,
@@ -171,7 +164,6 @@ pub struct BinaryExpr<'a> {
 
 /// An assignment or update + assignment operation
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct AssignExpr<'a> {
     pub operator: AssignOp,
     pub left: AssignLeft<'a>,
@@ -180,7 +172,6 @@ pub struct AssignExpr<'a> {
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum AssignLeft<'a> {
     Pat(Pat<'a>),
     Expr(Box<Expr<'a>>),
@@ -192,7 +183,6 @@ pub enum AssignLeft<'a> {
 /// false || true
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct LogicalExpr<'a> {
     pub operator: LogicalOp,
     pub left: Box<Expr<'a>>,
@@ -205,7 +195,6 @@ pub struct LogicalExpr<'a> {
 /// c.stuff;
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct MemberExpr<'a> {
     pub object: Box<Expr<'a>>,
     pub property: Box<Expr<'a>>,
@@ -217,7 +206,6 @@ pub struct MemberExpr<'a> {
 /// var a = true ? 'stuff' : 'things';
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ConditionalExpr<'a> {
     pub test: Box<Expr<'a>>,
     pub alternate: Box<Expr<'a>>,
@@ -229,7 +217,6 @@ pub struct ConditionalExpr<'a> {
 /// Math.random()
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct CallExpr<'a> {
     pub callee: Box<Expr<'a>>,
     pub arguments: Vec<Expr<'a>>,
@@ -240,7 +227,6 @@ pub struct CallExpr<'a> {
 /// new Uint8Array(32);
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct NewExpr<'a> {
     pub callee: Box<Expr<'a>>,
     pub arguments: Vec<Expr<'a>>,
@@ -257,7 +243,6 @@ pub type SequenceExpr<'a> = Vec<Expr<'a>>;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ArrowFuncExpr<'a> {
     pub id: Option<Ident<'a>>,
     pub params: Vec<FuncArg<'a>>,
@@ -269,7 +254,6 @@ pub struct ArrowFuncExpr<'a> {
 
 /// The body portion of an arrow function can be either an expression or a block of statements
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ArrowFuncBody<'a> {
     FuncBody(FuncBody<'a>),
     Expr(Box<Expr<'a>>),
@@ -284,7 +268,6 @@ pub enum ArrowFuncBody<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct YieldExpr<'a> {
     pub argument: Option<Box<Expr<'a>>>,
     pub delegate: bool,
@@ -293,7 +276,6 @@ pub struct YieldExpr<'a> {
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TaggedTemplateExpr<'a> {
     pub tag: Box<Expr<'a>>,
     pub quasi: TemplateLit<'a>,
@@ -304,7 +286,6 @@ pub struct TaggedTemplateExpr<'a> {
 /// `I own ${0} birds`;
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TemplateLit<'a> {
     pub quasis: Vec<TemplateElement<'a>>,
     pub expressions: Vec<Expr<'a>>,
@@ -312,7 +293,6 @@ pub struct TemplateLit<'a> {
 
 /// The text part of a `TemplateLiteral`
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TemplateElement<'a> {
     pub tail: bool,
     /// The non-quoted version
@@ -342,15 +322,13 @@ impl<'a> TemplateElement<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct MetaProp<'a> {
     pub meta: Ident<'a>,
     pub property: Ident<'a>,
 }
 
 /// A literal value
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum Lit<'a> {
     /// `null`
     Null,

@@ -15,7 +15,6 @@ use pat::Pat;
 use stmt::Stmt;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Ident<'a> {
     pub name: Cow<'a, str>,
 }
@@ -57,7 +56,7 @@ impl<'a> Program<'a> {
 
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 #[serde(untagged)] 
 pub enum ProgramPart<'a> {
     /// A Directive like `'use strict';`
@@ -79,8 +78,7 @@ impl<'a> ProgramPart<'a> {
 
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct Dir<'a> {
     pub expr: Lit<'a>,
     pub dir: Cow<'a, str>,
@@ -97,7 +95,6 @@ pub struct Dir<'a> {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Func<'a> {
     pub id: Option<Ident<'a>>,
     pub params: Vec<FuncArg<'a>>,
@@ -171,7 +168,6 @@ pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Class<'a> {
     pub id: Option<Ident<'a>>,
     pub super_class: Option<Box<Expr<'a>>>,
@@ -189,7 +185,7 @@ impl<'a> Class<'a> {
 }
 
 /// The kind of variable being defined (`var`/`let`/`const`)
-#[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
 #[serde(rename_all = "camelCase", untagged)]
 pub enum VarKind {
     Var,
@@ -200,7 +196,6 @@ pub enum VarKind {
 
 /// The available operators for assignment Exprs
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum AssignOp {
     Equal,
     PlusEqual,
@@ -220,7 +215,6 @@ pub enum AssignOp {
 
 /// The available logical operators
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum LogicalOp {
     Or,
     And,
@@ -229,7 +223,6 @@ pub enum LogicalOp {
 
 /// The available operations for `Binary` Exprs
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum BinaryOp {
     Equal,
     NotEqual,
@@ -258,7 +251,6 @@ pub enum BinaryOp {
 
 /// `++` or `--`
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum UpdateOp {
     Increment,
     Decrement,
@@ -267,7 +259,6 @@ pub enum UpdateOp {
 /// The allowed operators for an Expr
 /// to be `Unary`
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum UnaryOp {
     Minus,
     Plus,
@@ -281,7 +272,6 @@ pub enum UnaryOp {
 
 /// A flag for determining what kind of property
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum PropKind {
     /// A property with a value
     Init,

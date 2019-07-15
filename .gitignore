@@ -1,5 +1,7 @@
 **/target
 **/*.rs.bk
 Cargo.lock
-.vscode/settings.json
+.vscode/*
 /node_modules
+*.es.json
+*.rs.json
