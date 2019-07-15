@@ -4,8 +4,8 @@ use crate::expr::Expr;
 use crate::pat::Pat;
 use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[serde(untagged)]
 pub enum Stmt<'a> {
     /// Any expression
     Expr(Expr<'a>),

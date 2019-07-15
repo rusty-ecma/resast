@@ -39,8 +39,6 @@ impl<'a> Ident<'a> {
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
 #[derive(PartialEq, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[serde(tag = "sourceType", content: "body")]
 pub enum Program<'a> {
     /// An ES6 Mod
     Mod(Vec<ProgramPart<'a>>),
