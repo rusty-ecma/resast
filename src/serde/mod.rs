@@ -52,7 +52,16 @@ impl<'a> Serialize for Dir<'a> {
         let mut state = serializer.serialize_struct("Node", 3)?;
         state.serialize_field("type", "ExpressionStatement")?;
         state.serialize_field("expression", &self.expr)?;
-        state.serialize_field("directive", &self.dir)?;
+        if let Lit::String(ref sl) = self.expr {
+            match sl {
+                StringLit::Double(ref s) => if !s.is_empty() {
+                    state.serialize_field("directive", &self.dir)?;
+                },
+                StringLit::Single(ref s) => if !s.is_empty() {
+                    state.serialize_field("directive", &self.dir)?;
+                }
+            }
+        }
         state.end()
     }
 }
@@ -292,14 +301,22 @@ impl<'a> Serialize for Lit<'a> {
                 serialize_number(serializer, n)
             },
             Lit::String(ref sl) => {
+                eprintln!("string literal {:?}", self);
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 let (quote, value) = match sl {
                     StringLit::Double(ref s) => ('"', s),
                     StringLit::Single(ref s) => ('\'', s),
                 };
                 state.serialize_field("type", "Literal")?;
-                state.serialize_field("value", value)?;
-                state.serialize_field("raw", &format!("{0}{1}{0}", quote, value))?;
+                let inner = if let Some(esc) = unescape(&value) {
+                    esc
+                } else {
+                    value.to_string()
+                };
+                state.serialize_field("value", &inner)?;
+                let quoted = format!("{0}{1}{0}", quote, value);
+                eprintln!("value: {} quoted: {}", inner, quoted);
+                state.serialize_field("raw", &quoted)?;
                 state.end()
             },
             Lit::RegEx(ref r) => {
@@ -359,12 +376,10 @@ where S: Serializer,
             serialize_int(&mut state, 2, &n[2..])?;
         } else if n.chars().all(|c| c.is_digit(8)) {
             serialize_int(&mut state, 8, n)?;
+        } else if n.contains('E') || n.contains('e') || n.contains('.') {
+            serialize_float(&mut state, n)?;
         } else {
-            if n.contains('E') || n.contains('e') || n.contains('.') {
-                serialize_float(&mut state, n)?;
-            } else {
-                serialize_int(&mut state, 10, n)?;
-            }
+            serialize_int(&mut state, 10, n)?;
         }
     } else if n.contains('E') || n.contains('e') || n.contains('.') {
         serialize_float(&mut state, n)?;
@@ -398,5 +413,27 @@ where T: SerializeStruct,
         }
     } else {
         state.serialize_field("value", &::std::f32::NAN)
+    }
+}
+
+impl<'a> Serialize for Expr<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Expr::Array(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "ArrayExpression");
+                state.serialize_field("elements", a);
+                state.end()
+            },
+            Expr::This => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "ThisExpression")?;
+                state.end()
+            },
+            _ => unimplemented!()
+        }
     }
 }

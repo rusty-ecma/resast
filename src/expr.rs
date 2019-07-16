@@ -6,7 +6,7 @@ use crate::{
 use crate::pat::Pat;
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
 /// A slightly more granular program part that a statement
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 #[serde(untagged)]
 pub enum Expr<'a> {
     /// `[0,,]`
