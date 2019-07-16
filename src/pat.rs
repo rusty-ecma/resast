@@ -2,7 +2,7 @@ use crate::expr::{Expr, Prop};
 use crate::{Ident};
 /// All of the different ways you can declare an identifier
 /// and/or value
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 #[serde(untagged)]
 pub enum Pat<'a> {
     Ident(Ident<'a>),

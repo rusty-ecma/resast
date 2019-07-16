@@ -111,7 +111,7 @@ pub enum ObjProp<'a> {
 }
 
 /// A single part of an object literal or class
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct Prop<'a> {
     pub key: PropKey<'a>,
     pub value: PropValue<'a>,
@@ -124,6 +124,7 @@ pub struct Prop<'a> {
 
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum PropKey<'a> {
     Lit(Lit<'a>),
     Expr(Expr<'a>),

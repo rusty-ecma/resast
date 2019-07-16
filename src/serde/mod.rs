@@ -78,8 +78,7 @@ impl<'a> Serialize for Decl<'a> {
                 state.serialize_field("body", &f.body)?;
                 state.serialize_field("generator", &f.generator)?;
                 state.serialize_field("async", &f.is_async)?;
-                state.serialize_field("expression", &false)?;
-                state.serialize_field("params", &f.params)?;
+                state.serialize_field("parameters", &f.params)?;
                 state.end()
             },
             Decl::Class(ref c) => {
@@ -424,8 +423,149 @@ impl<'a> Serialize for Expr<'a> {
         match self {
             Expr::Array(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
-                state.serialize_field("type", "ArrayExpression");
-                state.serialize_field("elements", a);
+                state.serialize_field("type", "ArrayExpression")?;
+                state.serialize_field("elements", a)?;
+                state.end()
+            },
+            Expr::ArrowFunc(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 6)?;
+                state.serialize_field("type", "ArrorFunction")?;
+                state.serialize_field("id", &a.id)?;
+                state.serialize_field("expression", &a.expression)?;
+                state.serialize_field("generator", &a.generator)?;
+                state.serialize_field("async", &a.is_async)?;
+                match a.body {
+                    ArrowFuncBody::Expr(ref e) => {
+                        state.serialize_field("body", e)?;
+                    },
+                    ArrowFuncBody::FuncBody(ref b) => {
+                        state.serialize_field("body", b)?;
+                    }
+                }
+                state.end()
+            },
+            Expr::ArrowParamPlaceHolder(_, _) => {
+                unreachable!("ArrowParamPlaceHolder Expression should never be returned by the parsing process");
+            },
+            Expr::Assign(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "AssignmentExpression")?;
+                state.serialize_field("left", &a.left)?;
+                state.serialize_field("operator", &a.operator)?;
+                state.serialize_field("right", &a.right)?;
+                state.end()
+            },
+            Expr::Await(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "AwaitExpression")?;
+                state.serialize_field("expression", a)?;
+                state.end()
+            },
+            Expr::Binary(ref b) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "BinaryExpression")?;
+                state.serialize_field("left", &b.left)?;
+                state.serialize_field("operator", &b.operator)?;
+                state.serialize_field("right", &b.right)?;
+                state.end()
+            },
+            Expr::Call(ref c) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "CallExpression")?;
+                state.serialize_field("callee", &c.callee)?;
+                state.serialize_field("arguments", &c.arguments)?;
+                state.end()
+            },
+            Expr::Class(ref c) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "ClassExpression")?;
+                state.serialize_field("id", &c.id)?;
+                state.serialize_field("superClass", &c.super_class)?;
+                state.serialize_field("body", &c.body)?;
+                state.end()
+            },
+            Expr::Conditional(ref c) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "ConditionalExpression")?;
+                state.serialize_field("test", &c.test)?;
+                state.serialize_field("consequent", &c.consequent)?;
+                state.serialize_field("alternate", &c.alternate)?;
+                state.end()
+            },
+            Expr::Func(ref f) => {
+                let mut state = serializer.serialize_struct("Node", 6)?;
+                state.serialize_field("type", "FunctionExpression")?;
+                state.serialize_field("id", &f.id)?;
+                state.serialize_field("parameters", &f.params)?;
+                state.serialize_field("body", &f.body)?;
+                state.serialize_field("generator", &f.generator)?;
+                state.serialize_field("async", &f.is_async)?;
+                state.end()
+            },
+            Expr::Ident(ref i) => {
+                i.serialize(serializer)
+            },
+            Expr::Lit(ref l) => {
+                l.serialize(serializer)
+            },
+            Expr::Logical(ref l) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "LogicalExpression")?;
+                state.serialize_field("left", &l.left)?;
+                state.serialize_field("operator", &l.operator)?;
+                state.serialize_field("right", &l.right)?;
+                state.end()
+            },
+            Expr::Member(ref m) => {
+                let mut state = serializer.serialize_struct("Node", 4)?;
+                state.serialize_field("type", "MemberExpression")?;
+                state.serialize_field("object", &m.object)?;
+                state.serialize_field("property", &m.property)?;
+                state.serialize_field("computed", &m.computed)?;
+                state.end()
+            },
+            Expr::MetaProp(ref m) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "MetaProperty")?;
+                state.serialize_field("meta", &m.meta)?;
+                state.serialize_field("property", &m.property)?;
+                state.end()
+            },
+            Expr::New(ref n) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "NewExpression")?;
+                state.serialize_field("callee", &n.callee)?;
+                state.serialize_field("arguments", &n.arguments)?;
+                state.end()
+            },
+            Expr::Obj(ref o) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "ObjectExpression")?;
+                state.serialize_field("properties", o)?;
+                state.end()
+            },
+            Expr::Sequence(ref s) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "SequenceExpression")?;
+                state.serialize_field("expressions", s)?;
+                state.end()
+            },
+            Expr::Spread(ref s) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "SpreadElement")?;
+                state.serialize_field("argument", s)?;
+                state.end()
+            },
+            Expr::Super => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "Super")?;
+                state.end()
+            },
+            Expr::TaggedTemplate(ref t) => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "TaggedTemplateExpression")?;
+                state.serialize_field("tag", &t.tag)?;
+                state.serialize_field("quasi", &t.quasi)?;
                 state.end()
             },
             Expr::This => {
@@ -433,7 +573,88 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("type", "ThisExpression")?;
                 state.end()
             },
-            _ => unimplemented!()
+            Expr::Unary(ref u) => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "UnaryExpression")?;
+                state.serialize_field("argument", &u.argument)?;
+                state.serialize_field("operator", &u.operator)?;
+                state.serialize_field("prefix", &u.prefix)?;
+                state.end()
+            },
+            Expr::Update(ref u) => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "UpdateExpression")?;
+                state.serialize_field("argument", &u.argument)?;
+                state.serialize_field("operator", &u.operator)?;
+                state.serialize_field("prefix", &u.prefix)?;
+                state.end()
+            },
+            Expr::Yield(ref y) => {
+                let mut state = serializer.serialize_struct("Node", 1)?;
+                state.serialize_field("type", "YieldExpression")?;
+                state.serialize_field("argument", &y.argument)?;
+                state.serialize_field("delegate", &y.delegate)?;
+                state.end()
+            }
         }
+    }
+}
+
+impl<'a> Serialize for Pat<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Pat::Array(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "ArrayPattern")?;
+                state.serialize_field("elements", a)?;
+                state.end()
+            },
+            Pat::Assign(ref a) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "AssignmentPattern")?;
+                state.serialize_field("left", &a.left)?;
+                state.serialize_field("right", &a.right)?;
+                state.end()
+            },
+            Pat::Ident(ref i) => {
+                i.serialize(serializer)
+            },
+            Pat::Obj(ref o) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "ObjectPattern")?;
+                state.serialize_field("properties", o)?;
+                state.end()
+            },
+            Pat::RestElement(ref r) => {
+                let mut state = serializer.serialize_struct("Node", 2)?;
+                state.serialize_field("type", "RestElement")?;
+                state.serialize_field("argument", r)?;
+                state.end()
+            }
+        }
+    }
+}
+
+
+impl<'a> Serialize for Prop<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "Property")?;
+        state.serialize_field("key", &self.key)?;
+        state.serialize_field("computed", &self.computed)?;
+        state.serialize_field("kind", &self.kind)?;
+        state.serialize_field("method", &self.method)?;
+        state.serialize_field("shortHand", &self.short_hand)?;
+        state.serialize_field("value", &self.value)?;
+        if self.is_static {
+            state.serialize_field("static", &self.is_static)?;
+        }
+        state.end()
     }
 }

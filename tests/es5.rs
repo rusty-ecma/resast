@@ -13,7 +13,7 @@ fn run_test(name: &str, js: &str) {
     let res_json: Value = from_str(&raw_res).expect("failed to revert back to Value");
     let raw_esparse = ::std::process::Command::new("node")
         .arg("run_es_parse.js")
-        .arg(&format!("{}",js))
+        .arg(&js)
         .output()
         .expect("failed to spawn esparse");
     let raw_js = String::from_utf8_lossy(&raw_esparse.stdout).to_string();
@@ -69,29 +69,34 @@ fn test6() {
     let js = r#"bom:for(;;)break﻿bom;"#;
     run_test("test6", js);
 }
+#[cfg(windows)]
 #[test]
 fn test7() {
     let js = r#"lineFeed:0
-0;"#;
+        0;"#;
     run_test("test7", js);
 }
+#[cfg(not(windows))]
 #[test]
 fn test8() {
     let js = r#"carriageReturn:0
 0;"#;
     run_test("test8", js);
 }
+#[cfg(not(windows))]
 #[test]
 fn test9() {
     let js = r#"carriageReturnLineFeed:0
 0;"#;
     run_test("test9", js);
 }
+#[cfg(not(windows))]
 #[test]
 fn test10() {
     let js = r#"lineSeparator:0 0;"#;
     run_test("test10", js);
 }
+#[cfg(not(windows))]
 #[test]
 fn test11() {
     let js = r#"paragraphSeparator:0 0;"#;

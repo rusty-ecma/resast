@@ -272,6 +272,7 @@ pub enum UnaryOp {
 
 /// A flag for determining what kind of property
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum PropKind {
     /// A property with a value
     Init,
