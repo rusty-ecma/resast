@@ -241,14 +241,15 @@ pub struct SwitchStmt<'a> {
 }
 
 /// A single case part of a switch statement
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct SwitchCase<'a> {
     pub test: Option<Expr<'a>>,
     pub consequent: Vec<ProgramPart<'a>>,
 }
 
 /// A collection of program parts wrapped in curly braces
-pub type BlockStmt<'a> = Vec<ProgramPart<'a>>;
+#[derive(PartialEq, Debug, Clone, Deserialize)]
+pub struct BlockStmt<'a>(pub Vec<ProgramPart<'a>>);
 
 /// A try/catch block
 /// ```js
@@ -268,7 +269,7 @@ pub struct TryStmt<'a> {
 }
 
 /// The error handling part of a `TryStmt`
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct CatchClause<'a> {
     pub param: Option<Pat<'a>>,
     pub body: BlockStmt<'a>,
@@ -325,7 +326,7 @@ pub struct ForStmt<'a> {
 /// ```js
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum LoopInit<'a> {
     Variable(VarKind, Vec<VarDecl<'a>>),
     Expr(Expr<'a>),
@@ -368,7 +369,7 @@ pub struct ForOfStmt<'a> {
 
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum LoopLeft<'a> {
     Expr(Expr<'a>),
     Variable(VarKind, VarDecl<'a>),

@@ -195,7 +195,7 @@ pub enum VarKind {
 
 
 /// The available operators for assignment Exprs
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum AssignOp {
     Equal,
     PlusEqual,
@@ -214,7 +214,7 @@ pub enum AssignOp {
 
 
 /// The available logical operators
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum LogicalOp {
     Or,
     And,
@@ -222,7 +222,7 @@ pub enum LogicalOp {
 
 
 /// The available operations for `Binary` Exprs
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum BinaryOp {
     Equal,
     NotEqual,
@@ -250,7 +250,7 @@ pub enum BinaryOp {
 
 
 /// `++` or `--`
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum UpdateOp {
     Increment,
     Decrement,
@@ -258,7 +258,7 @@ pub enum UpdateOp {
 
 /// The allowed operators for an Expr
 /// to be `Unary`
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum UnaryOp {
     Minus,
     Plus,

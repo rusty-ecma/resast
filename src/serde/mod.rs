@@ -78,7 +78,8 @@ impl<'a> Serialize for Decl<'a> {
                 state.serialize_field("body", &f.body)?;
                 state.serialize_field("generator", &f.generator)?;
                 state.serialize_field("async", &f.is_async)?;
-                state.serialize_field("parameters", &f.params)?;
+                state.serialize_field("expression", &false)?;
+                state.serialize_field("params", &f.params)?;
                 state.end()
             },
             Decl::Class(ref c) => {
@@ -166,10 +167,7 @@ impl<'a> Serialize for Stmt<'a> {
                 state.end()
             },
             Stmt::Block(ref b) => {
-                let mut state = serializer.serialize_struct("Node", 2)?;
-                state.serialize_field("type", "BlockStatement")?;
-                state.serialize_field("body", b)?;
-                state.end()
+                b.serialize(serializer)
             },
             Stmt::Break(ref b) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
@@ -221,6 +219,7 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("left", &f.left)?;
                 state.serialize_field("right", &f.right)?;
                 state.serialize_field("body", &f.body)?;
+                state.serialize_field("each", &false)?;
                 state.end()
             },
             Stmt::ForOf(ref f) => {
@@ -321,9 +320,8 @@ impl<'a> Serialize for Lit<'a> {
             Lit::RegEx(ref r) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "Literal")?;
-                let value: ::std::collections::HashMap<(), ()> = ::std::collections::HashMap::new();
-                state.serialize_field("value", &value)?;
                 state.serialize_field("raw", &format!("/{}/{}", r.pattern, r.flags))?;
+                state.serialize_field("value", &format_regex_value(r))?;
                 state.serialize_field("regex", r)?;
                 state.end()
             },
@@ -356,6 +354,37 @@ impl<'a> Serialize for Lit<'a> {
             },
         }
     }
+}
+
+fn format_regex_value(r: &RegEx) -> String {
+    let mut ret = String::from("/");
+    ret.push_str(&r.pattern.replace('/', r"\/"));
+    ret.push('/');
+    if r.flags.is_empty() {
+        return ret;
+    }
+    if r.flags.contains('g') {
+        ret.push('g');
+    }
+    if r.flags.contains('i') {
+        ret.push('i');
+    }
+    if r.flags.contains('m') {
+        ret.push('m');
+    }
+    if r.flags.contains('u') {
+        ret.push('u')
+    }
+    if r.flags.contains('y') {
+        ret.push('y')
+    }
+    ret.push_str(&r.flags.replace(|c| 
+        c == 'g' 
+        || c == 'i'
+        || c == 'm'
+        || c == 'u'
+        || c == 'y', ""));
+    ret
 }
 
 fn serialize_number<S>(s: S, n: &str) -> Result<S::Ok, S::Error>
@@ -496,10 +525,11 @@ impl<'a> Serialize for Expr<'a> {
                 let mut state = serializer.serialize_struct("Node", 6)?;
                 state.serialize_field("type", "FunctionExpression")?;
                 state.serialize_field("id", &f.id)?;
-                state.serialize_field("parameters", &f.params)?;
+                state.serialize_field("params", &f.params)?;
                 state.serialize_field("body", &f.body)?;
                 state.serialize_field("generator", &f.generator)?;
                 state.serialize_field("async", &f.is_async)?;
+                state.serialize_field("expression", &false)?;
                 state.end()
             },
             Expr::Ident(ref i) => {
@@ -650,11 +680,180 @@ impl<'a> Serialize for Prop<'a> {
         state.serialize_field("computed", &self.computed)?;
         state.serialize_field("kind", &self.kind)?;
         state.serialize_field("method", &self.method)?;
-        state.serialize_field("shortHand", &self.short_hand)?;
+        state.serialize_field("shorthand", &self.short_hand)?;
         state.serialize_field("value", &self.value)?;
         if self.is_static {
             state.serialize_field("static", &self.is_static)?;
         }
         state.end()
+    }
+}
+
+impl<'a> Serialize for BlockStmt<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 2)?;
+        state.serialize_field("type", "BlockStatement")?;
+        state.serialize_field("body", &self.0)?;
+        state.end()
+    }
+}
+
+impl<'a> Serialize for CatchClause<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 2)?;
+        state.serialize_field("type", "CatchClause")?;
+        state.serialize_field("param", &self.param)?;
+        state.serialize_field("body", &self.body)?;
+        state.end()
+    }
+}
+impl<'a> Serialize for SwitchCase<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "SwitchCase")?;
+        state.serialize_field("test", &self.test)?;
+        state.serialize_field("consequent", &self.consequent)?;
+        state.end()
+    }
+}
+
+impl Serialize for AssignOp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match self {
+            AssignOp::Equal => "=",
+            AssignOp::PlusEqual => "+=",
+            AssignOp::MinusEqual => "-=",
+            AssignOp::TimesEqual => "*=",
+            AssignOp::DivEqual => "/=",
+            AssignOp::ModEqual => "%=",
+            AssignOp::LeftShiftEqual => "<<=",
+            AssignOp::RightShiftEqual => ">>=",
+            AssignOp::UnsignedRightShiftEqual => ">>>=",
+            AssignOp::OrEqual => "|=",
+            AssignOp::XOrEqual => "^=",
+            AssignOp::AndEqual => "&=",
+            AssignOp::PowerOfEqual => "**=",
+        };
+        serializer.serialize_str(s)
+    }
+}
+impl Serialize for BinaryOp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match self {
+            BinaryOp::Equal => "==",
+            BinaryOp::NotEqual => "!=",
+            BinaryOp::StrictEqual => "===",
+            BinaryOp::StrictNotEqual => "!==",
+            BinaryOp::LessThan => "<",
+            BinaryOp::GreaterThan => ">",
+            BinaryOp::LessThanEqual => "<=",
+            BinaryOp::GreaterThanEqual => ">=",
+            BinaryOp::LeftShift => "<<",
+            BinaryOp::RightShift => ">>",
+            BinaryOp::UnsignedRightShift => ">>>",
+            BinaryOp::Plus => "+",
+            BinaryOp::Minus => "-",
+            BinaryOp::Times => "*",
+            BinaryOp::Over => "/",
+            BinaryOp::Mod => "%",
+            BinaryOp::Or => "|",
+            BinaryOp::XOr => "^",
+            BinaryOp::And => "&",
+            BinaryOp::In => "in",
+            BinaryOp::InstanceOf => "instanceof",
+            BinaryOp::PowerOf => "**",
+        };
+        serializer.serialize_str(s)
+    }
+}
+impl Serialize for LogicalOp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match self {
+            LogicalOp::And => "&&",
+            LogicalOp::Or => "||",
+        };
+        serializer.serialize_str(s)
+    }
+}
+impl Serialize for UnaryOp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match self {
+            UnaryOp::Minus => "-",
+            UnaryOp::Plus => "+",
+            UnaryOp::Not => "!",
+            UnaryOp::Tilde => "~",
+            UnaryOp::TypeOf => "typeof",
+            UnaryOp::Void => "void",
+            UnaryOp::Delete => "delete",
+        };
+        serializer.serialize_str(s)
+    }
+}
+impl Serialize for UpdateOp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match self {
+            UpdateOp::Increment => "++",
+            UpdateOp::Decrement => "--",
+        };
+        serializer.serialize_str(s)
+    }
+}
+impl<'a> Serialize for LoopLeft<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            LoopLeft::Expr(ref e) => e.serialize(serializer),
+            LoopLeft::Pat(ref p) => p.serialize(serializer),
+            LoopLeft::Variable(ref kind, ref v) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "VariableDeclaration")?;
+                state.serialize_field("kind", kind)?;
+                state.serialize_field("declarations", &[v])?;
+                state.end()
+            },
+        }
+    }
+}
+impl<'a> Serialize for LoopInit<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            LoopInit::Expr(ref e) => e.serialize(serializer),
+            LoopInit::Variable(ref kind, ref v) => {
+                let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "VariableDeclaration")?;
+                state.serialize_field("kind", kind)?;
+                state.serialize_field("declarations", v)?;
+                state.end()
+            },
+        }
     }
 }

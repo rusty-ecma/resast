@@ -9,8 +9,6 @@ use resast::prelude::*;
 use std::fs::{
     read_to_string,
 };
-use std::io::Write;
-
 #[test]
 fn serde1() {
     let ast = Program::Script(vec![

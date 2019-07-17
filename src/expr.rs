@@ -134,6 +134,7 @@ pub enum PropKey<'a> {
 
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum PropValue<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
@@ -174,6 +175,7 @@ pub struct AssignExpr<'a> {
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum AssignLeft<'a> {
     Pat(Pat<'a>),
     Expr(Box<Expr<'a>>),

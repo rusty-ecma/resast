@@ -5,7 +5,7 @@ use serde_json::{
     from_str,
     to_writer_pretty,
 };
-
+#[cfg(not(windows))]
 fn run_test(name: &str, js: &str) {
     let mut p = Parser::new(js).expect("couldn't create parser");
     let res = p.parse().expect("Unable to parse js");
@@ -17,6 +17,26 @@ fn run_test(name: &str, js: &str) {
         .output()
         .expect("failed to spawn esparse");
     let raw_js = String::from_utf8_lossy(&raw_esparse.stdout).to_string();
+    let es_json: Value = from_str(&raw_js).expect(
+        "failed to convert esparse result to Value"
+    );
+    check_jsons(name, es_json, res_json);
+}
+
+#[cfg(windows)]
+fn run_test(name: &str, js: &str) {
+    let js_file = format!("{}.js", name);
+    let mut p = Parser::new(js).expect("couldn't create parser");
+    let res = p.parse().expect("Unable to parse js");
+    let raw_res = to_string(&res).expect("failed to convert it to json");
+    let res_json: Value = from_str(&raw_res).expect("failed to revert back to Value");
+    ::std::fs::write(&js_file, js).expect("failed to write out js to file");
+    let raw_esparse = ::std::process::Command::new("node_modules/.bin/esparse.cmd")
+        .arg(&js_file)
+        .output()
+        .expect("failed to spawn esparse");
+    let raw_js = String::from_utf8_lossy(&raw_esparse.stdout).to_string();
+    ::std::fs::remove_file(&js_file).expect("failed to delete js file");
     let es_json: Value = from_str(&raw_js).expect(
         "failed to convert esparse result to Value"
     );
@@ -69,34 +89,34 @@ fn test6() {
     let js = r#"bom:for(;;)break﻿bom;"#;
     run_test("test6", js);
 }
-#[cfg(windows)]
+// #[cfg(windows)]
 #[test]
 fn test7() {
     let js = r#"lineFeed:0
         0;"#;
     run_test("test7", js);
 }
-#[cfg(not(windows))]
+// #[cfg(not(windows))]
 #[test]
 fn test8() {
     let js = r#"carriageReturn:0
 0;"#;
     run_test("test8", js);
 }
-#[cfg(not(windows))]
+// #[cfg(not(windows))]
 #[test]
 fn test9() {
     let js = r#"carriageReturnLineFeed:0
 0;"#;
     run_test("test9", js);
 }
-#[cfg(not(windows))]
+// #[cfg(not(windows))]
 #[test]
 fn test10() {
     let js = r#"lineSeparator:0 0;"#;
     run_test("test10", js);
 }
-#[cfg(not(windows))]
+// #[cfg(not(windows))]
 #[test]
 fn test11() {
     let js = r#"paragraphSeparator:0 0;"#;
