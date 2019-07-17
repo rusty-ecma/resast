@@ -105,6 +105,7 @@ pub type ArrayExpr<'a> = Vec<Option<Expr<'a>>>;
 pub type ObjExpr<'a> = Vec<ObjProp<'a>>;
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ObjProp<'a> {
     Prop(Prop<'a>),
     Spread(Expr<'a>),
