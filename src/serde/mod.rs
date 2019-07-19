@@ -306,7 +306,7 @@ impl<'a> Serialize for Lit<'a> {
                 };
                 state.serialize_field("type", "Literal")?;
                 let quoted = format!("{0}{1}{0}", quote, value);
-                let inner = if let Some(esc) = unescape(&quoted) {
+                let inner = if let Some(esc) = unescaper(&quoted) {
                     esc
                 } else {
                     value.to_string()
@@ -852,6 +852,141 @@ impl<'a> Serialize for LoopInit<'a> {
                 state.serialize_field("declarations", v)?;
                 state.end()
             },
+        }
+    }
+}
+
+use std::collections::VecDeque;
+fn unescaper(s: &str) -> Option<String> {
+    
+    let mut queue : VecDeque<_> = String::from(s).chars().collect();
+    let mut s = String::new();
+
+    while let Some(c) = queue.pop_front() {
+        if c != '\\' {
+            s.push(c);
+            continue;
+        }
+
+        match queue.pop_front() {
+            Some('b') => s.push('\u{0008}'),
+            Some('f') => s.push('\u{000C}'),
+            Some('n') => s.push('\n'),
+            Some('r') => s.push('\r'),
+            Some('t') => s.push('\t'),
+            Some('\'') => s.push('\''),
+            Some('\"') => s.push('\"'),
+            Some('\\') => s.push('\\'),
+            Some('u') => if let Some(x) = unescape_unicode(&mut queue) {
+                s.push(x);
+            } else {
+                return None;
+            },
+            Some('x') => if let Some(x) = unescape_byte(&mut queue) {
+                s.push(x)
+            } else {
+                return None;
+            },
+            Some(c) if c.is_digit(8) => {
+                if let Some(x) = unescape_octal(c, &mut queue) {
+                    s.push(x);
+                } else {
+                    return None;
+                }
+            },
+            _ => return None
+        };
+    }
+
+    Some(s)
+}
+
+fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
+    let mut s = String::new();
+
+    for _ in 0..4 {
+        if let Some(x) = queue.pop_front() {
+            s.push(x)
+        } else {
+            return None;
+        }
+    }
+    match u32::from_str_radix(&s, 16) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            eprintln!("error parsing char {}", e);
+            None
+        }
+    }
+}
+
+fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
+    let mut s = String::new();
+
+    for _ in 0..2 {
+        if let Some(c) = queue.pop_front() {
+            s.push(c)
+        } else {
+            return None
+        }
+    }
+    match u32::from_str_radix(&s, 16) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}", e);
+            None
+        }
+    }
+    
+}
+
+fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+    match unescape_octal_leading(c, queue) {
+        Some(ch) => {
+            let _ = queue.pop_front();
+            let _ = queue.pop_front();
+            Some(ch)
+        }
+        None => unescape_octal_no_leading(c, queue)
+    }
+}
+
+fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
+    if c != '0' && c != '1' && c != '2' && c != '3' {
+        return None;
+    }
+
+    let mut s = String::new();
+    s.push(c);
+    if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
+        s.push(*one);
+        s.push(*two);
+    } else {
+        return None;
+    }
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}: {}", e, s);
+            None
+        }
+    }
+}
+
+fn unescape_octal_no_leading(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+    let mut s = String::new();
+    s.push(c);
+    if let Some(one) = queue.pop_front() {
+        s.push(one);
+    } else {
+        return None;
+    }
+
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}", e);
+            None
         }
     }
 }
