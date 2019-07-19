@@ -26,11 +26,12 @@ fn run_test(name: &str, js: &str) {
 #[cfg(windows)]
 fn run_test(name: &str, js: &str) {
     let js_file = format!("{}.js", name);
-    let mut p = Parser::new(js).expect("couldn't create parser");
+    ::std::fs::write(&js_file, js).expect("failed to write out js to file");
+    let reread = ::std::fs::read_to_string(&js_file).expect("unable to re-read js");
+    let mut p = Parser::new(&reread).expect("couldn't create parser");
     let res = p.parse().expect("Unable to parse js");
     let raw_res = to_string(&res).expect("failed to convert it to json");
     let res_json: Value = from_str(&raw_res).expect("failed to revert back to Value");
-    ::std::fs::write(&js_file, js).expect("failed to write out js to file");
     let raw_esparse = ::std::process::Command::new("node_modules/.bin/esparse.cmd")
         .arg(&js_file)
         .output()
@@ -41,6 +42,25 @@ fn run_test(name: &str, js: &str) {
         "failed to convert esparse result to Value"
     );
     check_jsons(name, es_json, res_json);
+}
+
+#[test]
+fn all() {
+    let js_file = "node_modules/everything.js/es5.js";
+    let js = ::std::fs::read_to_string(js_file).expect("couldn't read file");
+    let mut p = Parser::new(&js).expect("couldn't create parser");
+    let res = p.parse().expect("Unable to parse js");
+    let raw_res = to_string(&res).expect("failed to convert it to json");
+    let res_json: Value = from_str(&raw_res).expect("failed to revert back to Value");
+    let raw_esparse = ::std::process::Command::new("node_modules/.bin/esparse.cmd")
+        .arg(&js_file)
+        .output()
+        .expect("failed to spawn esparse");
+    let raw_js = String::from_utf8_lossy(&raw_esparse.stdout).to_string();
+    let es_json: Value = from_str(&raw_js).expect(
+        "failed to convert esparse result to Value"
+    );
+    check_jsons("everything5", es_json, res_json);
 }
 
 fn check_jsons(name: &str, es_json: Value, rs_json: Value) {
@@ -89,34 +109,34 @@ fn test6() {
     let js = r#"bom:for(;;)break﻿bom;"#;
     run_test("test6", js);
 }
-// #[cfg(windows)]
+
 #[test]
 fn test7() {
     let js = r#"lineFeed:0
         0;"#;
     run_test("test7", js);
 }
-// #[cfg(not(windows))]
+
 #[test]
 fn test8() {
     let js = r#"carriageReturn:0
 0;"#;
     run_test("test8", js);
 }
-// #[cfg(not(windows))]
+
 #[test]
 fn test9() {
     let js = r#"carriageReturnLineFeed:0
 0;"#;
     run_test("test9", js);
 }
-// #[cfg(not(windows))]
+
 #[test]
 fn test10() {
     let js = r#"lineSeparator:0 0;"#;
     run_test("test10", js);
 }
-// #[cfg(not(windows))]
+
 #[test]
 fn test11() {
     let js = r#"paragraphSeparator:0 0;"#;
@@ -187,7 +207,7 @@ fn test23() {
 }
 #[test]
 fn test24() {
-    let js = r#"'\1\00\400\000';"#;
+    let js = r#"'\\1\\00\\400\\000';"#;
     run_test("test24", js);
 }
 #[test]

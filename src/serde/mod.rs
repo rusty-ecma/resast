@@ -299,21 +299,19 @@ impl<'a> Serialize for Lit<'a> {
                 serialize_number(serializer, n)
             },
             Lit::String(ref sl) => {
-                eprintln!("string literal {:?}", self);
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 let (quote, value) = match sl {
                     StringLit::Double(ref s) => ('"', s),
                     StringLit::Single(ref s) => ('\'', s),
                 };
                 state.serialize_field("type", "Literal")?;
-                let inner = if let Some(esc) = unescape(&value) {
+                let quoted = format!("{0}{1}{0}", quote, value);
+                let inner = if let Some(esc) = unescape(&quoted) {
                     esc
                 } else {
                     value.to_string()
                 };
-                state.serialize_field("value", &inner)?;
-                let quoted = format!("{0}{1}{0}", quote, value);
-                eprintln!("value: {} quoted: {}", inner, quoted);
+                state.serialize_field("value", &inner[1..inner.len() - 1])?;
                 state.serialize_field("raw", &quoted)?;
                 state.end()
             },
