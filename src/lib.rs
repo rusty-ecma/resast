@@ -181,7 +181,7 @@ impl<'a> Class<'a> {
         Class {
             id,
             super_class: super_class.map(Box::new),
-            body,
+            body: ClassBody(body),
         }
     }
 }
