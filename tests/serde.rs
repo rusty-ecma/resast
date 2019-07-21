@@ -82,6 +82,23 @@ fn serde_es5() {
         panic!("json doesn't match");
     }
 }
+#[test]
+fn serde_es2015_script() {
+    let js = get_js_file("node_modules/everything.js/es2015-script.js");
+    let mut parser = Parser::new(&js).unwrap();
+    let parsed = parser.parse().unwrap();
+    let raw = to_string_pretty(&parsed).unwrap();
+    let json: Value = from_str(&raw).unwrap();
+    let es = esparse("node_modules/everything.js/es2015-script.js");
+    let esparsed: Value = from_str(&es).unwrap();
+    if json != esparsed {
+        let f1 = ::std::fs::File::create("3.rs.json").unwrap();
+        serde_json::to_writer_pretty(f1, &json).unwrap();
+        let f2 = ::std::fs::File::create("4.js.json").unwrap();
+        serde_json::to_writer_pretty(f2, &esparsed).unwrap();
+        panic!("json doesn't match");
+    }
+}
 
 pub fn npm_install() {
     let mut c = ::std::process::Command::new("npm");

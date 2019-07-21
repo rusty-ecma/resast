@@ -21,6 +21,7 @@ impl<'a> Pat<'a> {
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ArrayPatPart<'a> {
     Pat(Pat<'a>),
     Expr(Expr<'a>),
@@ -30,13 +31,14 @@ pub enum ArrayPatPart<'a> {
 pub type ObjPat<'a> = Vec<ObjPatPart<'a>>;
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ObjPatPart<'a> {
     Assign(Prop<'a>),
     Rest(Box<Pat<'a>>),
 }
 
 /// An assignment as a pattern
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct AssignPat<'a> {
     pub left: Box<Pat<'a>>,
     pub right: Box<Expr<'a>>,

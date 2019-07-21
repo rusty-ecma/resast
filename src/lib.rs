@@ -171,8 +171,10 @@ pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 pub struct Class<'a> {
     pub id: Option<Ident<'a>>,
     pub super_class: Option<Box<Expr<'a>>>,
-    pub body: Vec<Prop<'a>>,
+    pub body: ClassBody<'a>,
 }
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub struct ClassBody<'a>(pub Vec<Prop<'a>>);
 
 impl<'a> Class<'a> {
     pub fn new(id: Option<Ident<'a>>, super_class: Option<Expr<'a>>, body: Vec<Prop<'a>>) -> Class<'a> {

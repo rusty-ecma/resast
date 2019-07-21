@@ -4,7 +4,7 @@ use serde::ser::{
     SerializeStruct,
 };
 use crate::prelude::*;
-use unescape::unescape;
+
 impl<'a> Serialize for Program<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -122,7 +122,7 @@ impl<'a> Serialize for Ident<'a> {
     {
         let mut state = serializer.serialize_struct("Node", 2)?;
         state.serialize_field("type", "Identifier")?;
-        let unescaped = unescape(&self.name).unwrap_or(self.name.to_string());
+        let unescaped = unescaper(&self.name).unwrap_or_else(|| self.name.to_string());
         state.serialize_field("name", &unescaped)?;
         state.end()
     }
@@ -300,18 +300,22 @@ impl<'a> Serialize for Lit<'a> {
             },
             Lit::String(ref sl) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
+                state.serialize_field("type", "Literal")?;
                 let (quote, value) = match sl {
                     StringLit::Double(ref s) => ('"', s),
                     StringLit::Single(ref s) => ('\'', s),
                 };
-                state.serialize_field("type", "Literal")?;
                 let quoted = format!("{0}{1}{0}", quote, value);
                 let inner = if let Some(esc) = unescaper(&quoted) {
-                    esc
+                    if esc.trim_matches(quote) != "\n" {
+                        esc
+                    } else {
+                        format!("{0}{0}", quote)
+                    }
                 } else {
                     value.to_string()
                 };
-                state.serialize_field("value", &inner[1..inner.len() - 1])?;
+                state.serialize_field("value", &inner[1..inner.len()-1])?;
                 state.serialize_field("raw", &quoted)?;
                 state.end()
             },
@@ -356,7 +360,17 @@ impl<'a> Serialize for Lit<'a> {
 
 fn format_regex_value(r: &RegEx) -> String {
     let mut ret = String::from("/");
-    ret.push_str(&r.pattern.replace('/', r"\/"));
+    let mut escaped = false;
+    for c in r.pattern.chars() {
+        if c == '\\' {
+            escaped = true;
+            ret.push(c);
+        } else if !escaped && c == '/' {
+            ret.push_str(r"\/");
+        } else {
+            ret.push(c);
+        }
+    }
     ret.push('/');
     if r.flags.is_empty() {
         return ret;
@@ -456,10 +470,11 @@ impl<'a> Serialize for Expr<'a> {
             },
             Expr::ArrowFunc(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 6)?;
-                state.serialize_field("type", "ArrorFunction")?;
+                state.serialize_field("type", "ArrowFunctionExpression")?;
                 state.serialize_field("id", &a.id)?;
                 state.serialize_field("expression", &a.expression)?;
                 state.serialize_field("generator", &a.generator)?;
+                state.serialize_field("params", &a.params)?;
                 state.serialize_field("async", &a.is_async)?;
                 match a.body {
                     ArrowFuncBody::Expr(ref e) => {
@@ -641,6 +656,7 @@ impl<'a> Serialize for Pat<'a> {
                 state.end()
             },
             Pat::Assign(ref a) => {
+                eprintln!("pat::assign, {:?}", a);
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "AssignmentPattern")?;
                 state.serialize_field("left", &a.left)?;
@@ -679,7 +695,15 @@ impl<'a> Serialize for Prop<'a> {
         state.serialize_field("kind", &self.kind)?;
         state.serialize_field("method", &self.method)?;
         state.serialize_field("shorthand", &self.short_hand)?;
-        state.serialize_field("value", &self.value)?;
+        if self.short_hand {
+            eprintln!("prop: {:?}", self);
+
+        }
+        if self.short_hand && self.value == PropValue::None {
+            state.serialize_field("value", &self.key)?;
+        } else {
+            state.serialize_field("value", &self.value)?;
+        }
         if self.is_static {
             state.serialize_field("static", &self.is_static)?;
         }
@@ -687,6 +711,44 @@ impl<'a> Serialize for Prop<'a> {
     }
 }
 
+impl<'a> Serialize for TemplateLit<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "TemplateLiteral")?;
+        state.serialize_field("expressions", &self.expressions)?;
+        state.serialize_field("quasis", &self.quasis)?;
+        state.end()
+    }
+}
+
+impl<'a> Serialize for TemplateElement<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "TemplateElement")?;
+        state.serialize_field("tail", &self.tail)?;
+        let mut value = ::std::collections::HashMap::new();
+        let cooked = if let Some(s) = unescaper(&self.cooked) {
+            s
+        } else {
+            self.cooked.to_string()
+        };
+        value.insert("cooked", cooked.as_str());
+        let end_len = if self.raw.ends_with("${") {
+            2
+        } else {
+            1
+        };
+        value.insert("raw", &self.raw[1..self.raw.len()-end_len]);
+        state.serialize_field("value", &value)?;
+        state.end()
+    }
+}
 impl<'a> Serialize for BlockStmt<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -855,6 +917,18 @@ impl<'a> Serialize for LoopInit<'a> {
         }
     }
 }
+impl<'a> Serialize for AssignPat<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "AssignmentPattern")?;
+        state.serialize_field("left", &self.left)?;
+        state.serialize_field("right", &self.right)?;
+        state.end()
+    }
+}
 
 use std::collections::VecDeque;
 fn unescaper(s: &str) -> Option<String> {
@@ -874,6 +948,7 @@ fn unescaper(s: &str) -> Option<String> {
             Some('n') => s.push('\n'),
             Some('r') => s.push('\r'),
             Some('t') => s.push('\t'),
+            Some('v') => s.push('\u{000b}'),
             Some('\'') => s.push('\''),
             Some('\"') => s.push('\"'),
             Some('\\') => s.push('\\'),
@@ -887,12 +962,15 @@ fn unescaper(s: &str) -> Option<String> {
             } else {
                 return None;
             },
-            Some(c) if c.is_digit(8) => {
+            Some('\0') => s.push('\0'),
+            Some(c) => if c.is_digit(8) {
                 if let Some(x) = unescape_octal(c, &mut queue) {
                     s.push(x);
                 } else {
                     return None;
                 }
+            } else {
+                s.push(c)
             },
             _ => return None
         };
@@ -902,21 +980,39 @@ fn unescaper(s: &str) -> Option<String> {
 }
 
 fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
-    let mut s = String::new();
+    let ret = hex_char_code(queue)?;
+    ::std::char::from_u32(ret)
+}
 
-    for _ in 0..4 {
-        if let Some(x) = queue.pop_front() {
-            s.push(x)
+fn hex_char_code(queue: &mut VecDeque<char>) -> Option<u32> {
+    if let Some(c) = queue.pop_front() {
+        if c == '{' {
+            let mut x = 0;
+            while let Some(c) = queue.pop_front() {
+                if c == '}' {
+                    break;
+                }
+                x = x * 16 + c.to_digit(16)?;
+            }
+            Some(x)
         } else {
-            return None;
+            let mut x = c.to_digit(16)?;        
+            for _ in 0..3 {
+                if let Some(u) = queue.pop_front() {
+                    x = x * 16 + u.to_digit(16)?;
+                }
+            }
+            if x >= 0xD800 && x <= 0xDBFF {
+                debug_assert!(queue.pop_front() == Some('\\'));
+                debug_assert!(queue.pop_front() == Some('u'));
+                let high = (x - 0xD800) * 0x400;
+                let low =  hex_char_code(queue)? - 0xDC00;
+                x = 0x10000 + high + low;
+            }
+            Some(x)
         }
-    }
-    match u32::from_str_radix(&s, 16) {
-        Ok(u) => ::std::char::from_u32(u),
-        Err(e) => {
-            eprintln!("error parsing char {}", e);
-            None
-        }
+    } else {
+        None
     }
 }
 
@@ -934,22 +1030,50 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}", e);
-            None
         }
     }
     
 }
 
 fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
-    match unescape_octal_leading(c, queue) {
-        Some(ch) => {
-            let _ = queue.pop_front();
-            let _ = queue.pop_front();
-            Some(ch)
+    let (ret, ct) = if let Some(next) = queue.get(0) {
+        if !next.is_digit(8) {
+            let d = c.to_digit(8)?;
+            return std::char::from_u32(d);
+        } else if c >= '0' && c < '4' {
+            let s = if let Some(third) = queue.get(1) {
+                if !third.is_digit(8) {
+                    format!("{}{}", c, next)
+                } else {
+                    format!("{}{}{}", c, next, third)
+                }
+            } else {
+                format!("{}{}", c, next)
+            };
+            let ct = s.len().saturating_sub(1);
+            match u32::from_str_radix(&s, 8) {
+                Ok(r) => {
+                    (::std::char::from_u32(r), ct)
+                },
+                Err(e) => panic!("{}", e),
+            }
+        } else {
+            match u32::from_str_radix(&format!("{}{}", c, next), 8) {
+                Ok(r) => {
+                    (::std::char::from_u32(r), 1)
+                },
+                Err(e) => panic!("{}", e),
+            }
         }
-        None => unescape_octal_no_leading(c, queue)
+    } else {
+        (Some(c), 0)
+    };
+    for _ in 0..ct {
+        let _ = queue.pop_front();
     }
+    ret
 }
+
 
 fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
     if c != '0' && c != '1' && c != '2' && c != '3' {
@@ -968,7 +1092,6 @@ fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}: {}", e, s);
-            None
         }
     }
 }
@@ -976,6 +1099,7 @@ fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
 fn unescape_octal_no_leading(c: char, queue: &mut VecDeque<char>) -> Option<char> {
     let mut s = String::new();
     s.push(c);
+    
     if let Some(one) = queue.pop_front() {
         s.push(one);
     } else {
@@ -986,7 +1110,45 @@ fn unescape_octal_no_leading(c: char, queue: &mut VecDeque<char>) -> Option<char
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}", e);
-            None
         }
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn four_hundred() {
+        let js = r#""\1\00\400\000\""#;
+        let expectation = "\"\u{1}\u{0} 0\u{0}\"";
+        assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+    }
+    #[test]
+    fn escape_lots() {
+        let js = "\"\\'\\\"\\\\\\b\\f\\n\\r\\t\\v\\0\"";
+        let expectation = "\"'\"\\\u{8}\u{c}\n\r\t\u{b}\u{0}\"";
+        assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+    }
+
+    #[test]
+    fn escaped_new_line() {
+        let js = r#""\\\n""#;
+        let expectation = "\"\\\n\"";
+        assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+    }
+
+    #[test]
+    fn unicode_ident() {
+        let js = "φ";
+        let expectation = "φ";
+        assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+    }
+
+    #[test]
+    fn unicode_string() {
+        let js = r#""\uD834\uDF06\u2603\u03C6 \u{0000001F4a9}\u{1D306}\u{2603}\u{3c6} 𝌆☃φ""#;
+        let expectation = "\"𝌆☃φ 💩𝌆☃φ 𝌆☃φ\"";
+        assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+    }
+
 }

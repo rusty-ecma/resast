@@ -289,14 +289,14 @@ pub struct TaggedTemplateExpr<'a> {
 /// ```js
 /// `I own ${0} birds`;
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct TemplateLit<'a> {
     pub quasis: Vec<TemplateElement<'a>>,
     pub expressions: Vec<Expr<'a>>,
 }
 
 /// The text part of a `TemplateLiteral`
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct TemplateElement<'a> {
     pub tail: bool,
     /// The non-quoted version
