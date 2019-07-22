@@ -102,6 +102,35 @@ impl<'a> Serialize for Decl<'a> {
     }
 }
 
+impl<'a> Serialize for FuncArg<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            FuncArg::Expr(ref ex) => {
+                ex.serialize(serializer)
+            },
+            FuncArg::Pat(ref pat) => {
+                pat.serialize(serializer)
+            }
+        }
+    }
+}
+
+impl<'a> Serialize for ClassBody<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 7)?;
+        state.serialize_field("type", "ClassBody")?;
+        let body: Vec<MethodDef> = self.0.iter().map(MethodDef).collect();
+        state.serialize_field("body", &body)?;
+        state.end()
+    }
+}
+
 impl Serialize for VarKind {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -656,7 +685,6 @@ impl<'a> Serialize for Pat<'a> {
                 state.end()
             },
             Pat::Assign(ref a) => {
-                eprintln!("pat::assign, {:?}", a);
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "AssignmentPattern")?;
                 state.serialize_field("left", &a.left)?;
@@ -668,6 +696,7 @@ impl<'a> Serialize for Pat<'a> {
             },
             Pat::Obj(ref o) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
+                eprintln!("{:#?}", o);
                 state.serialize_field("type", "ObjectPattern")?;
                 state.serialize_field("properties", o)?;
                 state.end()
@@ -678,6 +707,21 @@ impl<'a> Serialize for Pat<'a> {
                 state.serialize_field("argument", r)?;
                 state.end()
             }
+        }
+    }
+}
+
+impl Serialize for PropKind {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            PropKind::Ctor => serializer.serialize_str("constructor"),
+            PropKind::Get => serializer.serialize_str("get"),
+            PropKind::Init => serializer.serialize_str("init"),
+            PropKind::Method => serializer.serialize_str("method"),
+            PropKind::Set => serializer.serialize_str("set"),
         }
     }
 }
@@ -695,10 +739,6 @@ impl<'a> Serialize for Prop<'a> {
         state.serialize_field("kind", &self.kind)?;
         state.serialize_field("method", &self.method)?;
         state.serialize_field("shorthand", &self.short_hand)?;
-        if self.short_hand {
-            eprintln!("prop: {:?}", self);
-
-        }
         if self.short_hand && self.value == PropValue::None {
             state.serialize_field("value", &self.key)?;
         } else {
@@ -707,6 +747,25 @@ impl<'a> Serialize for Prop<'a> {
         if self.is_static {
             state.serialize_field("static", &self.is_static)?;
         }
+        state.end()
+    }
+}
+
+struct MethodDef<'a>(pub &'a Prop<'a>);
+
+impl<'a> Serialize for MethodDef<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 3)?;
+        state.serialize_field("type", "MethodDefinition")?;
+        state.serialize_field("static", &self.0.is_static)?;
+        state.serialize_field("static", &self.0.is_static)?;
+        state.serialize_field("value", &self.0.value)?;
+        state.serialize_field("computed", &self.0.computed)?;
+        state.serialize_field("kind", &self.0.kind)?;
+        state.serialize_field("key", &self.0.key)?;
         state.end()
     }
 }

@@ -122,7 +122,7 @@ impl<'a> Func<'a> {
 }
 
 /// A single function argument from a function signature
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 #[serde(untagged)]
 pub enum FuncArg<'a> {
     Expr(Expr<'a>),
@@ -173,7 +173,7 @@ pub struct Class<'a> {
     pub super_class: Option<Box<Expr<'a>>>,
     pub body: ClassBody<'a>,
 }
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct ClassBody<'a>(pub Vec<Prop<'a>>);
 
 impl<'a> Class<'a> {
@@ -273,8 +273,7 @@ pub enum UnaryOp {
 
 
 /// A flag for determining what kind of property
-#[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
 pub enum PropKind {
     /// A property with a value
     Init,
@@ -293,6 +292,7 @@ pub mod prelude {
         AssignOp,
         BinaryOp,
         Class,
+        ClassBody,
         Dir,
         Func,
         FuncArg,

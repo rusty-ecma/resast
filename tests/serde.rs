@@ -131,3 +131,22 @@ pub fn esparse(path: impl AsRef<::std::path::Path>) -> String {
         .unwrap();
     String::from_utf8_lossy(&esparse.stdout).to_string()       
 }
+
+#[test]
+fn func_args() {
+    let js = "function f(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k){}";
+     let mut parser = Parser::new(&js).unwrap();
+    let parsed = parser.parse().unwrap();
+    let raw = to_string_pretty(&parsed).unwrap();
+    let json: Value = from_str(&raw).unwrap();
+    ::std::fs::write("args.js", js).expect("failed to write args.js");
+    let es = esparse("args.js");
+    let esparsed: Value = from_str(&es).unwrap();
+    if json != esparsed {
+        let f1 = ::std::fs::File::create("func_args.rs.json").unwrap();
+        serde_json::to_writer_pretty(f1, &json).unwrap();
+        let f2 = ::std::fs::File::create("func_args.js.json").unwrap();
+        serde_json::to_writer_pretty(f2, &esparsed).unwrap();
+        panic!("json doesn't match");
+    }
+}
