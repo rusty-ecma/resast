@@ -1,0 +1,159 @@
+{
+  "body": [
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [
+            {
+              "type": "EmptyStatement"
+            }
+          ],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": null,
+        "params": [
+          {
+            "name": "a",
+            "type": "Identifier"
+          },
+          {
+            "left": {
+              "name": "b",
+              "type": "Identifier"
+            },
+            "right": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "AssignmentPattern"
+          },
+          {
+            "elements": [
+              {
+                "name": "c",
+                "type": "Identifier"
+              },
+              null,
+              {
+                "left": {
+                  "name": "d",
+                  "type": "Identifier"
+                },
+                "right": {
+                  "raw": "0",
+                  "type": "Literal",
+                  "value": 0
+                },
+                "type": "AssignmentPattern"
+              },
+              {
+                "argument": {
+                  "name": "e",
+                  "type": "Identifier"
+                },
+                "type": "RestElement"
+              }
+            ],
+            "type": "ArrayPattern"
+          },
+          {
+            "properties": [
+              {
+                "computed": false,
+                "key": {
+                  "name": "f",
+                  "type": "Identifier"
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": true,
+                "type": "Property",
+                "value": {
+                  "name": "f",
+                  "type": "Identifier"
+                }
+              },
+              {
+                "computed": false,
+                "key": {
+                  "name": "g",
+                  "type": "Identifier"
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "type": "Property",
+                "value": {
+                  "name": "h",
+                  "type": "Identifier"
+                }
+              },
+              {
+                "computed": false,
+                "key": {
+                  "name": "i",
+                  "type": "Identifier"
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": true,
+                "type": "Property",
+                "value": {
+                  "left": {
+                    "name": "i",
+                    "type": "Identifier"
+                  },
+                  "right": {
+                    "raw": "0",
+                    "type": "Literal",
+                    "value": 0
+                  },
+                  "type": "AssignmentPattern"
+                }
+              },
+              {
+                "computed": false,
+                "key": {
+                  "name": "i",
+                  "type": "Identifier"
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "type": "Property",
+                "value": {
+                  "left": {
+                    "name": "j",
+                    "type": "Identifier"
+                  },
+                  "right": {
+                    "raw": "0",
+                    "type": "Literal",
+                    "value": 0
+                  },
+                  "type": "AssignmentPattern"
+                }
+              }
+            ],
+            "type": "ObjectPattern"
+          },
+          {
+            "argument": {
+              "name": "k",
+              "type": "Identifier"
+            },
+            "type": "RestElement"
+          }
+        ],
+        "type": "ArrowFunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    }
+  ],
+  "sourceType": "script",
+  "type": "Program"
+}

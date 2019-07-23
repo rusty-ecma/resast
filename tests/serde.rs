@@ -125,7 +125,12 @@ pub fn esparse(path: impl AsRef<::std::path::Path>) -> String {
             panic!("npm install failed to make {:?} available", path);
         }
     }
-    let esparse = ::std::process::Command::new("node_modules/.bin/esparse")
+    let cmd = if cfg!(windows) {
+        "node_modules/.bin/esparse.cmd"
+    } else {
+        "node_modules/.bin/esparse"
+    };
+    let esparse = ::std::process::Command::new(cmd)
         .arg(path)
         .output()
         .unwrap();
@@ -135,18 +140,41 @@ pub fn esparse(path: impl AsRef<::std::path::Path>) -> String {
 #[test]
 fn func_args() {
     let js = "function f(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k){}";
-     let mut parser = Parser::new(&js).unwrap();
+    let mut parser = Parser::new(&js).unwrap();
     let parsed = parser.parse().unwrap();
-    let raw = to_string_pretty(&parsed).unwrap();
-    let json: Value = from_str(&raw).unwrap();
+    ::std::fs::write("func_args.ron", &format!("{:#?}", parsed)).expect("failed to write .ron file");
+    let raw = to_string_pretty(&parsed).expect("failed to convert ron to string");
+    let json: Value = from_str(&raw).expect("failed to convert string to json");
     ::std::fs::write("args.js", js).expect("failed to write args.js");
     let es = esparse("args.js");
-    let esparsed: Value = from_str(&es).unwrap();
+    let esparsed: Value = from_str(&es).expect("failed to convert js.json string to Value");
+    let _ = ::std::fs::remove_file("args.js");
     if json != esparsed {
-        let f1 = ::std::fs::File::create("func_args.rs.json").unwrap();
-        serde_json::to_writer_pretty(f1, &json).unwrap();
-        let f2 = ::std::fs::File::create("func_args.js.json").unwrap();
-        serde_json::to_writer_pretty(f2, &esparsed).unwrap();
+        let f1 = ::std::fs::File::create("func_args.rs.json").expect("failed to create rs.json");
+        serde_json::to_writer_pretty(f1, &json).expect("failed to write rs.json");
+        let f2 = ::std::fs::File::create("func_args.js.json").expect("failed to create js.json");
+        serde_json::to_writer_pretty(f2, &esparsed).expect("failed to write js.json");
+        panic!("json doesn't match");
+    }
+}
+
+#[test]
+fn arrow_func_args() {
+    let js = "(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k) => {;};";
+    let mut parser = Parser::new(&js).unwrap();
+    let parsed = parser.parse().unwrap();
+    let raw = to_string_pretty(&parsed).expect("failed to convert ron to string");
+    let json: Value = from_str(&raw).expect("failed to convert string to json");
+    ::std::fs::write("args.js", js).expect("failed to write args.js");
+    let es = esparse("args.js");
+    let esparsed: Value = from_str(&es).expect("failed to convert js.json string to Value");
+    let _ = ::std::fs::remove_file("args.js");
+    if json != esparsed {
+        let f1 = ::std::fs::File::create("arrow_func_args.rs.json").expect("failed to create rs.json");
+        serde_json::to_writer_pretty(f1, &json).expect("failed to write rs.json");
+        let f2 = ::std::fs::File::create("arrow_func_args.js.json").expect("failed to create js.json");
+        serde_json::to_writer_pretty(f2, &esparsed).expect("failed to write js.json");
+        let _ = ::std::fs::write("arrow_func_args2.ron", &format!("{:#?}", parsed));
         panic!("json doesn't match");
     }
 }

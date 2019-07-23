@@ -696,7 +696,6 @@ impl<'a> Serialize for Pat<'a> {
             },
             Pat::Obj(ref o) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
-                eprintln!("{:#?}", o);
                 state.serialize_field("type", "ObjectPattern")?;
                 state.serialize_field("properties", o)?;
                 state.end()
@@ -1134,44 +1133,6 @@ fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
 }
 
 
-fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
-    if c != '0' && c != '1' && c != '2' && c != '3' {
-        return None;
-    }
-
-    let mut s = String::new();
-    s.push(c);
-    if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
-        s.push(*one);
-        s.push(*two);
-    } else {
-        return None;
-    }
-    match u32::from_str_radix(&s, 8) {
-        Ok(u) => ::std::char::from_u32(u),
-        Err(e) => {
-            panic!("{}: {}", e, s);
-        }
-    }
-}
-
-fn unescape_octal_no_leading(c: char, queue: &mut VecDeque<char>) -> Option<char> {
-    let mut s = String::new();
-    s.push(c);
-    
-    if let Some(one) = queue.pop_front() {
-        s.push(one);
-    } else {
-        return None;
-    }
-
-    match u32::from_str_radix(&s, 8) {
-        Ok(u) => ::std::char::from_u32(u),
-        Err(e) => {
-            panic!("{}", e);
-        }
-    }
-}
 
 #[cfg(test)]
 mod test {
