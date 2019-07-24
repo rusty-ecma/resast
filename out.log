@@ -1,0 +1,379 @@
+﻿cargo :     Finished dev [unoptimized + debuginfo] target(s) in 0.15s
+At line:1 char:1
++ cargo test arrow_func_args 2> out.log
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Finished de...get(s) in 0.15s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ 
+    Running target\debug\deps\resast-a97f8becbabe2a5f.exe
+
+ 
+    Running target\debug\deps\serde-cf11351e8dccbb7e.exe
+
+ DEBUG ressa > 0: parse_script
+
+ DEBUG ressa > 0: parse_statement_list_item_script
+
+ DEBUG ressa > 0: parse_statement
+
+ DEBUG ressa > 0: parse_expression_statement
+
+ DEBUG ressa > 0: parse_expression
+
+ DEBUG ressa > 0: isolate_cover_grammar
+
+ DEBUG ressa > 0: parse_assignment_expr
+
+ DEBUG ressa > 0: parse_conditional_expr
+
+ DEBUG ressa > 0: parse_binary_expression
+
+ DEBUG ressa > 0: parse_exponentiation_expression
+
+ DEBUG ressa > 0: parse_unary_expression
+
+ DEBUG ressa > 0: parse_update_expr
+
+ DEBUG ressa > 0: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "("
+
+ DEBUG ressa > 0: parse_primary_expression
+
+ DEBUG ressa > 0: parse_group_expr
+
+ DEBUG ressa > 1: parse_assignment_expr
+
+ DEBUG ressa > 1: parse_conditional_expr
+
+ DEBUG ressa > 1: parse_binary_expression
+
+ DEBUG ressa > 1: parse_exponentiation_expression
+
+ DEBUG ressa > 1: parse_unary_expression
+
+ DEBUG ressa > 1: parse_update_expr
+
+ DEBUG ressa > 1: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "a"
+
+ DEBUG ressa > 1: parse_primary_expression
+
+ DEBUG ressa > 1: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "a"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "a" }) true
+
+ DEBUG ressa > 4: parse_assignment_expr
+
+ DEBUG ressa > 4: parse_conditional_expr
+
+ DEBUG ressa > 4: parse_binary_expression
+
+ DEBUG ressa > 4: parse_exponentiation_expression
+
+ DEBUG ressa > 4: parse_unary_expression
+
+ DEBUG ressa > 4: parse_update_expr
+
+ DEBUG ressa > 4: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "b"
+ DEBUG ressa > 4: parse_primary_expression
+
+ DEBUG ressa > 4: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "b"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "b" }) true
+
+ DEBUG ressa > 8: isolate_cover_grammar
+
+ DEBUG ressa > 8: parse_assignment_expr
+
+ DEBUG ressa > 8: parse_conditional_expr
+
+ DEBUG ressa > 8: parse_binary_expression
+
+ DEBUG ressa > 8: parse_exponentiation_expression
+
+ DEBUG ressa > 8: parse_unary_expression
+
+ DEBUG ressa > 8: parse_update_expr
+
+ DEBUG ressa > 8: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "0"
+
+ DEBUG ressa > 8: parse_primary_expression
+
+ DEBUG ressa > current expression: Lit(Number("0")) true
+
+ DEBUG ressa > 11: parse_assignment_expr
+
+ DEBUG ressa > 11: parse_conditional_expr
+
+ DEBUG ressa > 11: parse_binary_expression
+
+ DEBUG ressa > 11: parse_exponentiation_expression
+
+ DEBUG ressa > 11: parse_unary_expression
+
+ DEBUG ressa > 11: parse_update_expr
+
+ DEBUG ressa > 11: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "["
+
+ DEBUG ressa > 11: parse_primary_expression
+
+ DEBUG ressa > 11: parse_array_init
+
+ DEBUG ressa > 12: parse_assignment_expr
+
+ DEBUG ressa > 12: parse_conditional_expr
+
+ DEBUG ressa > 12: parse_binary_expression
+
+ DEBUG ressa > 12: parse_exponentiation_expression
+
+ DEBUG ressa > 12: parse_unary_expression
+
+ DEBUG ressa > 12: parse_update_expr
+
+ DEBUG ressa > 12: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "c"
+
+ DEBUG ressa > 12: parse_primary_expression
+
+ DEBUG ressa > 12: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "c"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "c" }) true
+
+ DEBUG ressa > 16: parse_assignment_expr
+
+ DEBUG ressa > 16: parse_conditional_expr
+
+ DEBUG ressa > 16: parse_binary_expression
+
+ DEBUG ressa > 16: parse_exponentiation_expression
+
+ DEBUG ressa > 16: parse_unary_expression
+
+ DEBUG ressa > 16: parse_update_expr
+
+ DEBUG ressa > 16: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "d"
+
+ DEBUG ressa > 16: parse_primary_expression
+
+ DEBUG ressa > 16: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "d"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "d" }) true
+
+ DEBUG ressa > 20: isolate_cover_grammar
+
+ DEBUG ressa > 20: parse_assignment_expr
+
+ DEBUG ressa > 20: parse_conditional_expr
+
+ DEBUG ressa > 20: parse_binary_expression
+
+ DEBUG ressa > 20: parse_exponentiation_expression
+
+ DEBUG ressa > 20: parse_unary_expression
+
+ DEBUG ressa > 20: parse_update_expr
+
+ DEBUG ressa > 20: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "0"
+
+ DEBUG ressa > 20: parse_primary_expression
+
+ DEBUG ressa > current expression: Lit(Number("0")) true
+
+ DEBUG ressa > 23: parse_spread_element
+
+ DEBUG ressa > 26: parse_assignment_expr
+
+ DEBUG ressa > 26: parse_conditional_expr
+
+ DEBUG ressa > 26: parse_binary_expression
+
+ DEBUG ressa > 26: parse_exponentiation_expression
+
+ DEBUG ressa > 26: parse_unary_expression
+
+ DEBUG ressa > 26: parse_update_expr
+
+ DEBUG ressa > 26: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "e"
+
+ DEBUG ressa > 26: parse_primary_expression
+
+ DEBUG ressa > 26: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "e"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "e" }) true
+
+ DEBUG ressa > current expression: Array([Some(Ident(Ident { name: "c" })), None, Some(Assign(AssignExpr { operator: Equal, left: Expr(Ident(Ident { 
+name: "d" })), right: Lit(Number("0")) })), Some(Spread(Ident(Ident { name: "e" })))]) true
+
+ DEBUG ressa > 30: parse_assignment_expr
+
+ DEBUG ressa > 30: parse_conditional_expr
+
+ DEBUG ressa > 30: parse_binary_expression
+
+ DEBUG ressa > 30: parse_exponentiation_expression
+
+ DEBUG ressa > 30: parse_unary_expression
+
+ DEBUG ressa > 30: parse_update_expr
+
+ DEBUG ressa > 30: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "{"
+
+ DEBUG ressa > 30: parse_primary_expression
+
+ DEBUG ressa > 30: parse_obj_init
+
+ DEBUG ressa > 31: parse_obj_prop
+
+ DEBUG ressa > 32: expect_comma_sep
+
+ DEBUG ressa > 34: parse_obj_prop
+
+ DEBUG ressa > 37: parse_assignment_expr
+
+ DEBUG ressa > 37: parse_conditional_expr
+
+ DEBUG ressa > 37: parse_binary_expression
+
+ DEBUG ressa > 37: parse_exponentiation_expression
+
+ DEBUG ressa > 37: parse_unary_expression
+
+ DEBUG ressa > 37: parse_update_expr
+
+ DEBUG ressa > 37: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "h"
+
+ DEBUG ressa > 37: parse_primary_expression
+
+ DEBUG ressa > 37: at_async_function
+
+ DEBUG ressa > at_contextual_keyword "async" "h"
+
+ DEBUG ressa > current expression: Ident(Ident { name: "h" }) true
+
+ DEBUG ressa > 38: expect_comma_sep
+
+ DEBUG ressa > 40: parse_obj_prop
+
+ DEBUG ressa > 44: parse_assignment_expr
+
+ DEBUG ressa > 44: parse_conditional_expr
+
+ DEBUG ressa > 44: parse_binary_expression
+
+ DEBUG ressa > 44: parse_exponentiation_expression
+
+ DEBUG ressa > 44: parse_unary_expression
+
+ DEBUG ressa > 44: parse_update_expr
+
+ DEBUG ressa > 44: parse_left_hand_side_expr_allow_call
+
+ DEBUG ressa > at_contextual_keyword "async" "0"
+
+ DEBUG ressa > 44: parse_primary_expression
+
+ DEBUG ressa > current expression: Lit(Number("0")) true
+
+ DEBUG ressa > 45: expect_comma_sep
+ DEBUG ressa > 47: parse_obj_prop
+ DEBUG ressa > 50: parse_assignment_expr
+ DEBUG ressa > 50: parse_conditional_expr
+ DEBUG ressa > 50: parse_binary_expression
+ DEBUG ressa > 50: parse_exponentiation_expression
+ DEBUG ressa > 50: parse_unary_expression
+
+ DEBUG ressa > 50: parse_update_expr
+ DEBUG ressa > 50: parse_left_hand_side_expr_allow_call
+ DEBUG ressa > at_contextual_keyword "async" "j"
+ DEBUG ressa > 50: parse_primary_expression
+ DEBUG ressa > 50: at_async_function
+ DEBUG ressa > at_contextual_keyword "async" "j"
+ DEBUG ressa > current expression: Ident(Ident { name: "j" }) true
+ DEBUG ressa > 54: isolate_cover_grammar
+ DEBUG ressa > 54: parse_assignment_expr
+ DEBUG ressa > 54: parse_conditional_expr
+
+ DEBUG ressa > 54: parse_binary_expression
+ DEBUG ressa > 54: parse_exponentiation_expression
+ DEBUG ressa > 54: parse_unary_expression
+ DEBUG ressa > 54: parse_update_expr
+ DEBUG ressa > 54: parse_left_hand_side_expr_allow_call
+ DEBUG ressa > at_contextual_keyword "async" "0"
+ DEBUG ressa > 54: parse_primary_expression
+ DEBUG ressa > current expression: Lit(Number("0")) true
+
+ DEBUG ressa > current expression: Obj([Prop(Prop { key: Expr(Ident(Ident { name: "f" })), value: None, kind: Init, method: false, computed: false, 
+short_hand: true, is_static: false }), Prop(Prop { key: Expr(Ident(Ident { name: "g" })), value: Expr(Ident(Ident { name: "h" })), kind: Init, method: 
+false, computed: false, short_hand: false, is_static: false }), Prop(Prop { key: Expr(Ident(Ident { name: "i" })), value: Expr(Lit(Number("0"))), kind: 
+Init, method: false, computed: false, short_hand: true, is_static: false }), Prop(Prop { key: Expr(Ident(Ident { name: "i" })), value: 
+Expr(Assign(AssignExpr { operator: Equal, left: Expr(Ident(Ident { name: "j" })), right: Lit(Number("0")) })), kind: Init, method: false, computed: 
+false, short_hand: false, is_static: false })]) true
+
+ DEBUG ressa > 58: parse_rest_element
+ DEBUG ressa > 61: parse_pattern
+ DEBUG ressa > 61: parse_var_ident
+
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+ DEBUG ressa > 62: reinterpret_expr_as_pat
+
+ DEBUG ressa > current expression: ArrowParamPlaceHolder([Pat(Ident(Ident { name: "a" })), Pat(Assign(AssignPat { left: Ident(Ident { name: "b" }), 
+right: Lit(Number("0")) })), Pat(Array([Some(Pat(Ident(Ident { name: "c" }))), None, Some(Pat(Assign(AssignPat { left: Ident(Ident { name: "d" }), right: 
+Lit(Number("0")) }))), Some(Pat(RestElement(Ident(Ident { name: "e" }))))])), Pat(Obj([Assign(Prop { key: Expr(Ident(Ident { name: "f" })), value: None, 
+kind: Init, method: false, computed: false, short_hand: true, is_static: false }), Assign(Prop { key: Expr(Ident(Ident { name: "g" })), value: 
+Pat(Ident(Ident { name: "h" })), kind: Init, method: false, computed: false, short_hand: false, is_static: false }), Assign(Prop { key: Expr(Ident(Ident 
+{ name: "i" })), value: Expr(Lit(Number("0"))), kind: Init, method: false, computed: false, short_hand: true, is_static: false }), Assign(Prop { key: 
+Expr(Ident(Ident { name: "i" })), value: Pat(Assign(AssignPat { left: Ident(Ident { name: "j" }), right: Lit(Number("0")) })), kind: Init, method: false, 
+computed: false, short_hand: false, is_static: false })])), Pat(RestElement(Ident(Ident { name: "k" })))], false) true
+
+ DEBUG ressa > 67: parse_function_source_el
+
+ DEBUG ressa > 68: parse_directive_prologues
+ DEBUG ressa > 68: parse_statement_list_item_script
+ DEBUG ressa > 68: parse_statement
+
+error:
+ test failed, to rerun pass '--test serde'
+

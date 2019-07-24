@@ -1,4 +1,5 @@
 use ressa::*;
+use pretty_env_logger::try_init;
 
 use serde_json::{
     to_string_pretty,
@@ -160,6 +161,7 @@ fn func_args() {
 
 #[test]
 fn arrow_func_args() {
+    let _ = try_init();
     let js = "(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k) => {;};";
     let mut parser = Parser::new(&js).unwrap();
     let parsed = parser.parse().unwrap();

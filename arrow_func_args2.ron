@@ -13,16 +13,13 @@ Script(
                                     },
                                 ),
                             ),
-                            Expr(
+                            Pat(
                                 Assign(
-                                    AssignExpr {
-                                        operator: Equal,
-                                        left: Expr(
-                                            Ident(
-                                                Ident {
-                                                    name: "b",
-                                                },
-                                            ),
+                                    AssignPat {
+                                        left: Ident(
+                                            Ident {
+                                                name: "b",
+                                            },
                                         ),
                                         right: Lit(
                                             Number(
