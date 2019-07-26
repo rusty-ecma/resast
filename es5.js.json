@@ -1,0 +1,4473 @@
+{
+  "body": [
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "tab",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "tab",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "verticalTab",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "verticalTab",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "formFeed",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "formFeed",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "space",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "space",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "nbsp",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "nbsp",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "bom",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "bom",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "expression": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ExpressionStatement"
+      },
+      "label": {
+        "name": "lineFeed",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "body": {
+        "expression": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ExpressionStatement"
+      },
+      "label": {
+        "name": "carriageReturn",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "body": {
+        "expression": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ExpressionStatement"
+      },
+      "label": {
+        "name": "carriageReturnLineFeed",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "body": {
+        "expression": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ExpressionStatement"
+      },
+      "label": {
+        "name": "lineSeparator",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "body": {
+        "expression": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ExpressionStatement"
+      },
+      "label": {
+        "name": "paragraphSeparator",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "$",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "_",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x$",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x_",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x0",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "xa",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x0",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x0a",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x0123456789",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "qwertyuiopasdfghjklzxcvbnm",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "QWERTYUIOPASDFGHJKLZXCVBNM",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "œ一",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "ǻ둘",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "ɤ〩",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "φ",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "ﬁⅷ",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "ユニコード",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "x‌‍",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "expression": {
+        "raw": "null",
+        "type": "Literal",
+        "value": null
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "true",
+        "type": "Literal",
+        "value": true
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "false",
+        "type": "Literal",
+        "value": false
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "00",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "1234567890",
+        "type": "Literal",
+        "value": 1234567890
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "01234567",
+        "type": "Literal",
+        "value": 342391
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0.",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0.00",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "10.00",
+        "type": "Literal",
+        "value": 10
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": ".0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": ".00",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0e0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0E0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0.e0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0.00e+0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": ".00e-0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0x0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0X0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "0x0123456789abcdefABCDEF",
+        "type": "Literal",
+        "value": 1.3754889325393114e24
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "2e308",
+        "type": "Literal",
+        "value": null
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\"",
+        "type": "Literal",
+        "value": ""
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"'\"",
+        "type": "Literal",
+        "value": "'"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\\'\\\"\\\\\\b\\f\\n\\r\\t\\v\\0\"",
+        "type": "Literal",
+        "value": "'\"\\\b\f\n\r\t\u000b\u0000"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\\1\\00\\400\\000\"",
+        "type": "Literal",
+        "value": "\u0001\u0000 0\u0000"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\\x01\\x23\\x45\\x67\\x89\\xAB\\xCD\\xEF\"",
+        "type": "Literal",
+        "value": "\u0001#Eg«Íï"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\\u0123\\u4567\\u89AB\\uCDEF\"",
+        "type": "Literal",
+        "value": "ģ䕧覫췯"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "\"\\\n\"",
+        "type": "Literal",
+        "value": ""
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "''",
+        "type": "Literal",
+        "value": ""
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\"'",
+        "type": "Literal",
+        "value": "\""
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\\'\\\"\\\\\\b\\f\\n\\r\\t\\v\\0'",
+        "type": "Literal",
+        "value": "'\"\\\b\f\n\r\t\u000b\u0000"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\\1\\00\\400\\000'",
+        "type": "Literal",
+        "value": "\u0001\u0000 0\u0000"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\\x01\\x23\\x45\\x67\\x89\\xAB\\xCD\\xEF'",
+        "type": "Literal",
+        "value": "\u0001#Eg«Íï"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\\u0123\\u4567\\u89AB\\uCDEF'",
+        "type": "Literal",
+        "value": "ģ䕧覫췯"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "'\\\n'",
+        "type": "Literal",
+        "value": ""
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/x/",
+        "regex": {
+          "flags": "",
+          "pattern": "x"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/|/",
+        "regex": {
+          "flags": "",
+          "pattern": "|"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/|||/",
+        "regex": {
+          "flags": "",
+          "pattern": "|||"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/^$\\b\\B/",
+        "regex": {
+          "flags": "",
+          "pattern": "^$\\b\\B"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/(?=(?!(?:(.))))/",
+        "regex": {
+          "flags": "",
+          "pattern": "(?=(?!(?:(.))))"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/a.\\f\\n\\r\\t\\v\\0\\[\\-\\/\\\\\\x00\\u0000/",
+        "regex": {
+          "flags": "",
+          "pattern": "a.\\f\\n\\r\\t\\v\\0\\[\\-\\/\\\\\\x00\\u0000"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/\\d\\D\\s\\S\\w\\W/",
+        "regex": {
+          "flags": "",
+          "pattern": "\\d\\D\\s\\S\\w\\W"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/\\ca\\cb\\cc\\cd\\ce\\cf\\cg\\ch\\ci\\cj\\ck\\cl\\cm\\cn\\co\\cp\\cq\\cr\\cs\\ct\\cu\\cv\\cw\\cx\\cy\\cz/",
+        "regex": {
+          "flags": "",
+          "pattern": "\\ca\\cb\\cc\\cd\\ce\\cf\\cg\\ch\\ci\\cj\\ck\\cl\\cm\\cn\\co\\cp\\cq\\cr\\cs\\ct\\cu\\cv\\cw\\cx\\cy\\cz"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/\\cA\\cB\\cC\\cD\\cE\\cF\\cG\\cH\\cI\\cJ\\cK\\cL\\cM\\cN\\cO\\cP\\cQ\\cR\\cS\\cT\\cU\\cV\\cW\\cX\\cY\\cZ/",
+        "regex": {
+          "flags": "",
+          "pattern": "\\cA\\cB\\cC\\cD\\cE\\cF\\cG\\cH\\cI\\cJ\\cK\\cL\\cM\\cN\\cO\\cP\\cQ\\cR\\cS\\cT\\cU\\cV\\cW\\cX\\cY\\cZ"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/[a-z-]/",
+        "regex": {
+          "flags": "",
+          "pattern": "[a-z-]"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/[^\\b\\-^]/",
+        "regex": {
+          "flags": "",
+          "pattern": "[^\\b\\-^]"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/[/\\]\\\\]/",
+        "regex": {
+          "flags": "",
+          "pattern": "[/\\]\\\\]"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/./i",
+        "regex": {
+          "flags": "i",
+          "pattern": "."
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/./g",
+        "regex": {
+          "flags": "g",
+          "pattern": "."
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/./m",
+        "regex": {
+          "flags": "m",
+          "pattern": "."
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/./igm",
+        "regex": {
+          "flags": "igm",
+          "pattern": "."
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.*/",
+        "regex": {
+          "flags": "",
+          "pattern": ".*"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.*?/",
+        "regex": {
+          "flags": "",
+          "pattern": ".*?"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.+/",
+        "regex": {
+          "flags": "",
+          "pattern": ".+"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.+?/",
+        "regex": {
+          "flags": "",
+          "pattern": ".+?"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.?/",
+        "regex": {
+          "flags": "",
+          "pattern": ".?"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.??/",
+        "regex": {
+          "flags": "",
+          "pattern": ".??"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.{0}/",
+        "regex": {
+          "flags": "",
+          "pattern": ".{0}"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.{0,}/",
+        "regex": {
+          "flags": "",
+          "pattern": ".{0,}"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "raw": "/.{0,0}/",
+        "regex": {
+          "flags": "",
+          "pattern": ".{0,0}"
+        },
+        "type": "Literal",
+        "value": {}
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "type": "ThisExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          null
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          null,
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          null,
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "elements": [
+          null,
+          null
+        ],
+        "type": "ArrayExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "name": "y",
+              "type": "Identifier"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "'x'",
+              "type": "Literal",
+              "value": "x"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "raw": "\"y\"",
+              "type": "Literal",
+              "value": "y"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "name": "var",
+              "type": "Identifier"
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "0.",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "0.0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": ".0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "0e0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "raw": "0x0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "init",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "properties": [
+          {
+            "computed": false,
+            "key": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "kind": "get",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "kind": "set",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [
+                {
+                  "name": "a",
+                  "type": "Identifier"
+                }
+              ],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "raw": "'y'",
+              "type": "Literal",
+              "value": "y"
+            },
+            "kind": "get",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "raw": "\"y\"",
+              "type": "Literal",
+              "value": "y"
+            },
+            "kind": "set",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [
+                {
+                  "name": "a",
+                  "type": "Identifier"
+                }
+              ],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "get",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "kind": "set",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [
+                {
+                  "name": "a",
+                  "type": "Identifier"
+                }
+              ],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "name": "var",
+              "type": "Identifier"
+            },
+            "kind": "get",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [],
+              "type": "FunctionExpression"
+            }
+          },
+          {
+            "computed": false,
+            "key": {
+              "name": "var",
+              "type": "Identifier"
+            },
+            "kind": "set",
+            "method": false,
+            "shorthand": false,
+            "type": "Property",
+            "value": {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": null,
+              "params": [
+                {
+                  "name": "x",
+                  "type": "Identifier"
+                }
+              ],
+              "type": "FunctionExpression"
+            }
+          }
+        ],
+        "type": "ObjectExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "computed": false,
+        "object": {
+          "raw": "0.",
+          "type": "Literal",
+          "value": 0
+        },
+        "property": {
+          "name": "a",
+          "type": "Identifier"
+        },
+        "type": "MemberExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "computed": true,
+        "object": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "property": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "MemberExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "=",
+        "right": {
+          "async": false,
+          "body": {
+            "body": [
+              {
+                "argument": {
+                  "name": "f",
+                  "type": "Identifier"
+                },
+                "type": "ReturnStatement"
+              }
+            ],
+            "type": "BlockStatement"
+          },
+          "expression": false,
+          "generator": false,
+          "id": {
+            "name": "f",
+            "type": "Identifier"
+          },
+          "params": [],
+          "type": "FunctionExpression"
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "computed": true,
+          "object": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "operator": "=",
+        "right": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "computed": false,
+          "object": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "property": {
+            "name": "a",
+            "type": "Identifier"
+          },
+          "type": "MemberExpression"
+        },
+        "operator": "=",
+        "right": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "arguments": [],
+          "callee": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "NewExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": true,
+          "object": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": false,
+          "object": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "property": {
+            "name": "a",
+            "type": "Identifier"
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": false,
+          "object": {
+            "computed": true,
+            "object": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "property": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "MemberExpression"
+          },
+          "property": {
+            "name": "a",
+            "type": "Identifier"
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": true,
+          "object": {
+            "computed": false,
+            "object": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "property": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "type": "MemberExpression"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "arguments": [],
+          "callee": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "NewExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "arguments": [],
+          "callee": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "NewExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": false,
+          "object": {
+            "arguments": [],
+            "callee": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "type": "NewExpression"
+          },
+          "property": {
+            "name": "a",
+            "type": "Identifier"
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": true,
+          "object": {
+            "arguments": [],
+            "callee": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "type": "NewExpression"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "type": "NewExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "arguments": [],
+          "callee": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "CallExpression"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          }
+        ],
+        "callee": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          },
+          {
+            "name": "x",
+            "type": "Identifier"
+          }
+        ],
+        "callee": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": false,
+          "object": {
+            "arguments": [],
+            "callee": {
+              "computed": false,
+              "object": {
+                "name": "x",
+                "type": "Identifier"
+              },
+              "property": {
+                "name": "a",
+                "type": "Identifier"
+              },
+              "type": "MemberExpression"
+            },
+            "type": "CallExpression"
+          },
+          "property": {
+            "name": "a",
+            "type": "Identifier"
+          },
+          "type": "MemberExpression"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": true,
+          "object": {
+            "arguments": [],
+            "callee": {
+              "computed": true,
+              "object": {
+                "name": "x",
+                "type": "Identifier"
+              },
+              "property": {
+                "raw": "0",
+                "type": "Literal",
+                "value": 0
+              },
+              "type": "MemberExpression"
+            },
+            "type": "CallExpression"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "arguments": [],
+        "callee": {
+          "computed": true,
+          "object": {
+            "computed": false,
+            "object": {
+              "arguments": [],
+              "callee": {
+                "name": "x",
+                "type": "Identifier"
+              },
+              "type": "CallExpression"
+            },
+            "property": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "type": "MemberExpression"
+          },
+          "property": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "MemberExpression"
+        },
+        "type": "CallExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "argument": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "++",
+        "prefix": false,
+        "type": "UpdateExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "argument": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "--",
+        "prefix": false,
+        "type": "UpdateExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "argument": {
+          "argument": {
+            "argument": {
+              "argument": {
+                "argument": {
+                  "argument": {
+                    "argument": {
+                      "name": "x",
+                      "type": "Identifier"
+                    },
+                    "operator": "!",
+                    "prefix": true,
+                    "type": "UnaryExpression"
+                  },
+                  "operator": "~",
+                  "prefix": true,
+                  "type": "UnaryExpression"
+                },
+                "operator": "-",
+                "prefix": true,
+                "type": "UnaryExpression"
+              },
+              "operator": "+",
+              "prefix": true,
+              "type": "UnaryExpression"
+            },
+            "operator": "typeof",
+            "prefix": true,
+            "type": "UnaryExpression"
+          },
+          "operator": "void",
+          "prefix": true,
+          "type": "UnaryExpression"
+        },
+        "operator": "delete",
+        "prefix": true,
+        "type": "UnaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "argument": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "++",
+        "prefix": true,
+        "type": "UpdateExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "argument": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "--",
+        "prefix": true,
+        "type": "UpdateExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "*",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "/",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "%",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "+",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "-",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "<<",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": ">>",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": ">>>",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "<",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": ">",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "<=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": ">=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "instanceof",
+        "right": {
+          "async": false,
+          "body": {
+            "body": [],
+            "type": "BlockStatement"
+          },
+          "expression": false,
+          "generator": false,
+          "id": null,
+          "params": [],
+          "type": "FunctionExpression"
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "in",
+        "right": {
+          "properties": [],
+          "type": "ObjectExpression"
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "==",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "!=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "===",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "!==",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "&",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "^",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "|",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "BinaryExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "&&",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "LogicalExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "||",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "LogicalExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "alternate": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "consequent": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "test": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ConditionalExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "alternate": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "consequent": {
+          "alternate": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "consequent": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ConditionalExpression"
+        },
+        "test": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ConditionalExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "alternate": {
+          "left": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "operator": "=",
+          "right": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "AssignmentExpression"
+        },
+        "consequent": {
+          "left": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "operator": "=",
+          "right": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "AssignmentExpression"
+        },
+        "test": {
+          "left": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "operator": "||",
+          "right": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "LogicalExpression"
+        },
+        "type": "ConditionalExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "*=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "/=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "%=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "+=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "-=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "<<=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": ">>=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": ">>>=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "&=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "^=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "left": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "operator": "|=",
+        "right": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "AssignmentExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "expressions": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "SequenceExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "expressions": [
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          }
+        ],
+        "type": "SequenceExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "expressions": [
+          {
+            "left": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "operator": "=",
+            "right": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "AssignmentExpression"
+          },
+          {
+            "left": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "operator": "=",
+            "right": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "AssignmentExpression"
+          }
+        ],
+        "type": "SequenceExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "body": [],
+      "type": "BlockStatement"
+    },
+    {
+      "body": [
+        {
+          "type": "EmptyStatement"
+        }
+      ],
+      "type": "BlockStatement"
+    },
+    {
+      "body": [
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        }
+      ],
+      "type": "BlockStatement"
+    },
+    {
+      "body": [
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        }
+      ],
+      "type": "BlockStatement"
+    },
+    {
+      "body": [
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        },
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        }
+      ],
+      "type": "BlockStatement"
+    },
+    {
+      "body": [
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        },
+        {
+          "expression": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "ExpressionStatement"
+        }
+      ],
+      "type": "BlockStatement"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "y",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "y",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "z",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "y",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": null,
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "y",
+            "type": "Identifier"
+          },
+          "init": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "declarations": [
+        {
+          "id": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "init": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "VariableDeclarator"
+        },
+        {
+          "id": {
+            "name": "y",
+            "type": "Identifier"
+          },
+          "init": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "VariableDeclarator"
+        }
+      ],
+      "kind": "var",
+      "type": "VariableDeclaration"
+    },
+    {
+      "type": "EmptyStatement"
+    },
+    {
+      "alternate": null,
+      "consequent": {
+        "type": "EmptyStatement"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "IfStatement"
+    },
+    {
+      "alternate": {
+        "type": "EmptyStatement"
+      },
+      "consequent": {
+        "type": "EmptyStatement"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "IfStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "DoWhileStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "WhileStatement"
+    },
+    {
+      "body": {
+        "label": null,
+        "type": "BreakStatement"
+      },
+      "init": null,
+      "test": null,
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "init": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ForStatement",
+      "update": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      }
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "init": {
+        "left": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "operator": "in",
+        "right": {
+          "elements": [],
+          "type": "ArrayExpression"
+        },
+        "type": "BinaryExpression"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "label": null,
+        "type": "BreakStatement"
+      },
+      "init": {
+        "declarations": [
+          {
+            "id": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "init": null,
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "test": null,
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "init": {
+        "declarations": [
+          {
+            "id": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "init": null,
+            "type": "VariableDeclarator"
+          },
+          {
+            "id": {
+              "name": "b",
+              "type": "Identifier"
+            },
+            "init": null,
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ForStatement",
+      "update": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      }
+    },
+    {
+      "body": {
+        "label": null,
+        "type": "BreakStatement"
+      },
+      "init": {
+        "declarations": [
+          {
+            "id": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "init": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "test": null,
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "init": {
+        "declarations": [
+          {
+            "id": {
+              "name": "a",
+              "type": "Identifier"
+            },
+            "init": {
+              "left": {
+                "raw": "0",
+                "type": "Literal",
+                "value": 0
+              },
+              "operator": "in",
+              "right": {
+                "elements": [],
+                "type": "ArrayExpression"
+              },
+              "type": "BinaryExpression"
+            },
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "each": false,
+      "left": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "right": {
+        "properties": [],
+        "type": "ObjectExpression"
+      },
+      "type": "ForInStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "each": false,
+      "left": {
+        "declarations": [
+          {
+            "id": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "init": null,
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "right": {
+        "properties": [],
+        "type": "ObjectExpression"
+      },
+      "type": "ForInStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "each": false,
+      "left": {
+        "declarations": [
+          {
+            "id": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "init": {
+              "elements": [],
+              "type": "ArrayExpression"
+            },
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "right": {
+        "properties": [],
+        "type": "ObjectExpression"
+      },
+      "type": "ForInStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "each": false,
+      "left": {
+        "declarations": [
+          {
+            "id": {
+              "name": "x",
+              "type": "Identifier"
+            },
+            "init": {
+              "left": {
+                "raw": "0",
+                "type": "Literal",
+                "value": 0
+              },
+              "operator": "in",
+              "right": {
+                "elements": [],
+                "type": "ArrayExpression"
+              },
+              "type": "BinaryExpression"
+            },
+            "type": "VariableDeclarator"
+          }
+        ],
+        "kind": "var",
+        "type": "VariableDeclaration"
+      },
+      "right": {
+        "properties": [],
+        "type": "ObjectExpression"
+      },
+      "type": "ForInStatement"
+    },
+    {
+      "body": {
+        "label": null,
+        "type": "ContinueStatement"
+      },
+      "init": null,
+      "test": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "ContinueStatement"
+        },
+        "init": null,
+        "test": {
+          "raw": "0",
+          "type": "Literal",
+          "value": 0
+        },
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "label": null,
+        "type": "BreakStatement"
+      },
+      "init": null,
+      "test": null,
+      "type": "ForStatement",
+      "update": null
+    },
+    {
+      "body": {
+        "body": {
+          "label": {
+            "name": "x",
+            "type": "Identifier"
+          },
+          "type": "BreakStatement"
+        },
+        "init": null,
+        "test": null,
+        "type": "ForStatement",
+        "update": null
+      },
+      "label": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [
+            {
+              "label": null,
+              "type": "BreakStatement"
+            }
+          ],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "argument": null,
+            "type": "ReturnStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "argument": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "ReturnStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "object": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "WithStatement"
+    },
+    {
+      "cases": [],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        },
+        {
+          "consequent": [],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [],
+          "test": null,
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        },
+        {
+          "consequent": [],
+          "test": null,
+          "type": "SwitchCase"
+        },
+        {
+          "consequent": [],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [
+            {
+              "type": "EmptyStatement"
+            }
+          ],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [
+            {
+              "type": "EmptyStatement"
+            },
+            {
+              "type": "EmptyStatement"
+            }
+          ],
+          "test": {
+            "raw": "0",
+            "type": "Literal",
+            "value": 0
+          },
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [
+            {
+              "type": "EmptyStatement"
+            }
+          ],
+          "test": null,
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "cases": [
+        {
+          "consequent": [
+            {
+              "type": "EmptyStatement"
+            },
+            {
+              "type": "EmptyStatement"
+            }
+          ],
+          "test": null,
+          "type": "SwitchCase"
+        }
+      ],
+      "discriminant": {
+        "raw": "0",
+        "type": "Literal",
+        "value": 0
+      },
+      "type": "SwitchStatement"
+    },
+    {
+      "body": {
+        "type": "EmptyStatement"
+      },
+      "label": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "body": {
+        "body": {
+          "type": "EmptyStatement"
+        },
+        "label": {
+          "name": "y",
+          "type": "Identifier"
+        },
+        "type": "LabeledStatement"
+      },
+      "label": {
+        "name": "x",
+        "type": "Identifier"
+      },
+      "type": "LabeledStatement"
+    },
+    {
+      "block": {
+        "body": [
+          {
+            "argument": {
+              "raw": "0",
+              "type": "Literal",
+              "value": 0
+            },
+            "type": "ThrowStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "finalizer": null,
+      "handler": {
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "param": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CatchClause"
+      },
+      "type": "TryStatement"
+    },
+    {
+      "block": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "finalizer": null,
+      "handler": {
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "param": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CatchClause"
+      },
+      "type": "TryStatement"
+    },
+    {
+      "block": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "finalizer": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "handler": null,
+      "type": "TryStatement"
+    },
+    {
+      "block": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "finalizer": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "handler": {
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "param": {
+          "name": "x",
+          "type": "Identifier"
+        },
+        "type": "CatchClause"
+      },
+      "type": "TryStatement"
+    },
+    {
+      "type": "DebuggerStatement"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [
+        {
+          "name": "x",
+          "type": "Identifier"
+        }
+      ],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [
+        {
+          "name": "x",
+          "type": "Identifier"
+        },
+        {
+          "name": "y",
+          "type": "Identifier"
+        }
+      ],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "async": false,
+            "body": {
+              "body": [],
+              "type": "BlockStatement"
+            },
+            "expression": false,
+            "generator": false,
+            "id": {
+              "name": "f",
+              "type": "Identifier"
+            },
+            "params": [],
+            "type": "FunctionDeclaration"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "directive": "use strict",
+            "expression": {
+              "raw": "\"use strict\"",
+              "type": "Literal",
+              "value": "use strict"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "directive": "use strict",
+            "expression": {
+              "raw": "'use strict'",
+              "type": "Literal",
+              "value": "use strict"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "directive": "other directive",
+            "expression": {
+              "raw": "\"other directive\"",
+              "type": "Literal",
+              "value": "other directive"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "directive": "other directive",
+            "expression": {
+              "raw": "'other directive'",
+              "type": "Literal",
+              "value": "other directive"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "expression": {
+              "raw": "\"string\"",
+              "type": "Literal",
+              "value": "string"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "expression": {
+              "raw": "'string'",
+              "type": "Literal",
+              "value": "string"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "async": false,
+      "body": {
+        "body": [
+          {
+            "expression": {
+              "left": {
+                "raw": "'string'",
+                "type": "Literal",
+                "value": "string"
+              },
+              "operator": "+",
+              "right": {
+                "raw": "0",
+                "type": "Literal",
+                "value": 0
+              },
+              "type": "BinaryExpression"
+            },
+            "type": "ExpressionStatement"
+          }
+        ],
+        "type": "BlockStatement"
+      },
+      "expression": false,
+      "generator": false,
+      "id": {
+        "name": "f",
+        "type": "Identifier"
+      },
+      "params": [],
+      "type": "FunctionDeclaration"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": null,
+        "params": [],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": null,
+        "params": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          }
+        ],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": null,
+        "params": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          },
+          {
+            "name": "y",
+            "type": "Identifier"
+          }
+        ],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [
+            {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": {
+                "name": "f",
+                "type": "Identifier"
+              },
+              "params": [],
+              "type": "FunctionDeclaration"
+            }
+          ],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": null,
+        "params": [],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": {
+          "name": "f",
+          "type": "Identifier"
+        },
+        "params": [],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": {
+          "name": "f",
+          "type": "Identifier"
+        },
+        "params": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          }
+        ],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": {
+          "name": "f",
+          "type": "Identifier"
+        },
+        "params": [
+          {
+            "name": "x",
+            "type": "Identifier"
+          },
+          {
+            "name": "y",
+            "type": "Identifier"
+          }
+        ],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    },
+    {
+      "expression": {
+        "async": false,
+        "body": {
+          "body": [
+            {
+              "async": false,
+              "body": {
+                "body": [],
+                "type": "BlockStatement"
+              },
+              "expression": false,
+              "generator": false,
+              "id": {
+                "name": "f",
+                "type": "Identifier"
+              },
+              "params": [],
+              "type": "FunctionDeclaration"
+            }
+          ],
+          "type": "BlockStatement"
+        },
+        "expression": false,
+        "generator": false,
+        "id": {
+          "name": "f",
+          "type": "Identifier"
+        },
+        "params": [],
+        "type": "FunctionExpression"
+      },
+      "type": "ExpressionStatement"
+    }
+  ],
+  "sourceType": "script",
+  "type": "Program"
+}

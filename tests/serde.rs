@@ -7,9 +7,13 @@ use serde_json::{
     from_str,
 };
 use resast::prelude::*;
-use std::fs::{
-    read_to_string,
+use std::{
+    fs::{
+        read_to_string,
+    },
+    path::Path,
 };
+static ESMOD: &str = include_str!("everything.module.json");
 #[test]
 fn serde1() {
     let ast = Program::Script(vec![
@@ -68,35 +72,41 @@ fn serde1() {
 
 #[test]
 fn serde_es5() {
-    let js = get_js_file("node_modules/everything.js/es5.js");
-    let mut parser = Parser::new(&js).unwrap();
-    let parsed = parser.parse().unwrap();
-    let raw = to_string_pretty(&parsed).unwrap();
-    let json: Value = from_str(&raw).unwrap();
-    let es = esparse("node_modules/everything.js/es5.js");
-    let esparsed: Value = from_str(&es).unwrap();
-    if json != esparsed {
-        let f1 = ::std::fs::File::create("1.rs.json").unwrap();
-        serde_json::to_writer_pretty(f1, &json).unwrap();
-        let f2 = ::std::fs::File::create("2.js.json").unwrap();
-        serde_json::to_writer_pretty(f2, &esparsed).unwrap();
-        panic!("json doesn't match");
-    }
+    let json = run_rs_parse("node_modules/everything.js/es5.js");
+    let esparsed = esparse("node_modules/everything.js/es5.js");
+    check_jsons("es5", json, esparsed);
 }
 #[test]
 fn serde_es2015_script() {
-    let js = get_js_file("node_modules/everything.js/es2015-script.js");
-    let mut parser = Parser::new(&js).unwrap();
-    let parsed = parser.parse().unwrap();
-    let raw = to_string_pretty(&parsed).unwrap();
-    let json: Value = from_str(&raw).unwrap();
-    let es = esparse("node_modules/everything.js/es2015-script.js");
-    let esparsed: Value = from_str(&es).unwrap();
-    if json != esparsed {
-        let f1 = ::std::fs::File::create("3.rs.json").unwrap();
-        serde_json::to_writer_pretty(f1, &json).unwrap();
-        let f2 = ::std::fs::File::create("4.js.json").unwrap();
-        serde_json::to_writer_pretty(f2, &esparsed).unwrap();
+    let json = run_rs_parse("node_modules/everything.js/es2015-script.js");
+    let esparsed = esparse("node_modules/everything.js/es2015-script.js");
+    check_jsons("es2015-script", json, esparsed);
+}
+#[test]
+fn serde_es2015_module() {
+    let json = run_rs_parse("node_modules/everything.js/es2015-module.js");
+    let esparsed = esparse("node_modules/everything.js/es2015-module.js");
+    check_jsons("es2015-module", json, esparsed);
+}
+
+fn run_rs_parse(path: impl AsRef<Path>) -> Value {
+    let js = get_js_file(path);
+    let mut parser = Parser::new(&js).expect("failed to create parser");
+    let parsed = parser.parse().expect("failed to parse js");
+    let raw = to_string_pretty(&parsed).expect("failed to convert to json string");
+    from_str(&raw).expect("failed to revert to Value")
+}
+
+fn check_jsons(name: &str, lhs: Value, rhs: Value) {
+    if lhs != rhs {
+        let f1 = ::std::fs::File::create(
+                &format!("{}.rs.json", name)
+            ).expect("failed to write rs.json");
+        serde_json::to_writer_pretty(f1, &lhs).expect("");
+        let f2 = ::std::fs::File::create(
+                &format!("{}.js.json", name)
+            ).expect("failed to write js.json");
+        serde_json::to_writer_pretty(f2, &rhs).expect("");
         panic!("json doesn't match");
     }
 }
@@ -104,7 +114,7 @@ fn serde_es2015_script() {
 pub fn npm_install() {
     let mut c = ::std::process::Command::new("npm");
     c.arg("i");
-    c.output().unwrap();
+    c.output().expect("failed to run npm install");
 }
 
 pub fn get_js_file(path: impl AsRef<::std::path::Path>) -> String {
@@ -115,10 +125,10 @@ pub fn get_js_file(path: impl AsRef<::std::path::Path>) -> String {
             panic!("npm install failed to make {:?} available", path);
         }
     }
-    read_to_string(path).unwrap()
+    read_to_string(path).expect(&format!("failed to read {} to a string", path.display()))
 }
 
-pub fn esparse(path: impl AsRef<::std::path::Path>) -> String {
+pub fn esparse(path: impl AsRef<::std::path::Path>) -> Value {
     let path = path.as_ref();
     if !path.exists() {
         npm_install();
@@ -126,29 +136,24 @@ pub fn esparse(path: impl AsRef<::std::path::Path>) -> String {
             panic!("npm install failed to make {:?} available", path);
         }
     }
-    let cmd = if cfg!(windows) {
-        "node_modules/.bin/esparse.cmd"
-    } else {
-        "node_modules/.bin/esparse"
-    };
-    let esparse = ::std::process::Command::new(cmd)
+    let esparse = ::std::process::Command::new("node")
+        .arg("run_es_parse.js")
         .arg(path)
         .output()
-        .unwrap();
-    String::from_utf8_lossy(&esparse.stdout).to_string()       
+        .expect("failed to execute run_es_parse.js");
+    let json = String::from_utf8_lossy(&esparse.stdout).to_string();
+    from_str(&json).expect(&format!("failed  to convert {} to Value", path.display()))
 }
 
 #[test]
 fn func_args() {
     let js = "function f(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k){}";
-    let mut parser = Parser::new(&js).unwrap();
-    let parsed = parser.parse().unwrap();
-    ::std::fs::write("func_args.ron", &format!("{:#?}", parsed)).expect("failed to write .ron file");
+    let mut parser = Parser::new(&js).expect("");
+    let parsed = parser.parse().expect("");
     let raw = to_string_pretty(&parsed).expect("failed to convert ron to string");
     let json: Value = from_str(&raw).expect("failed to convert string to json");
     ::std::fs::write("args.js", js).expect("failed to write args.js");
-    let es = esparse("args.js");
-    let esparsed: Value = from_str(&es).expect("failed to convert js.json string to Value");
+    let esparsed = esparse("args.js");
     let _ = ::std::fs::remove_file("args.js");
     if json != esparsed {
         let f1 = ::std::fs::File::create("func_args.rs.json").expect("failed to create rs.json");
@@ -162,15 +167,14 @@ fn func_args() {
 #[test]
 fn arrow_func_args() {
     let _ = try_init();
-    let js = "(a, b = 0, [c,, d = 0, ...e], {f, g: h, i = 0, i: j = 0}, ...k) => {;};";
-    let mut parser = Parser::new(&js).unwrap();
-    let parsed = parser.parse().unwrap();
+    let js = "({i = 0}, ...k) => {;};";
+    let mut parser = Parser::new(&js).expect("");
+    let parsed = parser.parse().expect("");
     let raw = to_string_pretty(&parsed).expect("failed to convert ron to string");
     let json: Value = from_str(&raw).expect("failed to convert string to json");
-    ::std::fs::write("args.js", js).expect("failed to write args.js");
-    let es = esparse("args.js");
-    let esparsed: Value = from_str(&es).expect("failed to convert js.json string to Value");
-    let _ = ::std::fs::remove_file("args.js");
+    ::std::fs::write("arrow-args.js", js).expect("failed to write args.js");
+    let esparsed = esparse("arrow-args.js");
+    let _ = ::std::fs::remove_file("arrow-args.js");
     if json != esparsed {
         let f1 = ::std::fs::File::create("arrow_func_args.rs.json").expect("failed to create rs.json");
         serde_json::to_writer_pretty(f1, &json).expect("failed to write rs.json");

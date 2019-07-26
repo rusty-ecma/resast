@@ -96,12 +96,43 @@ impl<'a> Serialize for Decl<'a> {
                 state.serialize_field("kind", kind)?;
                 state.serialize_field("declarations", vs)?;
                 state.end()
+            },
+            Decl::Import(ref imp) => {
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ImportDeclaration")?;
+                state.serialize_field("specifiers", &imp.specifiers)?;
+                state.serialize_field("source", &imp.source)?;
+                state.end()
+            },
+            Decl::Export(ref exp) => {
+                exp.serialize(serializer)
             }
-            _ => unimplemented!(),
         }
     }
 }
 
+impl<'a> Serialize for ImportSpecifier<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ImportSpecifier::Default(ref d) => {
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ImportDeclaration")?;
+                state.serialize_field("specifiers", &imp.specifiers)?;
+                state.serialize_field("source", &imp.source)?;
+                state.end()
+            },
+            ImportSpecifier::Namespace(ref n) => {
+
+            },
+            ImportSpecifier::Normal(ref n) => {
+
+            }
+        }
+    }
+}
 impl<'a> Serialize for FuncArg<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

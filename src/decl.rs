@@ -65,7 +65,7 @@ pub struct ModImport<'a> {
 }
 
 /// The name of the thing being imported
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum ImportSpecifier<'a> {
     /// A specifier in curly braces, this might
     /// have a local alias
