@@ -111,6 +111,60 @@ impl<'a> Serialize for Decl<'a> {
     }
 }
 
+impl<'a> Serialize for ModExport<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ModExport::All(ref source) => {
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ExportAllDeclaration")?;
+                state.serialize_field("source", source)?;
+                state.end()
+            },
+            ModExport::Default(ref def) => {
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ExportDefaultDeclaration")?;
+                state.serialize_field("declaration", def)?;
+                state.end()
+            },
+            ModExport::Named(ref named) => {
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ExportNamedDeclaration")?;
+                match named {
+                    NamedExportDecl::Decl(ref d) => {
+                        let specs: Vec<()> = Vec::new();
+                        let source: Option<()> = None;
+                        state.serialize_field("declaration", d)?;
+                        state.serialize_field("specifiers", &specs)?;
+                        state.serialize_field("source", &source)?;
+                    },
+                    NamedExportDecl::Specifier(ref specs, source) => {
+                        let decl: Option<()> = None;
+                        state.serialize_field("declaration", &decl)?;
+                        state.serialize_field("specifiers", specs)?;
+                        state.serialize_field("source", source)?;
+                    }
+                }
+                state.end()
+            }
+        }
+    }
+}
+
+impl<'a> Serialize for DefaultExportDecl<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            DefaultExportDecl::Decl(ref d) => d.serialize(serializer),
+            DefaultExportDecl::Expr(ref e) => e.serialize(serializer),
+        }
+    }
+}
+
 impl<'a> Serialize for ImportSpecifier<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -119,18 +173,36 @@ impl<'a> Serialize for ImportSpecifier<'a> {
         match self {
             ImportSpecifier::Default(ref d) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
-                state.serialize_field("type", "ImportDeclaration")?;
-                state.serialize_field("specifiers", &imp.specifiers)?;
-                state.serialize_field("source", &imp.source)?;
+                state.serialize_field("type", "ImportDefaultSpecifier")?;
+                state.serialize_field("local", d)?;
                 state.end()
             },
             ImportSpecifier::Namespace(ref n) => {
-
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ImportNamespaceSpecifier")?;
+                state.serialize_field("local", n)?;
+                state.end()
             },
             ImportSpecifier::Normal(ref n) => {
-
+                let mut state = serializer.serialize_struct("Node", 7)?;
+                state.serialize_field("type", "ImportSpecifier")?;
+                state.serialize_field("local", &n.local)?;
+                state.serialize_field("imported", &n.imported)?;
+                state.end()
             }
         }
+    }
+}
+impl<'a> Serialize for ExportSpecifier<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Node", 7)?;
+        state.serialize_field("type", "ExportSpecifier")?;
+        state.serialize_field("exported", &self.exported)?;
+        state.serialize_field("local", &self.local)?;
+        state.end()
     }
 }
 impl<'a> Serialize for FuncArg<'a> {

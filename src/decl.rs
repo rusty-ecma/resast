@@ -97,7 +97,7 @@ pub struct NormalImportSpec<'a> {
 }
 
 /// Something exported from this module
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum ModExport<'a> {
     /// ```js
     /// export default function() {};
@@ -141,7 +141,7 @@ pub enum NamedExportDecl<'a> {
 /// ```js
 /// export default class Thing {}
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub enum DefaultExportDecl<'a> {
     Decl(Decl<'a>),
     Expr(Expr<'a>),
@@ -155,7 +155,7 @@ pub enum DefaultExportDecl<'a> {
 /// //aliased
 /// export {Stuff as NewThing} from 'place'
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Deserialize)]
 pub struct ExportSpecifier<'a> {
     pub local: Ident<'a>,
     pub exported: Ident<'a>,

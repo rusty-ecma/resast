@@ -13,7 +13,6 @@ use std::{
     },
     path::Path,
 };
-static ESMOD: &str = include_str!("everything.module.json");
 #[test]
 fn serde1() {
     let ast = Program::Script(vec![
@@ -90,8 +89,12 @@ fn serde_es2015_module() {
 }
 
 fn run_rs_parse(path: impl AsRef<Path>) -> Value {
+    let module = path.as_ref().ends_with("es2015-module.js");
+    eprintln!("working on {:?} -> {}", path.as_ref(), module);
     let js = get_js_file(path);
-    let mut parser = Parser::new(&js).expect("failed to create parser");
+    let mut b = Builder::new();
+    b.set_module(module);
+    let mut parser = b.js(&js).build().expect("failed to create parser");
     let parsed = parser.parse().expect("failed to parse js");
     let raw = to_string_pretty(&parsed).expect("failed to convert to json string");
     from_str(&raw).expect("failed to revert to Value")
