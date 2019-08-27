@@ -914,8 +914,7 @@ fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
     match u32::from_str_radix(&s, 16) {
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
-            eprintln!("error parsing char {}", e);
-            None
+            panic!("error parsing char {}", e);
         }
     }
 }
@@ -934,41 +933,73 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}", e);
-            None
         }
     }
     
 }
 
 fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
-    match unescape_octal_leading(c, queue) {
-        Some(ch) => {
-            let _ = queue.pop_front();
-            let _ = queue.pop_front();
-            Some(ch)
-        }
-        None => unescape_octal_no_leading(c, queue)
-    }
-}
-
-fn unescape_octal_leading(c: char, queue: &VecDeque<char>) -> Option<char> {
-    if c != '0' && c != '1' && c != '2' && c != '3' {
-        return None;
-    }
-
     let mut s = String::new();
-    s.push(c);
-    if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
-        s.push(*one);
-        s.push(*two);
-    } else {
-        return None;
+    if c >= '0' && c <= '3' {
+        s.push(c);
+        if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
+            if one.is_digit(8) {
+                s.push(*one);
+                if two.is_digit(8) {
+                    s.push(*two);
+                }
+            }
+        } else {
+            return None;
+        }
+    } else if c > '3' && c < '8' {
+        if let Some(one) = queue.get(0) {
+            if one.is_digit(8) {
+                s.push(*one);
+            }
+        }
     }
+    for _ in s.chars() {
+        let _ = queue.pop_front();
+    }
+
     match u32::from_str_radix(&s, 8) {
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}: {}", e, s);
-            None
+        }
+    }
+}
+
+fn unescape_octal_leading(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+    let mut s = String::new();
+    if c >= '0' && c <= '3' {
+        s.push(c);
+        if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
+            if one.is_digit(8) {
+                s.push(*one);
+                if two.is_digit(8) {
+                    s.push(*two);
+                }
+            }
+        } else {
+            return None;
+        }
+    } else if c > '3' && c < '8' {
+        if let Some(one) = queue.get(0) {
+            if one.is_digit(8) {
+                s.push(*one);
+            }
+        }
+    }
+    for _ in s.chars() {
+        let _ = queue.pop_front();
+    }
+
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}: {}", e, s);
         }
     }
 }
@@ -986,7 +1017,6 @@ fn unescape_octal_no_leading(c: char, queue: &mut VecDeque<char>) -> Option<char
         Ok(u) => ::std::char::from_u32(u),
         Err(e) => {
             panic!("{}", e);
-            None
         }
     }
 }
