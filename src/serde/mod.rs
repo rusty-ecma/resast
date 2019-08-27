@@ -1157,6 +1157,7 @@ fn hex_char_code(queue: &mut VecDeque<char>) -> Option<u32> {
             }
             Some(x)
         } else {
+<<<<<<< HEAD
             let mut x = c.to_digit(16)?;        
             for _ in 0..3 {
                 if let Some(u) = queue.pop_front() {
@@ -1171,6 +1172,15 @@ fn hex_char_code(queue: &mut VecDeque<char>) -> Option<u32> {
                 x = 0x10000 + high + low;
             }
             Some(x)
+=======
+            return None;
+        }
+    }
+    match u32::from_str_radix(&s, 16) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("error parsing char {}", e);
+>>>>>>> from_one
         }
     } else {
         None
@@ -1197,6 +1207,7 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
 }
 
 fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+<<<<<<< HEAD
     let (ret, ct) = if let Some(next) = queue.get(0) {
         if !next.is_digit(8) {
             let d = c.to_digit(8)?;
@@ -1251,6 +1262,70 @@ mod test {
         let js = "\"\\'\\\"\\\\\\b\\f\\n\\r\\t\\v\\0\"";
         let expectation = "\"'\"\\\u{8}\u{c}\n\r\t\u{b}\u{0}\"";
         assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+=======
+    let mut s = String::new();
+    if c >= '0' && c <= '3' {
+        s.push(c);
+        if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
+            if one.is_digit(8) {
+                s.push(*one);
+                if two.is_digit(8) {
+                    s.push(*two);
+                }
+            }
+        } else {
+            return None;
+        }
+    } else if c > '3' && c < '8' {
+        if let Some(one) = queue.get(0) {
+            if one.is_digit(8) {
+                s.push(*one);
+            }
+        }
+    }
+    for _ in s.chars() {
+        let _ = queue.pop_front();
+    }
+
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}: {}", e, s);
+        }
+    }
+}
+
+fn unescape_octal_leading(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+    let mut s = String::new();
+    if c >= '0' && c <= '3' {
+        s.push(c);
+        if let (Some(one), Some(two)) = (queue.get(0), queue.get(1)) {
+            if one.is_digit(8) {
+                s.push(*one);
+                if two.is_digit(8) {
+                    s.push(*two);
+                }
+            }
+        } else {
+            return None;
+        }
+    } else if c > '3' && c < '8' {
+        if let Some(one) = queue.get(0) {
+            if one.is_digit(8) {
+                s.push(*one);
+            }
+        }
+    }
+    for _ in s.chars() {
+        let _ = queue.pop_front();
+    }
+
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}: {}", e, s);
+        }
+>>>>>>> from_one
     }
 
     #[test]
@@ -1260,11 +1335,19 @@ mod test {
         assert_eq!(unescaper(js).unwrap(), expectation.to_string());
     }
 
+<<<<<<< HEAD
     #[test]
     fn unicode_ident() {
         let js = "φ";
         let expectation = "φ";
         assert_eq!(unescaper(js).unwrap(), expectation.to_string());
+=======
+    match u32::from_str_radix(&s, 8) {
+        Ok(u) => ::std::char::from_u32(u),
+        Err(e) => {
+            panic!("{}", e);
+        }
+>>>>>>> from_one
     }
 
     #[test]
