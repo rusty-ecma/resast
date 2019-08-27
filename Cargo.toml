@@ -1,6 +1,6 @@
 [package]
 name = "resast"
-version = "0.4.0-beta-3"
+version = "0.4.0-beta-4"
 authors = ["rfm <r@robertmasen.pizza>"]
 edition = "2018"
 description = "Rusty-ECMAScript Abstract Syntax Tree"
@@ -10,14 +10,15 @@ keywords = ["JavaScript", "parsing", "JS", "ES", "ECMA"]
 categories = ["parsing", "text-processing", "web-programming"]
 
 [dependencies]
-serde = "1"
-serde_derive = "1"
-unescape = "0.1"
+serde = { version = "1", optional = true }
+serde_derive = { version = "1", optional = true }
 
 [dev-dependencies]
 serde_json = "1"
-ressa = {path = "../ressa"} # "0.7.0-beta-5"
+ressa = "0.7.0-beta-5"
 pretty_env_logger = "0.3"
 
-[patch.crates-io]
-resast = { path = "." }
+[features]
+default = []
+serialization = ["serde", "serde_derive"]
+esprima = ["serialization"]

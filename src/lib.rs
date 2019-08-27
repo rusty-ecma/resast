@@ -1,3 +1,4 @@
+#[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde_derive;
 
@@ -6,15 +7,21 @@ use std::borrow::Cow;
 pub mod decl;
 pub mod expr;
 pub mod pat;
-pub mod stmt;
+#[cfg(feature = "esprima")]
 pub mod serde;
+pub mod stmt;
 
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Ident<'a> {
     pub name: Cow<'a, str>,
 }
@@ -22,12 +29,12 @@ pub struct Ident<'a> {
 impl<'a> Ident<'a> {
     pub fn new(s: String) -> Self {
         Ident {
-            name: Cow::Owned(s)
+            name: Cow::Owned(s),
         }
     }
     pub fn from(s: &'a str) -> Self {
         Ident {
-            name: Cow::Borrowed(s)
+            name: Cow::Borrowed(s),
         }
     }
 }
@@ -37,7 +44,12 @@ impl<'a> Ident<'a> {
 /// It is essentially a collection of `ProgramPart`s
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
-#[derive(PartialEq, Debug, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Program<'a> {
     /// An ES6 Mod
     Mod(Vec<ProgramPart<'a>>),
@@ -56,8 +68,13 @@ impl<'a> Program<'a> {
 
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
-#[derive(PartialEq, Debug, Clone, Deserialize)]
-#[serde(untagged)] 
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum ProgramPart<'a> {
     /// A Directive like `'use strict';`
     Dir(Dir<'a>),
@@ -78,7 +95,12 @@ impl<'a> ProgramPart<'a> {
 
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Dir<'a> {
     pub expr: Lit<'a>,
     pub dir: Cow<'a, str>,
@@ -94,7 +116,12 @@ pub struct Dir<'a> {
 /// var x = function() {}
 /// let y = function q() {}
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Func<'a> {
     pub id: Option<Ident<'a>>,
     pub params: Vec<FuncArg<'a>>,
@@ -105,11 +132,11 @@ pub struct Func<'a> {
 
 impl<'a> Func<'a> {
     pub fn new(
-        id: Option<Ident<'a>>, 
-        params: Vec<FuncArg<'a>>, 
-        body: FuncBody<'a>, 
-        generator: bool, 
-        is_async: bool
+        id: Option<Ident<'a>>,
+        params: Vec<FuncArg<'a>>,
+        body: FuncBody<'a>,
+        generator: bool,
+        is_async: bool,
     ) -> Self {
         Func {
             id,
@@ -122,8 +149,13 @@ impl<'a> Func<'a> {
 }
 
 /// A single function argument from a function signature
-#[derive(PartialEq, Debug, Clone, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum FuncArg<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
@@ -139,7 +171,12 @@ impl<'a> FuncArg<'a> {
 }
 
 /// The block statement that makes up the function's body
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 /// A way to declare object templates
 /// ```js
@@ -167,17 +204,31 @@ pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Class<'a> {
     pub id: Option<Ident<'a>>,
     pub super_class: Option<Box<Expr<'a>>>,
     pub body: ClassBody<'a>,
 }
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ClassBody<'a>(pub Vec<Prop<'a>>);
 
 impl<'a> Class<'a> {
-    pub fn new(id: Option<Ident<'a>>, super_class: Option<Expr<'a>>, body: Vec<Prop<'a>>) -> Class<'a> {
+    pub fn new(
+        id: Option<Ident<'a>>,
+        super_class: Option<Expr<'a>>,
+        body: Vec<Prop<'a>>,
+    ) -> Class<'a> {
         Class {
             id,
             super_class: super_class.map(Box::new),
@@ -187,17 +238,26 @@ impl<'a> Class<'a> {
 }
 
 /// The kind of variable being defined (`var`/`let`/`const`)
-#[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
-#[serde(rename_all = "camelCase", untagged)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum VarKind {
     Var,
     Let,
     Const,
 }
 
-
 /// The available operators for assignment Exprs
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum AssignOp {
     Equal,
     PlusEqual,
@@ -214,17 +274,25 @@ pub enum AssignOp {
     PowerOfEqual,
 }
 
-
 /// The available logical operators
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LogicalOp {
     Or,
     And,
 }
 
-
 /// The available operations for `Binary` Exprs
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum BinaryOp {
     Equal,
     NotEqual,
@@ -250,9 +318,13 @@ pub enum BinaryOp {
     PowerOf,
 }
 
-
 /// `++` or `--`
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum UpdateOp {
     Increment,
     Decrement,
@@ -260,7 +332,12 @@ pub enum UpdateOp {
 
 /// The allowed operators for an Expr
 /// to be `Unary`
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum UnaryOp {
     Minus,
     Plus,
@@ -271,9 +348,13 @@ pub enum UnaryOp {
     Delete,
 }
 
-
 /// A flag for determining what kind of property
-#[derive(PartialEq, Debug, Clone, Copy, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Copy)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum PropKind {
     /// A property with a value
     Init,
@@ -288,88 +369,23 @@ pub enum PropKind {
 }
 
 pub mod prelude {
-    pub use crate::{
-        AssignOp,
-        BinaryOp,
-        Class,
-        ClassBody,
-        Dir,
-        Func,
-        FuncArg,
-        FuncBody,
-        Ident,
-        LogicalOp,
-        Program,
-        ProgramPart,
-        PropKind,
-        UnaryOp,
-        UpdateOp,
-        VarKind,
+    pub use crate::decl::{
+        Decl, DefaultExportDecl, ExportSpecifier, ImportSpecifier, ModDecl, ModExport, ModImport,
+        NamedExportDecl, NormalImportSpec, VarDecl,
     };
     pub use crate::expr::{
-        ArrayExpr,
-        ArrowFuncBody,
-        ArrowFuncExpr,
-        AssignExpr,
-        AssignLeft,
-        BinaryExpr,
-        CallExpr,
-        ConditionalExpr,
-        Expr,
-        Lit,
-        LogicalExpr,
-        MemberExpr,
-        MetaProp,
-        NewExpr,
-        ObjExpr,
-        ObjProp,
-        Prop,
-        PropKey,
-        PropValue,
-        RegEx,
-        StringLit,
-        TaggedTemplateExpr,
-        TemplateElement,
-        TemplateLit,
-        UnaryExpr,
-        UpdateExpr,
-        YieldExpr,
+        ArrayExpr, ArrowFuncBody, ArrowFuncExpr, AssignExpr, AssignLeft, BinaryExpr, CallExpr,
+        ConditionalExpr, Expr, Lit, LogicalExpr, MemberExpr, MetaProp, NewExpr, ObjExpr, ObjProp,
+        Prop, PropKey, PropValue, RegEx, StringLit, TaggedTemplateExpr, TemplateElement,
+        TemplateLit, UnaryExpr, UpdateExpr, YieldExpr,
     };
-    pub use crate::decl::{
-        Decl,
-        VarDecl,
-        ModDecl,
-        ModImport,
-        ImportSpecifier,
-        ModExport,
-        NamedExportDecl,
-        DefaultExportDecl,
-        ExportSpecifier,
-        NormalImportSpec
-    };
+    pub use crate::pat::{ArrayPatPart, AssignPat, ObjPat, ObjPatPart, Pat};
     pub use crate::stmt::{
-        Stmt,
-        WithStmt,
-        LabeledStmt,
-        IfStmt,
-        SwitchStmt,
-        SwitchCase,
-        BlockStmt,
-        TryStmt,
-        CatchClause,
-        WhileStmt,
-        DoWhileStmt,
-        ForStmt,
-        LoopInit,
-        ForInStmt,
-        ForOfStmt,
-        LoopLeft,
+        BlockStmt, CatchClause, DoWhileStmt, ForInStmt, ForOfStmt, ForStmt, IfStmt, LabeledStmt,
+        LoopInit, LoopLeft, Stmt, SwitchCase, SwitchStmt, TryStmt, WhileStmt, WithStmt,
     };
-    pub use crate::pat::{
-        ArrayPatPart,
-        AssignPat,
-        ObjPat,
-        ObjPatPart,
-        Pat,
+    pub use crate::{
+        AssignOp, BinaryOp, Class, ClassBody, Dir, Func, FuncArg, FuncBody, Ident, LogicalOp,
+        Program, ProgramPart, PropKind, UnaryOp, UpdateOp, VarKind,
     };
 }
