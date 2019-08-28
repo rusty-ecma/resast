@@ -1,10 +1,15 @@
-use crate::VarKind;
 use crate::expr::{Expr, Lit};
 use crate::pat::Pat;
+use crate::VarKind;
 use crate::{Class, Func, Ident};
 
 /// The declaration of a variable, function, class, import or export
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Decl<'a> {
     /// A variable declaration
     /// ```js
@@ -37,7 +42,12 @@ pub enum Decl<'a> {
 }
 
 /// The identifier and optional value of a variable declaration
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct VarDecl<'a> {
     pub id: Pat<'a>,
     pub init: Option<Expr<'a>>,
@@ -46,7 +56,8 @@ pub struct VarDecl<'a> {
 /// A module declaration, This would only be available
 /// in an ES Mod, it would be either an import or
 /// export at the top level
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub enum ModDecl<'a> {
     Import(ModImport<'a>),
     Export(ModExport<'a>),
@@ -58,14 +69,20 @@ pub enum ModDecl<'a> {
 /// ```js
 /// import {Thing} from './stuff.js';
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct ModImport<'a> {
     pub specifiers: Vec<ImportSpecifier<'a>>,
     pub source: Lit<'a>,
 }
 
 /// The name of the thing being imported
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum ImportSpecifier<'a> {
     /// A specifier in curly braces, this might
     /// have a local alias
@@ -90,14 +107,20 @@ pub enum ImportSpecifier<'a> {
     /// ```
     Namespace(Ident<'a>),
 }
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct NormalImportSpec<'a> {
     pub local: Ident<'a>,
     pub imported: Ident<'a>,
 }
 
 /// Something exported from this module
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum ModExport<'a> {
     /// ```js
     /// export default function() {};
@@ -131,7 +154,8 @@ pub enum ModExport<'a> {
 /// ```js
 /// export function thing() {}
 /// export {stuff} from 'place';
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub enum NamedExportDecl<'a> {
     Decl(Decl<'a>),
     Specifier(Vec<ExportSpecifier<'a>>, Option<Lit<'a>>),
@@ -141,7 +165,12 @@ pub enum NamedExportDecl<'a> {
 /// ```js
 /// export default class Thing {}
 /// ```
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum DefaultExportDecl<'a> {
     Decl(Decl<'a>),
     Expr(Expr<'a>),
@@ -155,7 +184,12 @@ pub enum DefaultExportDecl<'a> {
 /// //aliased
 /// export {Stuff as NewThing} from 'place'
 /// ```
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ExportSpecifier<'a> {
     pub local: Ident<'a>,
     pub exported: Ident<'a>,

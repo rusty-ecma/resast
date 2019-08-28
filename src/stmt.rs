@@ -4,7 +4,12 @@ use crate::expr::Expr;
 use crate::pat::Pat;
 use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Stmt<'a> {
     /// Any expression
     Expr(Expr<'a>),
@@ -184,7 +189,8 @@ pub enum Stmt<'a> {
 /// }
 /// //rand !== 0
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct WithStmt<'a> {
     pub object: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -199,7 +205,8 @@ pub struct WithStmt<'a> {
 ///     break;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct LabeledStmt<'a> {
     pub label: Ident<'a>,
     pub body: Box<Stmt<'a>>,
@@ -213,7 +220,8 @@ pub struct LabeledStmt<'a> {
 ///     console.log('Never true');
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct IfStmt<'a> {
     pub test: Expr<'a>,
     pub consequent: Box<Stmt<'a>>,
@@ -234,21 +242,32 @@ pub struct IfStmt<'a> {
 ///         return true;
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct SwitchStmt<'a> {
     pub discriminant: Expr<'a>,
     pub cases: Vec<SwitchCase<'a>>,
 }
 
 /// A single case part of a switch statement
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct SwitchCase<'a> {
     pub test: Option<Expr<'a>>,
     pub consequent: Vec<ProgramPart<'a>>,
 }
 
 /// A collection of program parts wrapped in curly braces
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct BlockStmt<'a>(pub Vec<ProgramPart<'a>>);
 
 /// A try/catch block
@@ -261,7 +280,8 @@ pub struct BlockStmt<'a>(pub Vec<ProgramPart<'a>>);
 ///
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct TryStmt<'a> {
     pub block: BlockStmt<'a>,
     pub handler: Option<CatchClause<'a>>,
@@ -269,7 +289,12 @@ pub struct TryStmt<'a> {
 }
 
 /// The error handling part of a `TryStmt`
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct CatchClause<'a> {
     pub param: Option<Pat<'a>>,
     pub body: BlockStmt<'a>,
@@ -289,7 +314,8 @@ pub struct CatchClause<'a> {
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct WhileStmt<'a> {
     pub test: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -301,7 +327,8 @@ pub struct WhileStmt<'a> {
 ///     console.log('at least once')
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct DoWhileStmt<'a> {
     pub test: Expr<'a>,
     pub body: Box<Stmt<'a>>,
@@ -314,7 +341,8 @@ pub struct DoWhileStmt<'a> {
 ///     console.log('forever!');
 /// }
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct ForStmt<'a> {
     pub init: Option<LoopInit<'a>>,
     pub test: Option<Expr<'a>>,
@@ -326,7 +354,12 @@ pub struct ForStmt<'a> {
 /// ```js
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LoopInit<'a> {
     Variable(VarKind, Vec<VarDecl<'a>>),
     Expr(Expr<'a>),
@@ -344,7 +377,8 @@ pub enum LoopInit<'a> {
 /// }
 /// //prints a, b
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct ForInStmt<'a> {
     pub left: LoopLeft<'a>,
     pub right: Expr<'a>,
@@ -359,7 +393,8 @@ pub struct ForInStmt<'a> {
 /// }
 /// //prints 2, 3, 4, 5, 6
 /// ```
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct ForOfStmt<'a> {
     pub left: LoopLeft<'a>,
     pub right: Expr<'a>,
@@ -369,7 +404,12 @@ pub struct ForOfStmt<'a> {
 
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LoopLeft<'a> {
     Expr(Expr<'a>),
     Variable(VarKind, VarDecl<'a>),

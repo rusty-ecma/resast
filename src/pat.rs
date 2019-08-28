@@ -2,8 +2,13 @@ use crate::expr::{Expr, Prop};
 use crate::{Ident};
 /// All of the different ways you can declare an identifier
 /// and/or value
-#[derive(PartialEq, Debug, Clone, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum Pat<'a> {
     Ident(Ident<'a>),
     Obj(ObjPat<'a>),
@@ -20,8 +25,9 @@ impl<'a> Pat<'a> {
     }
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum ArrayPatPart<'a> {
     Pat(Pat<'a>),
     Expr(Expr<'a>),
@@ -30,15 +36,21 @@ pub enum ArrayPatPart<'a> {
 /// similar to an `ObjectExpr`
 pub type ObjPat<'a> = Vec<ObjPatPart<'a>>;
 /// A single part of an ObjectPat
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum ObjPatPart<'a> {
     Assign(Prop<'a>),
     Rest(Box<Pat<'a>>),
 }
 
 /// An assignment as a pattern
-#[derive(PartialEq, Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct AssignPat<'a> {
     pub left: Box<Pat<'a>>,
     pub right: Box<Expr<'a>>,

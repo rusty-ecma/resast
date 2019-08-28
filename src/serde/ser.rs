@@ -1,9 +1,5 @@
-use serde::ser::{
-    Serialize,
-    Serializer,
-    SerializeStruct,
-};
 use crate::prelude::*;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 impl<'a> Serialize for Program<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -16,7 +12,7 @@ impl<'a> Serialize for Program<'a> {
             Program::Script(ref body) => {
                 state.serialize_field("sourceType", "script")?;
                 state.serialize_field("body", &body)?;
-            },
+            }
             Program::Mod(ref body) => {
                 state.serialize_field("sourceType", "module")?;
                 state.serialize_field("body", body)?;
@@ -32,15 +28,9 @@ impl<'a> Serialize for ProgramPart<'a> {
         S: Serializer,
     {
         match self {
-            ProgramPart::Decl(ref d) => {
-                d.serialize(serializer)
-            },
-            ProgramPart::Dir(ref d) => {
-                d.serialize(serializer)
-            },
-            ProgramPart::Stmt(ref s) => {
-                s.serialize(serializer)
-            }
+            ProgramPart::Decl(ref d) => d.serialize(serializer),
+            ProgramPart::Dir(ref d) => d.serialize(serializer),
+            ProgramPart::Stmt(ref s) => s.serialize(serializer),
         }
     }
 }
@@ -54,11 +44,15 @@ impl<'a> Serialize for Dir<'a> {
         state.serialize_field("expression", &self.expr)?;
         if let Lit::String(ref sl) = self.expr {
             match sl {
-                StringLit::Double(ref s) => if !s.is_empty() {
-                    state.serialize_field("directive", &self.dir)?;
-                },
-                StringLit::Single(ref s) => if !s.is_empty() {
-                    state.serialize_field("directive", &self.dir)?;
+                StringLit::Double(ref s) => {
+                    if !s.is_empty() {
+                        state.serialize_field("directive", &self.dir)?;
+                    }
+                }
+                StringLit::Single(ref s) => {
+                    if !s.is_empty() {
+                        state.serialize_field("directive", &self.dir)?;
+                    }
                 }
             }
         }
@@ -81,7 +75,7 @@ impl<'a> Serialize for Decl<'a> {
                 state.serialize_field("expression", &false)?;
                 state.serialize_field("params", &f.params)?;
                 state.end()
-            },
+            }
             Decl::Class(ref c) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "ClassDeclaration")?;
@@ -89,24 +83,22 @@ impl<'a> Serialize for Decl<'a> {
                 state.serialize_field("id", &c.id)?;
                 state.serialize_field("superClass", &c.super_class)?;
                 state.end()
-            },
+            }
             Decl::Var(ref kind, ref vs) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "VariableDeclaration")?;
                 state.serialize_field("kind", kind)?;
                 state.serialize_field("declarations", vs)?;
                 state.end()
-            },
+            }
             Decl::Import(ref imp) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ImportDeclaration")?;
                 state.serialize_field("specifiers", &imp.specifiers)?;
                 state.serialize_field("source", &imp.source)?;
                 state.end()
-            },
-            Decl::Export(ref exp) => {
-                exp.serialize(serializer)
             }
+            Decl::Export(ref exp) => exp.serialize(serializer),
         }
     }
 }
@@ -122,13 +114,13 @@ impl<'a> Serialize for ModExport<'a> {
                 state.serialize_field("type", "ExportAllDeclaration")?;
                 state.serialize_field("source", source)?;
                 state.end()
-            },
+            }
             ModExport::Default(ref def) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ExportDefaultDeclaration")?;
                 state.serialize_field("declaration", def)?;
                 state.end()
-            },
+            }
             ModExport::Named(ref named) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ExportNamedDeclaration")?;
@@ -139,7 +131,7 @@ impl<'a> Serialize for ModExport<'a> {
                         state.serialize_field("declaration", d)?;
                         state.serialize_field("specifiers", &specs)?;
                         state.serialize_field("source", &source)?;
-                    },
+                    }
                     NamedExportDecl::Specifier(ref specs, source) => {
                         let decl: Option<()> = None;
                         state.serialize_field("declaration", &decl)?;
@@ -176,13 +168,13 @@ impl<'a> Serialize for ImportSpecifier<'a> {
                 state.serialize_field("type", "ImportDefaultSpecifier")?;
                 state.serialize_field("local", d)?;
                 state.end()
-            },
+            }
             ImportSpecifier::Namespace(ref n) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ImportNamespaceSpecifier")?;
                 state.serialize_field("local", n)?;
                 state.end()
-            },
+            }
             ImportSpecifier::Normal(ref n) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ImportSpecifier")?;
@@ -211,12 +203,8 @@ impl<'a> Serialize for FuncArg<'a> {
         S: Serializer,
     {
         match self {
-            FuncArg::Expr(ref ex) => {
-                ex.serialize(serializer)
-            },
-            FuncArg::Pat(ref pat) => {
-                pat.serialize(serializer)
-            }
+            FuncArg::Expr(ref ex) => ex.serialize(serializer),
+            FuncArg::Pat(ref pat) => pat.serialize(serializer),
         }
     }
 }
@@ -297,45 +285,43 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("label", &l.label)?;
                 state.serialize_field("body", &l.body)?;
                 state.end()
-            },
-            Stmt::Block(ref b) => {
-                b.serialize(serializer)
-            },
+            }
+            Stmt::Block(ref b) => b.serialize(serializer),
             Stmt::Break(ref b) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "BreakStatement")?;
                 state.serialize_field("label", &b)?;
                 state.end()
-            },
+            }
             Stmt::Continue(ref c) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "ContinueStatement")?;
                 state.serialize_field("label", &c)?;
                 state.end()
-            },
+            }
             Stmt::Debugger => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "DebuggerStatement")?;
                 state.end()
-            },
+            }
             Stmt::DoWhile(ref d) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "DoWhileStatement")?;
                 state.serialize_field("test", &d.test)?;
                 state.serialize_field("body", &d.body)?;
                 state.end()
-            },
+            }
             Stmt::Empty => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "EmptyStatement")?;
                 state.end()
-            },
+            }
             Stmt::Expr(ref e) => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "ExpressionStatement")?;
                 state.serialize_field("expression", e)?;
                 state.end()
-            },
+            }
             Stmt::For(ref f) => {
                 let mut state = serializer.serialize_struct("Node", 5)?;
                 state.serialize_field("type", "ForStatement")?;
@@ -344,7 +330,7 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("update", &f.update)?;
                 state.serialize_field("body", &f.body)?;
                 state.end()
-            },
+            }
             Stmt::ForIn(ref f) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "ForInStatement")?;
@@ -353,7 +339,7 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("body", &f.body)?;
                 state.serialize_field("each", &false)?;
                 state.end()
-            },
+            }
             Stmt::ForOf(ref f) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "ForOfStatement")?;
@@ -361,7 +347,7 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("right", &f.right)?;
                 state.serialize_field("body", &f.body)?;
                 state.end()
-            },
+            }
             Stmt::If(ref f) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "IfStatement")?;
@@ -369,26 +355,26 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("consequent", &f.consequent)?;
                 state.serialize_field("alternate", &f.alternate)?;
                 state.end()
-            },
+            }
             Stmt::Return(ref r) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "ReturnStatement")?;
                 state.serialize_field("argument", r)?;
                 state.end()
-            },
+            }
             Stmt::Switch(ref s) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "SwitchStatement")?;
                 state.serialize_field("discriminant", &s.discriminant)?;
                 state.serialize_field("cases", &s.cases)?;
                 state.end()
-            },
+            }
             Stmt::Throw(ref t) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "ThrowStatement")?;
                 state.serialize_field("argument", t)?;
                 state.end()
-            },
+            }
             Stmt::Try(ref t) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "TryStatement")?;
@@ -396,27 +382,27 @@ impl<'a> Serialize for Stmt<'a> {
                 state.serialize_field("handler", &t.handler)?;
                 state.serialize_field("finalizer", &t.finalizer)?;
                 state.end()
-            },
+            }
             Stmt::Var(ref v) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "VariableStatement")?;
                 state.serialize_field("decls", &v)?;
                 state.end()
-            },
+            }
             Stmt::While(ref w) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "WhileStatement")?;
                 state.serialize_field("test", &w.test)?;
                 state.serialize_field("body", &w.body)?;
                 state.end()
-            },
+            }
             Stmt::With(ref w) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "WithStatement")?;
                 state.serialize_field("object", &w.object)?;
                 state.serialize_field("body", &w.body)?;
                 state.end()
-            },
+            }
         }
     }
 }
@@ -427,9 +413,7 @@ impl<'a> Serialize for Lit<'a> {
         S: Serializer,
     {
         match self {
-            Lit::Number(ref n) => {
-                serialize_number(serializer, n)
-            },
+            Lit::Number(ref n) => serialize_number(serializer, n),
             Lit::String(ref sl) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "Literal")?;
@@ -447,10 +431,10 @@ impl<'a> Serialize for Lit<'a> {
                 } else {
                     value.to_string()
                 };
-                state.serialize_field("value", &inner[1..inner.len()-1])?;
+                state.serialize_field("value", &inner[1..inner.len() - 1])?;
                 state.serialize_field("raw", &quoted)?;
                 state.end()
-            },
+            }
             Lit::RegEx(ref r) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "Literal")?;
@@ -458,7 +442,7 @@ impl<'a> Serialize for Lit<'a> {
                 state.serialize_field("value", &format_regex_value(r))?;
                 state.serialize_field("regex", r)?;
                 state.end()
-            },
+            }
             Lit::Null => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "Literal")?;
@@ -466,26 +450,22 @@ impl<'a> Serialize for Lit<'a> {
                 let value: Option<()> = None;
                 state.serialize_field("value", &value)?;
                 state.end()
-            },
+            }
             Lit::Boolean(ref b) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "Literal")?;
-                let raw = if *b {
-                    "true"
-                } else {
-                    "false"
-                };
+                let raw = if *b { "true" } else { "false" };
                 state.serialize_field("raw", raw)?;
                 state.serialize_field("value", b)?;
                 state.end()
-            },
+            }
             Lit::Template(ref t) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "TemplateLiteral")?;
                 state.serialize_field("quasis", &t.quasis)?;
                 state.serialize_field("expressions", &t.expressions)?;
                 state.end()
-            },
+            }
         }
     }
 }
@@ -522,17 +502,16 @@ fn format_regex_value(r: &RegEx) -> String {
     if r.flags.contains('y') {
         ret.push('y')
     }
-    ret.push_str(&r.flags.replace(|c| 
-        c == 'g' 
-        || c == 'i'
-        || c == 'm'
-        || c == 'u'
-        || c == 'y', ""));
+    ret.push_str(&r.flags.replace(
+        |c| c == 'g' || c == 'i' || c == 'm' || c == 'u' || c == 'y',
+        "",
+    ));
     ret
 }
 
 fn serialize_number<S>(s: S, n: &str) -> Result<S::Ok, S::Error>
-where S: Serializer,
+where
+    S: Serializer,
 {
     let mut state = s.serialize_struct("Node", 3)?;
     state.serialize_field("type", "Literal")?;
@@ -562,7 +541,8 @@ where S: Serializer,
 }
 
 fn serialize_int<T>(state: &mut T, radix: u32, n: &str) -> Result<(), T::Error>
-where T: SerializeStruct,
+where
+    T: SerializeStruct,
 {
     if let Ok(value) = i128::from_str_radix(n, radix) {
         if value < ::std::i32::MAX as i128 {
@@ -575,7 +555,8 @@ where T: SerializeStruct,
     }
 }
 fn serialize_float<T>(state: &mut T, n: &str) -> Result<(), T::Error>
-where T: SerializeStruct,
+where
+    T: SerializeStruct,
 {
     if let Ok(value) = n.parse::<f32>() {
         if value % 1.0 == 0.0 {
@@ -599,7 +580,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("type", "ArrayExpression")?;
                 state.serialize_field("elements", a)?;
                 state.end()
-            },
+            }
             Expr::ArrowFunc(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 6)?;
                 state.serialize_field("type", "ArrowFunctionExpression")?;
@@ -611,16 +592,16 @@ impl<'a> Serialize for Expr<'a> {
                 match a.body {
                     ArrowFuncBody::Expr(ref e) => {
                         state.serialize_field("body", e)?;
-                    },
+                    }
                     ArrowFuncBody::FuncBody(ref b) => {
                         state.serialize_field("body", b)?;
                     }
                 }
                 state.end()
-            },
+            }
             Expr::ArrowParamPlaceHolder(_, _) => {
                 unreachable!("ArrowParamPlaceHolder Expression should never be returned by the parsing process");
-            },
+            }
             Expr::Assign(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "AssignmentExpression")?;
@@ -628,13 +609,13 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("operator", &a.operator)?;
                 state.serialize_field("right", &a.right)?;
                 state.end()
-            },
+            }
             Expr::Await(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "AwaitExpression")?;
                 state.serialize_field("expression", a)?;
                 state.end()
-            },
+            }
             Expr::Binary(ref b) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "BinaryExpression")?;
@@ -642,14 +623,14 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("operator", &b.operator)?;
                 state.serialize_field("right", &b.right)?;
                 state.end()
-            },
+            }
             Expr::Call(ref c) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "CallExpression")?;
                 state.serialize_field("callee", &c.callee)?;
                 state.serialize_field("arguments", &c.arguments)?;
                 state.end()
-            },
+            }
             Expr::Class(ref c) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "ClassExpression")?;
@@ -657,7 +638,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("superClass", &c.super_class)?;
                 state.serialize_field("body", &c.body)?;
                 state.end()
-            },
+            }
             Expr::Conditional(ref c) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "ConditionalExpression")?;
@@ -665,7 +646,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("consequent", &c.consequent)?;
                 state.serialize_field("alternate", &c.alternate)?;
                 state.end()
-            },
+            }
             Expr::Func(ref f) => {
                 let mut state = serializer.serialize_struct("Node", 6)?;
                 state.serialize_field("type", "FunctionExpression")?;
@@ -676,13 +657,9 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("async", &f.is_async)?;
                 state.serialize_field("expression", &false)?;
                 state.end()
-            },
-            Expr::Ident(ref i) => {
-                i.serialize(serializer)
-            },
-            Expr::Lit(ref l) => {
-                l.serialize(serializer)
-            },
+            }
+            Expr::Ident(ref i) => i.serialize(serializer),
+            Expr::Lit(ref l) => l.serialize(serializer),
             Expr::Logical(ref l) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "LogicalExpression")?;
@@ -690,7 +667,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("operator", &l.operator)?;
                 state.serialize_field("right", &l.right)?;
                 state.end()
-            },
+            }
             Expr::Member(ref m) => {
                 let mut state = serializer.serialize_struct("Node", 4)?;
                 state.serialize_field("type", "MemberExpression")?;
@@ -698,56 +675,56 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("property", &m.property)?;
                 state.serialize_field("computed", &m.computed)?;
                 state.end()
-            },
+            }
             Expr::MetaProp(ref m) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "MetaProperty")?;
                 state.serialize_field("meta", &m.meta)?;
                 state.serialize_field("property", &m.property)?;
                 state.end()
-            },
+            }
             Expr::New(ref n) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "NewExpression")?;
                 state.serialize_field("callee", &n.callee)?;
                 state.serialize_field("arguments", &n.arguments)?;
                 state.end()
-            },
+            }
             Expr::Obj(ref o) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "ObjectExpression")?;
                 state.serialize_field("properties", o)?;
                 state.end()
-            },
+            }
             Expr::Sequence(ref s) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "SequenceExpression")?;
                 state.serialize_field("expressions", s)?;
                 state.end()
-            },
+            }
             Expr::Spread(ref s) => {
                 let mut state = serializer.serialize_struct("Node", 3)?;
                 state.serialize_field("type", "SpreadElement")?;
                 state.serialize_field("argument", s)?;
                 state.end()
-            },
+            }
             Expr::Super => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "Super")?;
                 state.end()
-            },
+            }
             Expr::TaggedTemplate(ref t) => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "TaggedTemplateExpression")?;
                 state.serialize_field("tag", &t.tag)?;
                 state.serialize_field("quasi", &t.quasi)?;
                 state.end()
-            },
+            }
             Expr::This => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "ThisExpression")?;
                 state.end()
-            },
+            }
             Expr::Unary(ref u) => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "UnaryExpression")?;
@@ -755,7 +732,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("operator", &u.operator)?;
                 state.serialize_field("prefix", &u.prefix)?;
                 state.end()
-            },
+            }
             Expr::Update(ref u) => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "UpdateExpression")?;
@@ -763,7 +740,7 @@ impl<'a> Serialize for Expr<'a> {
                 state.serialize_field("operator", &u.operator)?;
                 state.serialize_field("prefix", &u.prefix)?;
                 state.end()
-            },
+            }
             Expr::Yield(ref y) => {
                 let mut state = serializer.serialize_struct("Node", 1)?;
                 state.serialize_field("type", "YieldExpression")?;
@@ -786,23 +763,21 @@ impl<'a> Serialize for Pat<'a> {
                 state.serialize_field("type", "ArrayPattern")?;
                 state.serialize_field("elements", a)?;
                 state.end()
-            },
+            }
             Pat::Assign(ref a) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "AssignmentPattern")?;
                 state.serialize_field("left", &a.left)?;
                 state.serialize_field("right", &a.right)?;
                 state.end()
-            },
-            Pat::Ident(ref i) => {
-                i.serialize(serializer)
-            },
+            }
+            Pat::Ident(ref i) => i.serialize(serializer),
             Pat::Obj(ref o) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "ObjectPattern")?;
                 state.serialize_field("properties", o)?;
                 state.end()
-            },
+            }
             Pat::RestElement(ref r) => {
                 let mut state = serializer.serialize_struct("Node", 2)?;
                 state.serialize_field("type", "RestElement")?;
@@ -827,7 +802,6 @@ impl Serialize for PropKind {
         }
     }
 }
-
 
 impl<'a> Serialize for Prop<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -900,12 +874,8 @@ impl<'a> Serialize for TemplateElement<'a> {
             self.cooked.to_string()
         };
         value.insert("cooked", cooked.as_str());
-        let end_len = if self.raw.ends_with("${") {
-            2
-        } else {
-            1
-        };
-        value.insert("raw", &self.raw[1..self.raw.len()-end_len]);
+        let end_len = if self.raw.ends_with("${") { 2 } else { 1 };
+        value.insert("raw", &self.raw[1..self.raw.len() - end_len]);
         state.serialize_field("value", &value)?;
         state.end()
     }
@@ -1057,7 +1027,7 @@ impl<'a> Serialize for LoopLeft<'a> {
                 state.serialize_field("kind", kind)?;
                 state.serialize_field("declarations", &[v])?;
                 state.end()
-            },
+            }
         }
     }
 }
@@ -1074,7 +1044,7 @@ impl<'a> Serialize for LoopInit<'a> {
                 state.serialize_field("kind", kind)?;
                 state.serialize_field("declarations", v)?;
                 state.end()
-            },
+            }
         }
     }
 }
@@ -1093,8 +1063,7 @@ impl<'a> Serialize for AssignPat<'a> {
 
 use std::collections::VecDeque;
 fn unescaper(s: &str) -> Option<String> {
-    
-    let mut queue : VecDeque<_> = String::from(s).chars().collect();
+    let mut queue: VecDeque<_> = String::from(s).chars().collect();
     let mut s = String::new();
 
     while let Some(c) = queue.pop_front() {
@@ -1113,27 +1082,33 @@ fn unescaper(s: &str) -> Option<String> {
             Some('\'') => s.push('\''),
             Some('\"') => s.push('\"'),
             Some('\\') => s.push('\\'),
-            Some('u') => if let Some(x) = unescape_unicode(&mut queue) {
-                s.push(x);
-            } else {
-                return None;
-            },
-            Some('x') => if let Some(x) = unescape_byte(&mut queue) {
-                s.push(x)
-            } else {
-                return None;
-            },
-            Some('\0') => s.push('\0'),
-            Some(c) => if c.is_digit(8) {
-                if let Some(x) = unescape_octal(c, &mut queue) {
+            Some('u') => {
+                if let Some(x) = unescape_unicode(&mut queue) {
                     s.push(x);
                 } else {
                     return None;
                 }
-            } else {
-                s.push(c)
-            },
-            _ => return None
+            }
+            Some('x') => {
+                if let Some(x) = unescape_byte(&mut queue) {
+                    s.push(x)
+                } else {
+                    return None;
+                }
+            }
+            Some('\0') => s.push('\0'),
+            Some(c) => {
+                if c.is_digit(8) {
+                    if let Some(x) = unescape_octal(c, &mut queue) {
+                        s.push(x);
+                    } else {
+                        return None;
+                    }
+                } else {
+                    s.push(c)
+                }
+            }
+            _ => return None,
         };
     }
 
@@ -1157,7 +1132,7 @@ fn hex_char_code(queue: &mut VecDeque<char>) -> Option<u32> {
             }
             Some(x)
         } else {
-            let mut x = c.to_digit(16)?;        
+            let mut x = c.to_digit(16)?;
             for _ in 0..3 {
                 if let Some(u) = queue.pop_front() {
                     x = x * 16 + u.to_digit(16)?;
@@ -1167,7 +1142,7 @@ fn hex_char_code(queue: &mut VecDeque<char>) -> Option<u32> {
                 debug_assert!(queue.pop_front() == Some('\\'));
                 debug_assert!(queue.pop_front() == Some('u'));
                 let high = (x - 0xD800) * 0x400;
-                let low =  hex_char_code(queue)? - 0xDC00;
+                let low = hex_char_code(queue)? - 0xDC00;
                 x = 0x10000 + high + low;
             }
             Some(x)
@@ -1184,7 +1159,7 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
         if let Some(c) = queue.pop_front() {
             s.push(c)
         } else {
-            return None
+            return None;
         }
     }
     match u32::from_str_radix(&s, 16) {
@@ -1193,7 +1168,6 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
             panic!("{}", e);
         }
     }
-    
 }
 
 fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
@@ -1213,16 +1187,12 @@ fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
             };
             let ct = s.len().saturating_sub(1);
             match u32::from_str_radix(&s, 8) {
-                Ok(r) => {
-                    (::std::char::from_u32(r), ct)
-                },
+                Ok(r) => (::std::char::from_u32(r), ct),
                 Err(e) => panic!("{}", e),
             }
         } else {
             match u32::from_str_radix(&format!("{}{}", c, next), 8) {
-                Ok(r) => {
-                    (::std::char::from_u32(r), 1)
-                },
+                Ok(r) => (::std::char::from_u32(r), 1),
                 Err(e) => panic!("{}", e),
             }
         }
@@ -1234,8 +1204,6 @@ fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
     }
     ret
 }
-
-
 
 #[cfg(test)]
 mod test {

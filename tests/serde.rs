@@ -1,3 +1,4 @@
+#![cfg(feature = "esprima")]
 use ressa::*;
 use pretty_env_logger::try_init;
 
