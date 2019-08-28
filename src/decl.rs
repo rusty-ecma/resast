@@ -1,158 +1,66 @@
-use crate::expr::{Expr, Literal, PropertyKey, PropertyKind, PropertyValue, Property, ObjectExpr};
-use crate::pat::{Pat, ObjectPatPart};
-use crate::{Class, Function, Identifier};
+use crate::expr::{Expr, Lit};
+use crate::pat::Pat;
+use crate::VarKind;
+use crate::{Class, Func, Ident};
 
 /// The declaration of a variable, function, class, import or export
-#[derive(PartialEq, Debug, Clone)]
-pub enum Decl {
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum Decl<'a> {
     /// A variable declaration
     /// ```js
     /// var x, b;
     /// let y, a = 0;
     /// const q = 100
     /// ```
-    Variable(VariableKind, Vec<VariableDecl>),
+    Var(VarKind, Vec<VarDecl<'a>>),
     /// A function declaration
     /// ```js
     /// function thing() {}
     /// ```
-    Function(Function),
+    Func(Func<'a>),
     /// A class declaration
     /// ```js
     /// class Thing {}
     /// ```
-    Class(Class),
+    Class(Class<'a>),
     /// An import declaration
     /// ```js
     /// import * as moment from 'moment';
     /// import Thing, {thing} from 'stuff';
     /// ```
-    Import(Box<ModImport>),
+    Import(Box<ModImport<'a>>),
     /// An export declaration
     /// ```js
     /// export function thing() {}
     /// ```
-    Export(Box<ModExport>),
-}
-
-impl Decl {
-    pub fn variable(kind: VariableKind, decls: Vec<VariableDecl>) -> Self {
-        Decl::Variable(kind, decls)
-    }
-    pub fn function(f: Function) -> Self {
-        Decl::Function(f)
-    }
-    pub fn class(class: Class) -> Self {
-        Decl::Class(class)
-    }
-    pub fn import(imp: ModImport) -> Self {
-        Decl::Import(Box::new(imp))
-    }
-    pub fn export(exp: ModExport) -> Self {
-        Decl::Export(Box::new(exp))
-    }
+    Export(Box<ModExport<'a>>),
 }
 
 /// The identifier and optional value of a variable declaration
-#[derive(PartialEq, Debug, Clone)]
-pub struct VariableDecl {
-    pub id: Pat,
-    pub init: Option<Expr>,
-}
-
-impl VariableDecl {
-    pub fn new(id: Pat, init: Option<Expr>) -> Self {
-        VariableDecl {
-            id,
-            init,
-        }
-    }
-
-    pub fn uninitialized(name: &str) -> Self {
-        Self {
-            id: Pat::Identifier(String::from(name)),
-            init: None,
-        }
-    }
-
-    pub fn with_value(name: &str, value: Expr) -> Self {
-        Self {
-            id: Pat::Identifier(String::from(name)),
-            init: Some(value),
-        }
-    }
-
-    pub fn destructed(names: &[&str], value: ObjectExpr) -> Self {
-        let id = Pat::Object(
-            names
-                .iter()
-                .map(|name| {
-                    ObjectPatPart::Assignment(Property {
-                        key: PropertyKey::Expr(Expr::ident(&name.to_string())),
-                        value: PropertyValue::None,
-                        kind: PropertyKind::Init,
-                        method: false,
-                        short_hand: true,
-                        computed: false,
-                        is_static: false,
-                    })
-                })
-                .collect(),
-        );
-        Self {
-            id,
-            init: Some(Expr::Object(value)),
-        }
-    }
-
-    pub fn destructed_with_rest(names: &[&str], rest: &str, value: ObjectExpr) -> Self {
-        let mut props: Vec<ObjectPatPart> = names
-            .iter()
-            .map(|name| {
-                ObjectPatPart::Assignment(Property {
-                    key: PropertyKey::Expr(Expr::Ident(String::from(*name))),
-                    value: PropertyValue::None,
-                    kind: PropertyKind::Init,
-                    computed: false,
-                    method: false,
-                    short_hand: true,
-                    is_static: false,
-                })
-            })
-            .collect();
-        props.push(ObjectPatPart::Rest(Box::new(Pat::RestElement(
-            Box::new(Pat::Identifier(String::from(rest))),
-        ))));
-        let id = Pat::Object(props);
-        let init = Some(Expr::Object(value));
-        Self { id, init }
-    }
-}
-
-/// The kind of variable being defined (`var`/`let`/`const`)
-#[derive(PartialEq, Clone, Debug, Copy)]
-pub enum VariableKind {
-    Var,
-    Let,
-    Const,
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub struct VarDecl<'a> {
+    pub id: Pat<'a>,
+    pub init: Option<Expr<'a>>,
 }
 
 /// A module declaration, This would only be available
 /// in an ES Mod, it would be either an import or
 /// export at the top level
 #[derive(PartialEq, Debug, Clone)]
-pub enum ModDecl {
-    Import(ModImport),
-    Export(ModExport),
-}
-
-impl ModDecl {
-    pub fn import(inner: ModImport) -> Self {
-        ModDecl::Import(inner)
-    }
-    pub fn export(inner: ModExport) -> Self {
-        ModDecl::Export(inner)
-    }
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+pub enum ModDecl<'a> {
+    Import(ModImport<'a>),
+    Export(ModExport<'a>),
 }
 
 /// A declaration that imports exported
@@ -162,23 +70,20 @@ impl ModDecl {
 /// import {Thing} from './stuff.js';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct ModImport {
-    pub specifiers: Vec<ImportSpecifier>,
-    pub source: Literal,
-}
-
-impl ModImport {
-    pub fn new(specs: Vec<ImportSpecifier>, source: String) -> Self {
-        Self {
-            specifiers: specs,
-            source: Literal::String(source),
-        }
-    }
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+pub struct ModImport<'a> {
+    pub specifiers: Vec<ImportSpecifier<'a>>,
+    pub source: Lit<'a>,
 }
 
 /// The name of the thing being imported
-#[derive(PartialEq, Debug, Clone)]
-pub enum ImportSpecifier {
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum ImportSpecifier<'a> {
     /// A specifier in curly braces, this might
     /// have a local alias
     ///
@@ -186,44 +91,43 @@ pub enum ImportSpecifier {
     /// import {Thing} from './stuff.js';
     /// import {People as Persons} from './places.js';
     /// ```
-    Normal(Identifier, Option<Identifier>),
+    Normal(NormalImportSpec<'a>),
     /// A specifier that has been exported with the
     /// default keyword, this should not be wrapped in
     /// curly braces.
     /// ```js
     /// import DefaultThing from './stuff/js';
     /// ```
-    Default(Identifier),
+    Default(Ident<'a>),
     /// Import all exported members from a module
     /// in a namespace.
     ///
     /// ```js
     /// import * as Moment from 'moment.js';
     /// ```
-    Namespace(Identifier),
+    Namespace(Ident<'a>),
 }
-
-impl ImportSpecifier {
-    pub fn normal(ident: Identifier, module: Option<Identifier>) -> Self {
-        ImportSpecifier::Normal(ident, module)
-    }
-    pub fn default(ident: Identifier) -> Self {
-        ImportSpecifier::Default(ident)
-    }
-    pub fn namespace(ident: Identifier) -> Self {
-        ImportSpecifier::Namespace(ident)
-    }
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+pub struct NormalImportSpec<'a> {
+    pub local: Ident<'a>,
+    pub imported: Ident<'a>,
 }
 
 /// Something exported from this module
-#[derive(PartialEq, Debug, Clone)]
-pub enum ModExport {
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum ModExport<'a> {
     /// ```js
     /// export default function() {};
     /// //or
     /// export default 1;
     /// ```
-    Default(DefaultExportDecl),
+    Default(DefaultExportDecl<'a>),
     ///```js
     /// export {foo} from 'mod';
     /// //or
@@ -234,62 +138,42 @@ pub enum ModExport {
     /// export function bar() {
     /// }
     /// ```
-    Named(NamedExportDecl),
+    Named(NamedExportDecl<'a>),
     /// ```js
     /// export * from 'mod';
     /// ```
-    All(Literal),
+    All(Lit<'a>),
 }
 
-impl ModExport {
-    pub fn default(default: DefaultExportDecl) -> Self {
-        ModExport::Default(default)
-    }
-
-    pub fn named(named: NamedExportDecl) -> Self {
-        ModExport::Named(named)
-    }
-    pub fn all(lit: Literal) -> Self {
-        ModExport::All(lit)
-    }
-}
-
+// pub struct NamedExportDecl<'a> {
+//     decl: Option<Box<Decl<'a>>>,
+//     specs: Vec<ExportSpecifier<'a>>,
+//     source: Option<Cow<'a, str>>
+// }
 /// An export that has a name
 /// ```js
 /// export function thing() {}
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone)]
-pub enum NamedExportDecl {
-    Decl(Decl),
-    Specifier(Vec<ExportSpecifier>, Option<Literal>),
-}
-
-impl NamedExportDecl {
-    pub fn decl(decl: Decl) -> Self {
-        NamedExportDecl::Decl(decl)
-    }
-    pub fn specifier(exports: Vec<ExportSpecifier>, path: Option<Literal>) -> Self {
-        NamedExportDecl::Specifier(exports, path)
-    }
+#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+pub enum NamedExportDecl<'a> {
+    Decl(Decl<'a>),
+    Specifier(Vec<ExportSpecifier<'a>>, Option<Lit<'a>>),
 }
 
 /// A default export
 /// ```js
 /// export default class Thing {}
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub enum DefaultExportDecl {
-    Decl(Decl),
-    Expr(Expr),
-}
-
-impl DefaultExportDecl {
-    pub fn decl(decl: Decl) -> Self {
-        DefaultExportDecl::Decl(decl)
-    }
-    pub fn expr(expr: Expr) -> Self {
-        DefaultExportDecl::Expr(expr)
-    }
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum DefaultExportDecl<'a> {
+    Decl(Decl<'a>),
+    Expr(Expr<'a>),
 }
 
 /// The name of the thing being exported
@@ -300,17 +184,13 @@ impl DefaultExportDecl {
 /// //aliased
 /// export {Stuff as NewThing} from 'place'
 /// ```
-#[derive(PartialEq, Debug, Clone)]
-pub struct ExportSpecifier {
-    pub local: Identifier,
-    pub exported: Option<Identifier>,
-}
-
-impl ExportSpecifier {
-    pub fn new(local: Identifier, exported: Option<Identifier>) -> ExportSpecifier {
-        ExportSpecifier {
-            local,
-            exported,
-        }
-    }
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub struct ExportSpecifier<'a> {
+    pub local: Ident<'a>,
+    pub exported: Ident<'a>,
 }
