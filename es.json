@@ -1,0 +1,610 @@
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "esp"
+                    },
+                    "init": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "require"
+                        },
+                        "arguments": [
+                            {
+                                "type": "Literal",
+                                "value": "esprima",
+                                "raw": "'esprima'"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "kind": "const"
+        },
+        {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "fs"
+                    },
+                    "init": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "require"
+                        },
+                        "arguments": [
+                            {
+                                "type": "Literal",
+                                "value": "fs",
+                                "raw": "'fs'"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "kind": "const"
+        },
+        {
+            "type": "FunctionDeclaration",
+            "id": {
+                "type": "Identifier",
+                "name": "main"
+            },
+            "params": [],
+            "body": {
+                "type": "BlockStatement",
+                "body": [
+                    {
+                        "type": "VariableDeclaration",
+                        "declarations": [
+                            {
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "js"
+                                },
+                                "init": {
+                                    "type": "MemberExpression",
+                                    "computed": true,
+                                    "object": {
+                                        "type": "MemberExpression",
+                                        "computed": false,
+                                        "object": {
+                                            "type": "Identifier",
+                                            "name": "process"
+                                        },
+                                        "property": {
+                                            "type": "Identifier",
+                                            "name": "argv"
+                                        }
+                                    },
+                                    "property": {
+                                        "type": "Literal",
+                                        "value": 2,
+                                        "raw": "2"
+                                    }
+                                }
+                            }
+                        ],
+                        "kind": "let"
+                    },
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "MemberExpression",
+                                "computed": false,
+                                "object": {
+                                    "type": "Identifier",
+                                    "name": "console"
+                                },
+                                "property": {
+                                    "type": "Identifier",
+                                    "name": "error"
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "js"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "ReturnStatement",
+                        "argument": {
+                            "type": "NewExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "Promise"
+                            },
+                            "arguments": [
+                                {
+                                    "type": "ArrowFunctionExpression",
+                                    "id": null,
+                                    "params": [
+                                        {
+                                            "type": "Identifier",
+                                            "name": "r"
+                                        },
+                                        {
+                                            "type": "Identifier",
+                                            "name": "j"
+                                        }
+                                    ],
+                                    "body": {
+                                        "type": "BlockStatement",
+                                        "body": [
+                                            {
+                                                "type": "ExpressionStatement",
+                                                "expression": {
+                                                    "type": "CallExpression",
+                                                    "callee": {
+                                                        "type": "MemberExpression",
+                                                        "computed": false,
+                                                        "object": {
+                                                            "type": "Identifier",
+                                                            "name": "fs"
+                                                        },
+                                                        "property": {
+                                                            "type": "Identifier",
+                                                            "name": "readFile"
+                                                        }
+                                                    },
+                                                    "arguments": [
+                                                        {
+                                                            "type": "Identifier",
+                                                            "name": "js"
+                                                        },
+                                                        {
+                                                            "type": "Literal",
+                                                            "value": "utf8",
+                                                            "raw": "'utf8'"
+                                                        },
+                                                        {
+                                                            "type": "ArrowFunctionExpression",
+                                                            "id": null,
+                                                            "params": [
+                                                                {
+                                                                    "type": "Identifier",
+                                                                    "name": "err"
+                                                                },
+                                                                {
+                                                                    "type": "Identifier",
+                                                                    "name": "content"
+                                                                }
+                                                            ],
+                                                            "body": {
+                                                                "type": "BlockStatement",
+                                                                "body": [
+                                                                    {
+                                                                        "type": "IfStatement",
+                                                                        "test": {
+                                                                            "type": "Identifier",
+                                                                            "name": "err"
+                                                                        },
+                                                                        "consequent": {
+                                                                            "type": "ReturnStatement",
+                                                                            "argument": {
+                                                                                "type": "CallExpression",
+                                                                                "callee": {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "j"
+                                                                                },
+                                                                                "arguments": [
+                                                                                    {
+                                                                                        "type": "Identifier",
+                                                                                        "name": "err"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        "alternate": null
+                                                                    },
+                                                                    {
+                                                                        "type": "VariableDeclaration",
+                                                                        "declarations": [
+                                                                            {
+                                                                                "type": "VariableDeclarator",
+                                                                                "id": {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "parsed"
+                                                                                },
+                                                                                "init": null
+                                                                            }
+                                                                        ],
+                                                                        "kind": "let"
+                                                                    },
+                                                                    {
+                                                                        "type": "IfStatement",
+                                                                        "test": {
+                                                                            "type": "CallExpression",
+                                                                            "callee": {
+                                                                                "type": "MemberExpression",
+                                                                                "computed": false,
+                                                                                "object": {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "js"
+                                                                                },
+                                                                                "property": {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "endsWith"
+                                                                                }
+                                                                            },
+                                                                            "arguments": [
+                                                                                {
+                                                                                    "type": "Literal",
+                                                                                    "value": "module.js",
+                                                                                    "raw": "'module.js'"
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        "consequent": {
+                                                                            "type": "BlockStatement",
+                                                                            "body": [
+                                                                                {
+                                                                                    "type": "ExpressionStatement",
+                                                                                    "expression": {
+                                                                                        "type": "AssignmentExpression",
+                                                                                        "operator": "=",
+                                                                                        "left": {
+                                                                                            "type": "Identifier",
+                                                                                            "name": "parsed"
+                                                                                        },
+                                                                                        "right": {
+                                                                                            "type": "CallExpression",
+                                                                                            "callee": {
+                                                                                                "type": "MemberExpression",
+                                                                                                "computed": false,
+                                                                                                "object": {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "esp"
+                                                                                                },
+                                                                                                "property": {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "parseModule"
+                                                                                                }
+                                                                                            },
+                                                                                            "arguments": [
+                                                                                                {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "content"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        "alternate": {
+                                                                            "type": "BlockStatement",
+                                                                            "body": [
+                                                                                {
+                                                                                    "type": "ExpressionStatement",
+                                                                                    "expression": {
+                                                                                        "type": "AssignmentExpression",
+                                                                                        "operator": "=",
+                                                                                        "left": {
+                                                                                            "type": "Identifier",
+                                                                                            "name": "parsed"
+                                                                                        },
+                                                                                        "right": {
+                                                                                            "type": "CallExpression",
+                                                                                            "callee": {
+                                                                                                "type": "MemberExpression",
+                                                                                                "computed": false,
+                                                                                                "object": {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "esp"
+                                                                                                },
+                                                                                                "property": {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "parseScript"
+                                                                                                }
+                                                                                            },
+                                                                                            "arguments": [
+                                                                                                {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "content"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "VariableDeclaration",
+                                                                        "declarations": [
+                                                                            {
+                                                                                "type": "VariableDeclarator",
+                                                                                "id": {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "json"
+                                                                                },
+                                                                                "init": {
+                                                                                    "type": "CallExpression",
+                                                                                    "callee": {
+                                                                                        "type": "MemberExpression",
+                                                                                        "computed": false,
+                                                                                        "object": {
+                                                                                            "type": "Identifier",
+                                                                                            "name": "JSON"
+                                                                                        },
+                                                                                        "property": {
+                                                                                            "type": "Identifier",
+                                                                                            "name": "stringify"
+                                                                                        }
+                                                                                    },
+                                                                                    "arguments": [
+                                                                                        {
+                                                                                            "type": "Identifier",
+                                                                                            "name": "parsed"
+                                                                                        },
+                                                                                        {
+                                                                                            "type": "ArrowFunctionExpression",
+                                                                                            "id": null,
+                                                                                            "params": [
+                                                                                                {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "key"
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "Identifier",
+                                                                                                    "name": "value"
+                                                                                                }
+                                                                                            ],
+                                                                                            "body": {
+                                                                                                "type": "BlockStatement",
+                                                                                                "body": [
+                                                                                                    {
+                                                                                                        "type": "IfStatement",
+                                                                                                        "test": {
+                                                                                                            "type": "LogicalExpression",
+                                                                                                            "operator": "&&",
+                                                                                                            "left": {
+                                                                                                                "type": "BinaryExpression",
+                                                                                                                "operator": "===",
+                                                                                                                "left": {
+                                                                                                                    "type": "Identifier",
+                                                                                                                    "name": "key"
+                                                                                                                },
+                                                                                                                "right": {
+                                                                                                                    "type": "Literal",
+                                                                                                                    "value": "value",
+                                                                                                                    "raw": "'value'"
+                                                                                                                }
+                                                                                                            },
+                                                                                                            "right": {
+                                                                                                                "type": "BinaryExpression",
+                                                                                                                "operator": "instanceof",
+                                                                                                                "left": {
+                                                                                                                    "type": "Identifier",
+                                                                                                                    "name": "value"
+                                                                                                                },
+                                                                                                                "right": {
+                                                                                                                    "type": "Identifier",
+                                                                                                                    "name": "RegExp"
+                                                                                                                }
+                                                                                                            }
+                                                                                                        },
+                                                                                                        "consequent": {
+                                                                                                            "type": "BlockStatement",
+                                                                                                            "body": [
+                                                                                                                {
+                                                                                                                    "type": "ExpressionStatement",
+                                                                                                                    "expression": {
+                                                                                                                        "type": "AssignmentExpression",
+                                                                                                                        "operator": "=",
+                                                                                                                        "left": {
+                                                                                                                            "type": "Identifier",
+                                                                                                                            "name": "value"
+                                                                                                                        },
+                                                                                                                        "right": {
+                                                                                                                            "type": "CallExpression",
+                                                                                                                            "callee": {
+                                                                                                                                "type": "MemberExpression",
+                                                                                                                                "computed": false,
+                                                                                                                                "object": {
+                                                                                                                                    "type": "Identifier",
+                                                                                                                                    "name": "value"
+                                                                                                                                },
+                                                                                                                                "property": {
+                                                                                                                                    "type": "Identifier",
+                                                                                                                                    "name": "toString"
+                                                                                                                                }
+                                                                                                                            },
+                                                                                                                            "arguments": []
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        },
+                                                                                                        "alternate": null
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "type": "ReturnStatement",
+                                                                                                        "argument": {
+                                                                                                            "type": "Identifier",
+                                                                                                            "name": "value"
+                                                                                                        }
+                                                                                                    }
+                                                                                                ]
+                                                                                            },
+                                                                                            "generator": false,
+                                                                                            "expression": false,
+                                                                                            "async": false
+                                                                                        },
+                                                                                        {
+                                                                                            "type": "Literal",
+                                                                                            "value": 4,
+                                                                                            "raw": "4"
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        ],
+                                                                        "kind": "let"
+                                                                    },
+                                                                    {
+                                                                        "type": "ReturnStatement",
+                                                                        "argument": {
+                                                                            "type": "CallExpression",
+                                                                            "callee": {
+                                                                                "type": "Identifier",
+                                                                                "name": "r"
+                                                                            },
+                                                                            "arguments": [
+                                                                                {
+                                                                                    "type": "Identifier",
+                                                                                    "name": "json"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "generator": false,
+                                                            "expression": false,
+                                                            "async": false
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "generator": false,
+                                    "expression": false,
+                                    "async": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "generator": false,
+            "expression": false,
+            "async": true
+        },
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "CallExpression",
+                "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "MemberExpression",
+                            "computed": false,
+                            "object": {
+                                "type": "CallExpression",
+                                "callee": {
+                                    "type": "Identifier",
+                                    "name": "main"
+                                },
+                                "arguments": []
+                            },
+                            "property": {
+                                "type": "Identifier",
+                                "name": "then"
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "type": "ArrowFunctionExpression",
+                                "id": null,
+                                "params": [
+                                    {
+                                        "type": "Identifier",
+                                        "name": "json"
+                                    }
+                                ],
+                                "body": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "MemberExpression",
+                                        "computed": false,
+                                        "object": {
+                                            "type": "Identifier",
+                                            "name": "console"
+                                        },
+                                        "property": {
+                                            "type": "Identifier",
+                                            "name": "log"
+                                        }
+                                    },
+                                    "arguments": [
+                                        {
+                                            "type": "Identifier",
+                                            "name": "json"
+                                        }
+                                    ]
+                                },
+                                "generator": false,
+                                "expression": true,
+                                "async": false
+                            }
+                        ]
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "catch"
+                    }
+                },
+                "arguments": [
+                    {
+                        "type": "ArrowFunctionExpression",
+                        "id": null,
+                        "params": [
+                            {
+                                "type": "Identifier",
+                                "name": "e"
+                            }
+                        ],
+                        "body": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "MemberExpression",
+                                "computed": false,
+                                "object": {
+                                    "type": "Identifier",
+                                    "name": "console"
+                                },
+                                "property": {
+                                    "type": "Identifier",
+                                    "name": "error"
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "e"
+                                }
+                            ]
+                        },
+                        "generator": false,
+                        "expression": true,
+                        "async": false
+                    }
+                ]
+            }
+        }
+    ],
+    "sourceType": "script"
+}

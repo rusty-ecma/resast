@@ -1241,5 +1241,4 @@ mod test {
         let expectation = "\"𝌆☃φ 💩𝌆☃φ 𝌆☃φ\"";
         assert_eq!(unescaper(js).unwrap(), expectation.to_string());
     }
-
 }
