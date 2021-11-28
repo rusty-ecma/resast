@@ -91,7 +91,7 @@ pub enum ImportSpecifier<'a> {
     /// import {Thing} from './stuff.js';
     /// import {People as Persons} from './places.js';
     /// ```
-    Normal(NormalImportSpec<'a>),
+    Normal(Vec<NormalImportSpec<'a>>),
     /// A specifier that has been exported with the
     /// default keyword, this should not be wrapped in
     /// curly braces.

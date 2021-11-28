@@ -1,7 +1,7 @@
-use crate::VarKind;
 use crate::decl::VarDecl;
 use crate::expr::Expr;
 use crate::pat::Pat;
+use crate::VarKind;
 use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
