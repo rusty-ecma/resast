@@ -1,7 +1,8 @@
+use std::borrow::Cow;
+
 use crate::spanned::pat::Pat;
 use crate::spanned::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp};
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
-use crate::PropKind;
 
 use super::{Node, Slice, SourceLocation};
 
@@ -28,7 +29,7 @@ pub enum Expr<'a> {
     /// ```
     Assign(AssignExpr<'a>),
     /// The `await` keyword followed by another `Expr`
-    Await(Box<Expr<'a>>),
+    Await(Box<AwaitExpr<'a>>),
     /// An operation that has two arguments
     Binary(BinaryExpr<'a>),
     /// A class expression see `Class`
@@ -67,7 +68,7 @@ pub enum Expr<'a> {
     /// Any sequence of expressions separated with a comma
     Sequence(SequenceExpr<'a>),
     /// `...` followed by an `Expr`
-    Spread(Box<Expr<'a>>),
+    Spread(Box<SpreadExpr<'a>>),
     /// `super`
     Super(Slice<'a>),
     /// A template literal preceded by a tag function identifier
@@ -88,6 +89,47 @@ pub enum Expr<'a> {
     Update(UpdateExpr<'a>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<'a>),
+}
+
+impl<'a> From<Expr<'a>> for crate::Expr<'a> {
+    fn from(other: Expr<'a>) -> Self {
+        match other {
+            Expr::Array(inner) => Self::Array(
+                inner
+                    .elements
+                    .into_iter()
+                    .map(|e| e.map(From::from))
+                    .collect(),
+            ),
+            Expr::ArrowFunc(inner) => Self::ArrowFunc(inner.into()),
+            Expr::ArrowParamPlaceHolder(inner) => Self::ArrowParamPlaceHolder(
+                inner.args.into_iter().map(From::from).collect(),
+                inner.keyword.is_some(),
+            ),
+            Expr::Assign(inner) => Self::Assign(inner.into()),
+            Expr::Await(inner) => Self::Await(Box::new(inner.expr.into())),
+            Expr::Binary(inner) => Self::Binary(inner.into()),
+            Expr::Class(inner) => Self::Class(inner.into()),
+            Expr::Call(inner) => Self::Call(inner.into()),
+            Expr::Conditional(inner) => Self::Conditional(inner.into()),
+            Expr::Func(inner) => Self::Func(inner.into()),
+            Expr::Ident(inner) => Self::Ident(inner.into()),
+            Expr::Lit(inner) => Self::Lit(inner.into()),
+            Expr::Logical(inner) => Self::Logical(inner.into()),
+            Expr::Member(inner) => Self::Member(inner.into()),
+            Expr::MetaProp(inner) => Self::MetaProp(inner.into()),
+            Expr::New(inner) => Self::New(inner.into()),
+            Expr::Obj(inner) => Self::Obj(inner.props.into_iter().map(From::from).collect()),
+            Expr::Sequence(inner) => Self::Sequence(inner.into_iter().map(From::from).collect()),
+            Expr::Spread(inner) => Self::Spread(Box::new(inner.expr.into())),
+            Expr::Super(_) => Self::Super,
+            Expr::TaggedTemplate(inner) => Self::TaggedTemplate(inner.into()),
+            Expr::This(_) => Self::This,
+            Expr::Unary(inner) => Self::Unary(inner.into()),
+            Expr::Update(inner) => Self::Update(inner.into()),
+            Expr::Yield(inner) => Self::Yield(inner.into()),
+        }
+    }
 }
 
 impl<'a> Node for Expr<'a> {
@@ -159,28 +201,174 @@ impl<'a> Node for ObjExpr<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub enum ObjProp<'a> {
     Prop(Prop<'a>),
-    Spread(Expr<'a>),
+    Spread(SpreadExpr<'a>),
+}
+
+impl<'a> From<ObjProp<'a>> for crate::expr::ObjProp<'a> {
+    fn from(other: ObjProp<'a>) -> Self {
+        match other {
+            ObjProp::Prop(inner) => Self::Prop(inner.into()),
+            ObjProp::Spread(inner) => Self::Spread(inner.expr.into()),
+        }
+    }
 }
 
 impl<'a> Node for ObjProp<'a> {
     fn loc(&self) -> SourceLocation {
-        todo!()
+        match self {
+            ObjProp::Prop(inner) => inner.loc(),
+            ObjProp::Spread(inner) => inner.loc(),
+        }
     }
 }
 
-/// A single part of an object literal or class
+#[derive(PartialEq, Debug, Clone)]
+pub struct SpreadExpr<'a> {
+    dots: Slice<'a>,
+    expr: Expr<'a>,
+}
+
+impl<'a> Node for SpreadExpr<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.dots.loc.start,
+            end: self.expr.loc().end,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
-pub struct Prop<'a> {
-    pub key: PropKey<'a>,
-    pub value: Option<PropValue<'a>>,
-    pub kind: PropKind,
-    pub method: bool,
-    pub computed: bool,
-    pub short_hand: bool,
-    pub is_static: bool,
+pub enum Prop<'a> {
+    Init(PropInit<'a>),
+    Method(PropMethod<'a>),
+    Ctor(PropCtor<'a>),
+    Get(PropGet<'a>),
+    Set(PropSet<'a>),
+}
+
+impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
+    fn from(other: Prop<'a>) -> Self {
+        match other {
+            Prop::Init(inner) => Self {
+                computed: inner.key.brackets.is_some(),
+                short_hand: inner.value.is_none(),
+                key: inner.key.into(),
+                value: inner
+                    .value
+                    .map(From::from)
+                    .unwrap_or(crate::expr::PropValue::None),
+                kind: crate::PropKind::Init,
+                method: false,
+                is_static: false,
+            },
+            Prop::Method(inner) => Self {
+                key: inner.id.into(),
+                value: crate::prelude::PropValue::Expr(crate::Expr::Func(crate::Func {
+                    body: inner.body.into(),
+                    generator: inner.star.is_some(),
+                    id: None,
+                    is_async: inner.keyword.is_some(),
+                    params: inner.params.into_iter().map(From::from).collect(),
+                })),
+                kind: crate::PropKind::Method,
+                method: true,
+                computed: false,
+                short_hand: false,
+                is_static: false,
+            },
+            Prop::Ctor(inner) => Self {
+                computed: inner.keyword.brackets.is_some(),
+                key: inner.keyword.into(),
+                value: crate::prelude::PropValue::Expr(crate::Expr::Func(crate::Func {
+                    body: inner.body.into(),
+                    generator: false,
+                    id: None,
+                    is_async: false,
+                    params: inner.params.into_iter().map(From::from).collect(),
+                })),
+                kind: crate::PropKind::Ctor,
+                is_static: false,
+                method: false,
+                short_hand: false,
+            },
+            Prop::Get(inner) => Self {
+                computed: inner.id.brackets.is_some(),
+                key: inner.id.into(),
+                value: crate::prelude::PropValue::Expr(crate::Expr::Func(crate::Func {
+                    body: inner.body.into(),
+                    generator: false,
+                    id: None,
+                    is_async: false,
+                    params: Vec::new(),
+                })),
+                kind: crate::PropKind::Get,
+                method: true,
+                short_hand: false,
+                is_static: false,
+            },
+            Prop::Set(inner) => Self {
+                computed: inner.id.brackets.is_some(),
+                key: inner.id.into(),
+                value: crate::prelude::PropValue::Expr(crate::Expr::Func(crate::Func {
+                    body: inner.body.into(),
+                    generator: false,
+                    id: None,
+                    is_async: false,
+                    params: vec![inner.arg.into()],
+                })),
+                kind: crate::PropKind::Set,
+                method: true,
+                short_hand: false,
+                is_static: false,
+            },
+        }
+    }
 }
 
 impl<'a> Node for Prop<'a> {
+    fn loc(&self) -> SourceLocation {
+        match self {
+            Prop::Init(inner) => inner.loc(),
+            Prop::Method(inner) => inner.loc(),
+            Prop::Ctor(inner) => inner.loc(),
+            Prop::Get(inner) => inner.loc(),
+            Prop::Set(inner) => inner.loc(),
+        }
+    }
+}
+
+impl<'a> Prop<'a> {
+    pub fn computed(&self) -> bool {
+        if let Self::Init(init) = self {
+            init.computed()
+        } else {
+            false
+        }
+    }
+    pub fn short_hand(&self) -> bool {
+        if let Self::Init(init) = self {
+            init.short_hand()
+        } else {
+            false
+        }
+    }
+    pub fn is_async(&self) -> bool {
+        if let Self::Method(meth) = self {
+            meth.keyword.is_some()
+        } else {
+            false
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropInit<'a> {
+    pub key: PropInitKey<'a>,
+    pub colon: Option<Slice<'a>>,
+    pub value: Option<PropValue<'a>>,
+}
+
+impl<'a> Node for PropInit<'a> {
     fn loc(&self) -> SourceLocation {
         if let Some(value) = &self.value {
             SourceLocation {
@@ -193,12 +381,138 @@ impl<'a> Node for Prop<'a> {
     }
 }
 
+impl<'a> PropInit<'a> {
+    pub fn computed(&self) -> bool {
+        self.key.brackets.is_some()
+    }
+    pub fn short_hand(&self) -> bool {
+        self.value.is_none()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropInitKey<'a> {
+    pub value: PropKey<'a>,
+    pub brackets: Option<(Slice<'a>, Slice<'a>)>,
+}
+
+impl<'a> From<PropInitKey<'a>> for crate::expr::PropKey<'a> {
+    fn from(other: PropInitKey<'a>) -> Self {
+        other.value.into()
+    }
+}
+
+impl<'a> Node for PropInitKey<'a> {
+    fn loc(&self) -> SourceLocation {
+        if let Some((open, close)) = &self.brackets {
+            SourceLocation {
+                start: open.loc.start,
+                end: close.loc.end,
+            }
+        } else {
+            self.value.loc()
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropMethod<'a> {
+    pub keyword: Option<Slice<'a>>,
+    pub star: Option<Slice<'a>>,
+    pub id: PropInitKey<'a>,
+    pub open_paren: Slice<'a>,
+    pub params: Vec<FuncArg<'a>>,
+    pub close_paren: Slice<'a>,
+    pub body: FuncBody<'a>,
+}
+
+impl<'a> Node for PropMethod<'a> {
+    fn loc(&self) -> SourceLocation {
+        let start = if let Some(keyword) = &self.keyword {
+            keyword.loc.start
+        } else if let Some(star) = &self.star {
+            star.loc.start
+        } else {
+            self.id.loc().start
+        };
+        SourceLocation {
+            start,
+            end: self.body.loc().end,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropCtor<'a> {
+    pub keyword: PropInitKey<'a>,
+    pub open_paren: Slice<'a>,
+    pub params: Vec<FuncArg<'a>>,
+    pub close_paren: Slice<'a>,
+    pub body: FuncBody<'a>,
+}
+
+impl<'a> Node for PropCtor<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword.loc().start,
+            end: self.body.loc().end,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropGet<'a> {
+    pub keyword: Slice<'a>,
+    pub id: PropInitKey<'a>,
+    pub open_paren: Slice<'a>,
+    pub close_paren: Slice<'a>,
+    pub body: FuncBody<'a>,
+}
+
+impl<'a> Node for PropGet<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword.loc.start,
+            end: self.body.loc().end,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PropSet<'a> {
+    pub keyword: Slice<'a>,
+    pub id: PropInitKey<'a>,
+    pub open_paren: Slice<'a>,
+    pub arg: FuncArg<'a>,
+    pub close_paren: Slice<'a>,
+    pub body: FuncBody<'a>,
+}
+
+impl<'a> Node for PropSet<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword.loc.start,
+            end: self.body.loc().end,
+        }
+    }
+}
+
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone)]
 pub enum PropKey<'a> {
     Lit(Lit<'a>),
     Expr(Expr<'a>),
     Pat(Pat<'a>),
+}
+
+impl<'a> From<PropKey<'a>> for crate::expr::PropKey<'a> {
+    fn from(other: PropKey<'a>) -> Self {
+        match other {
+            PropKey::Lit(inner) => Self::Lit(inner.into()),
+            PropKey::Expr(inner) => Self::Expr(inner.into()),
+            PropKey::Pat(inner) => Self::Pat(inner.into()),
+        }
+    }
 }
 
 impl<'a> Node for PropKey<'a> {
@@ -218,6 +532,15 @@ pub enum PropValue<'a> {
     Pat(Pat<'a>),
 }
 
+impl<'a> From<PropValue<'a>> for crate::expr::PropValue<'a> {
+    fn from(other: PropValue<'a>) -> Self {
+        match other {
+            PropValue::Expr(inner) => Self::Expr(inner.into()),
+            PropValue::Pat(inner) => Self::Pat(inner.into()),
+        }
+    }
+}
+
 impl<'a> Node for PropValue<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -233,6 +556,16 @@ pub struct UnaryExpr<'a> {
     pub operator: UnaryOp<'a>,
     pub prefix: bool,
     pub argument: Box<Expr<'a>>,
+}
+
+impl<'a> From<UnaryExpr<'a>> for crate::expr::UnaryExpr<'a> {
+    fn from(other: UnaryExpr<'a>) -> Self {
+        Self {
+            operator: other.operator.into(),
+            prefix: other.prefix,
+            argument: Box::new(From::from(*other.argument)),
+        }
+    }
 }
 
 impl<'a> Node for UnaryExpr<'a> {
@@ -254,6 +587,16 @@ pub struct UpdateExpr<'a> {
     pub prefix: bool,
 }
 
+impl<'a> From<UpdateExpr<'a>> for crate::expr::UpdateExpr<'a> {
+    fn from(other: UpdateExpr<'a>) -> Self {
+        Self {
+            operator: other.operator.into(),
+            argument: Box::new(From::from(*other.argument)),
+            prefix: other.prefix,
+        }
+    }
+}
+
 impl<'a> Node for UpdateExpr<'a> {
     fn loc(&self) -> SourceLocation {
         let (start, end) = if self.prefix {
@@ -273,6 +616,16 @@ pub struct BinaryExpr<'a> {
     pub right: Box<Expr<'a>>,
 }
 
+impl<'a> From<BinaryExpr<'a>> for crate::expr::BinaryExpr<'a> {
+    fn from(other: BinaryExpr<'a>) -> Self {
+        Self {
+            operator: other.operator.into(),
+            left: Box::new(From::from(*other.left)),
+            right: Box::new(From::from(*other.right)),
+        }
+    }
+}
+
 impl<'a> Node for BinaryExpr<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -290,6 +643,16 @@ pub struct AssignExpr<'a> {
     pub right: Box<Expr<'a>>,
 }
 
+impl<'a> From<AssignExpr<'a>> for crate::expr::AssignExpr<'a> {
+    fn from(other: AssignExpr<'a>) -> Self {
+        Self {
+            operator: other.operator.into(),
+            left: other.left.into(),
+            right: Box::new(From::from(*other.right)),
+        }
+    }
+}
+
 impl<'a> Node for AssignExpr<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -299,11 +662,35 @@ impl<'a> Node for AssignExpr<'a> {
     }
 }
 
+#[derive(PartialEq, Debug, Clone)]
+pub struct AwaitExpr<'a> {
+    pub keyword: Slice<'a>,
+    pub expr: Expr<'a>,
+}
+
+impl<'a> Node for AwaitExpr<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword.loc.start,
+            end: self.expr.loc().end,
+        }
+    }
+}
+
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
 pub enum AssignLeft<'a> {
     Pat(Pat<'a>),
     Expr(Box<Expr<'a>>),
+}
+
+impl<'a> From<AssignLeft<'a>> for crate::expr::AssignLeft<'a> {
+    fn from(other: AssignLeft<'a>) -> Self {
+        match other {
+            AssignLeft::Pat(inner) => Self::Pat(inner.into()),
+            AssignLeft::Expr(inner) => Self::Expr(Box::new(From::from(*inner))),
+        }
+    }
 }
 
 impl<'a> Node for AssignLeft<'a> {
@@ -327,6 +714,16 @@ pub struct LogicalExpr<'a> {
     pub right: Box<Expr<'a>>,
 }
 
+impl<'a> From<LogicalExpr<'a>> for crate::expr::LogicalExpr<'a> {
+    fn from(other: LogicalExpr<'a>) -> Self {
+        Self {
+            operator: other.operator.into(),
+            left: Box::new(From::from(*other.left)),
+            right: Box::new(From::from(*other.right)),
+        }
+    }
+}
+
 impl<'a> Node for LogicalExpr<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -346,6 +743,17 @@ pub struct MemberExpr<'a> {
     pub object: Box<Expr<'a>>,
     pub property: Box<Expr<'a>>,
     pub indexer: MemberIndexer<'a>,
+}
+
+impl<'a> From<MemberExpr<'a>> for crate::expr::MemberExpr<'a> {
+    fn from(other: MemberExpr<'a>) -> Self {
+        let computed = other.computed();
+        Self {
+            object: Box::new(From::from(*other.object)),
+            property: Box::new(From::from(*other.property)),
+            computed,
+        }
+    }
 }
 
 impl<'a> MemberExpr<'a> {
@@ -402,6 +810,16 @@ pub struct ConditionalExpr<'a> {
     pub consequent: Box<Expr<'a>>,
 }
 
+impl<'a> From<ConditionalExpr<'a>> for crate::expr::ConditionalExpr<'a> {
+    fn from(other: ConditionalExpr<'a>) -> Self {
+        Self {
+            test: Box::new(From::from(*other.test)),
+            alternate: Box::new(From::from(*other.alternate)),
+            consequent: Box::new(From::from(*other.consequent)),
+        }
+    }
+}
+
 impl<'a> Node for ConditionalExpr<'a> {
     fn loc(&self) -> SourceLocation {
         let start = self.test.loc().start;
@@ -420,6 +838,15 @@ pub struct CallExpr<'a> {
     pub open_paren: Slice<'a>,
     pub arguments: Vec<Expr<'a>>,
     pub close_paren: Slice<'a>,
+}
+
+impl<'a> From<CallExpr<'a>> for crate::expr::CallExpr<'a> {
+    fn from(other: CallExpr<'a>) -> Self {
+        Self {
+            callee: Box::new(From::from(*other.callee)),
+            arguments: other.arguments.into_iter().map(From::from).collect(),
+        }
+    }
 }
 
 impl<'a> Node for CallExpr<'a> {
@@ -441,6 +868,15 @@ pub struct NewExpr<'a> {
     pub open_paren: Slice<'a>,
     pub arguments: Vec<Expr<'a>>,
     pub close_paren: Slice<'a>,
+}
+
+impl<'a> From<NewExpr<'a>> for crate::expr::NewExpr<'a> {
+    fn from(other: NewExpr<'a>) -> Self {
+        Self {
+            callee: Box::new(From::from(*other.callee)),
+            arguments: other.arguments.into_iter().map(From::from).collect(),
+        }
+    }
 }
 
 impl<'a> Node for NewExpr<'a> {
@@ -476,6 +912,8 @@ impl<'a> Node for SequenceExpr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrowParamPlaceHolder<'a> {
+    // async keyword
+    pub keyword: Option<Slice<'a>>,
     pub open_paren: Slice<'a>,
     pub args: Vec<FuncArg<'a>>,
     pub close_paren: Slice<'a>,
@@ -499,14 +937,27 @@ impl<'a> Node for ArrowParamPlaceHolder<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ArrowFuncExpr<'a> {
+    pub keyword: Option<Slice<'a>>,
+    pub star: Option<Slice<'a>>,
     pub open_paren: Option<Slice<'a>>,
     pub id: Option<Ident<'a>>,
     pub params: Vec<FuncArg<'a>>,
     pub close_paren: Option<Slice<'a>>,
     pub body: ArrowFuncBody<'a>,
-    pub expression: bool,
-    pub generator: bool,
-    pub is_async: bool,
+}
+
+impl<'a> From<ArrowFuncExpr<'a>> for crate::expr::ArrowFuncExpr<'a> {
+    fn from(other: ArrowFuncExpr<'a>) -> Self {
+        let expression = matches!(&other.body, ArrowFuncBody::Expr(_));
+        Self {
+            id: other.id.map(From::from),
+            params: other.params.into_iter().map(From::from).collect(),
+            body: other.body.into(),
+            expression,
+            generator: other.star.is_some(),
+            is_async: other.keyword.is_some(),
+        }
+    }
 }
 
 impl<'a> Node for ArrowFuncExpr<'a> {
@@ -532,6 +983,15 @@ pub enum ArrowFuncBody<'a> {
     Expr(Box<Expr<'a>>),
 }
 
+impl<'a> From<ArrowFuncBody<'a>> for crate::expr::ArrowFuncBody<'a> {
+    fn from(other: ArrowFuncBody<'a>) -> Self {
+        match other {
+            ArrowFuncBody::FuncBody(inner) => Self::FuncBody(inner.into()),
+            ArrowFuncBody::Expr(inner) => Self::Expr(Box::new(From::from(*inner))),
+        }
+    }
+}
+
 impl<'a> Node for ArrowFuncBody<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -553,7 +1013,16 @@ impl<'a> Node for ArrowFuncBody<'a> {
 pub struct YieldExpr<'a> {
     pub keyword: Slice<'a>,
     pub argument: Option<Box<Expr<'a>>>,
-    pub delegate: bool,
+    pub star: Option<Slice<'a>>,
+}
+
+impl<'a> From<YieldExpr<'a>> for crate::expr::YieldExpr<'a> {
+    fn from(other: YieldExpr<'a>) -> Self {
+        Self {
+            argument: other.argument.map(|e| Box::new(From::from(*e))),
+            delegate: other.star.is_some(),
+        }
+    }
 }
 
 impl<'a> Node for YieldExpr<'a> {
@@ -578,6 +1047,15 @@ pub struct TaggedTemplateExpr<'a> {
     pub quasi: TemplateLit<'a>,
 }
 
+impl<'a> From<TaggedTemplateExpr<'a>> for crate::expr::TaggedTemplateExpr<'a> {
+    fn from(other: TaggedTemplateExpr<'a>) -> Self {
+        Self {
+            tag: Box::new(From::from(*other.tag)),
+            quasi: other.quasi.into(),
+        }
+    }
+}
+
 impl<'a> Node for TaggedTemplateExpr<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -593,17 +1071,34 @@ impl<'a> Node for TaggedTemplateExpr<'a> {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct TemplateLit<'a> {
-    pub open_tick: Slice<'a>,
     pub quasis: Vec<TemplateElement<'a>>,
     pub expressions: Vec<Expr<'a>>,
-    pub close_tick: Slice<'a>,
+}
+
+impl<'a> From<TemplateLit<'a>> for crate::expr::TemplateLit<'a> {
+    fn from(other: TemplateLit<'a>) -> Self {
+        Self {
+            quasis: other.quasis.into_iter().map(From::from).collect(),
+            expressions: other.expressions.into_iter().map(From::from).collect(),
+        }
+    }
 }
 
 impl<'a> Node for TemplateLit<'a> {
     fn loc(&self) -> SourceLocation {
+        let start = self
+            .quasis
+            .first()
+            .map(|q| q.loc())
+            .unwrap_or_else(SourceLocation::zero);
+        let end = self
+            .quasis
+            .last()
+            .map(|q| q.loc())
+            .unwrap_or_else(SourceLocation::zero);
         SourceLocation {
-            start: self.open_tick.loc.start,
-            end: self.close_tick.loc.end,
+            start: start.start,
+            end: end.end,
         }
     }
 }
@@ -611,16 +1106,31 @@ impl<'a> Node for TemplateLit<'a> {
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
 pub struct TemplateElement<'a> {
-    pub tail: bool,
-    /// The non-quoted version
-    pub cooked: Slice<'a>,
-    /// The quoted version
+    /// Raw quoted element
     pub raw: Slice<'a>,
+    pub cooked: Slice<'a>,
+}
+
+impl<'a> From<TemplateElement<'a>> for crate::expr::TemplateElement<'a> {
+    fn from(other: TemplateElement<'a>) -> Self {
+        let tail = other.is_tail();
+        Self {
+            tail,
+            cooked: other.cooked.source,
+            raw: other.raw.source,
+        }
+    }
 }
 
 impl<'a> Node for TemplateElement<'a> {
     fn loc(&self) -> SourceLocation {
         self.raw.loc
+    }
+}
+
+impl<'a> TemplateElement<'a> {
+    pub fn is_tail(&self) -> bool {
+        self.raw.source.starts_with(|c| c == '`' || c == '}') && self.raw.source.ends_with('`')
     }
 }
 
@@ -637,7 +1147,17 @@ impl<'a> Node for TemplateElement<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct MetaProp<'a> {
     pub meta: Ident<'a>,
+    pub dot: Slice<'a>,
     pub property: Ident<'a>,
+}
+
+impl<'a> From<MetaProp<'a>> for crate::expr::MetaProp<'a> {
+    fn from(other: MetaProp<'a>) -> Self {
+        Self {
+            meta: other.meta.into(),
+            property: other.property.into(),
+        }
+    }
 }
 
 impl<'a> Node for MetaProp<'a> {
@@ -677,6 +1197,19 @@ pub enum Lit<'a> {
     Template(TemplateLit<'a>),
 }
 
+impl<'a> From<Lit<'a>> for crate::expr::Lit<'a> {
+    fn from(other: Lit<'a>) -> Self {
+        match other {
+            Lit::Null(_inner) => Self::Null,
+            Lit::String(inner) => Self::String(inner.into()),
+            Lit::Number(inner) => Self::Number(inner.source),
+            Lit::Boolean(inner) => Self::Boolean(inner.source == "true"),
+            Lit::RegEx(inner) => Self::RegEx(inner.into()),
+            Lit::Template(inner) => Self::Template(inner.into()),
+        }
+    }
+}
+
 impl<'a> Node for Lit<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -691,11 +1224,20 @@ impl<'a> Node for Lit<'a> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct StringLit<'a> {
     pub open_quote: Slice<'a>,
     pub content: Slice<'a>,
     pub close_quote: Slice<'a>,
+}
+
+impl<'a> From<StringLit<'a>> for crate::expr::StringLit<'a> {
+    fn from(other: StringLit<'a>) -> Self {
+        if other.open_quote.source == "\"" {
+            Self::Double(other.content.source)
+        } else {
+            Self::Single(other.content.source)
+        }
+    }
 }
 
 impl<'a> Node for StringLit<'a> {
@@ -719,6 +1261,18 @@ pub struct RegEx<'a> {
     pub pattern: Slice<'a>,
     pub close_slash: Slice<'a>,
     pub flags: Option<Slice<'a>>,
+}
+
+impl<'a> From<RegEx<'a>> for crate::expr::RegEx<'a> {
+    fn from(other: RegEx<'a>) -> Self {
+        Self {
+            pattern: other.pattern.source,
+            flags: other
+                .flags
+                .map(|f| f.source)
+                .unwrap_or_else(|| Cow::Borrowed("")),
+        }
+    }
 }
 
 impl<'a> Node for RegEx<'a> {

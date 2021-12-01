@@ -173,6 +173,32 @@ pub enum Stmt<'a> {
     Var(Vec<VarDecl<'a>>),
 }
 
+impl<'a> From<Stmt<'a>> for crate::stmt::Stmt<'a> {
+    fn from(other: Stmt<'a>) -> Self {
+        match other {
+            Stmt::Expr(inner) => Self::Expr(inner.into()),
+            Stmt::Block(inner) => Self::Block(inner.into()),
+            Stmt::Empty(inner) => Self::Empty(inner.into()),
+            Stmt::Debugger(inner) => Self::Debugger(inner.into()),
+            Stmt::With(inner) => Self::With(inner.into()),
+            Stmt::Return(inner) => Self::Return(inner.into()),
+            Stmt::Labeled(inner) => Self::Labeled(inner.into()),
+            Stmt::Break(inner) => Self::Break(inner.into()),
+            Stmt::Continue(inner) => Self::Continue(inner.into()),
+            Stmt::If(inner) => Self::If(inner.into()),
+            Stmt::Switch(inner) => Self::Switch(inner.into()),
+            Stmt::Throw(inner) => Self::Throw(inner.into()),
+            Stmt::Try(inner) => Self::Try(inner.into()),
+            Stmt::While(inner) => Self::While(inner.into()),
+            Stmt::DoWhile(inner) => Self::DoWhile(inner.into()),
+            Stmt::For(inner) => Self::For(inner.into()),
+            Stmt::ForIn(inner) => Self::ForIn(inner.into()),
+            Stmt::ForOf(inner) => Self::ForOf(inner.into()),
+            Stmt::Var(inner) => Self::Var(inner.into()),
+        }
+    }
+}
+
 impl<'a> Node for Stmt<'a> {
     fn loc(&self) -> super::SourceLocation {
         todo!()
@@ -325,6 +351,12 @@ pub struct BlockStmt<'a> {
     pub open_brace: Slice<'a>,
     pub stmts: Vec<ProgramPart<'a>>,
     pub close_brace: Slice<'a>,
+}
+
+impl<'a> From<BlockStmt<'a>> for crate::stmt::BlockStmt<'a> {
+    fn from(other: BlockStmt<'a>) -> Self {
+        Self(other.stmts.into_iter().map(From::from).collect())
+    }
 }
 
 impl<'a> Node for BlockStmt<'a> {

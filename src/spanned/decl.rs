@@ -38,14 +38,20 @@ pub enum Decl<'a> {
     Export(Box<ModExport<'a>>),
 }
 
+impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
+    fn from(_: Decl<'a>) -> Self {
+        todo!()
+    }
+}
+
 impl<'a> Node for Decl<'a> {
     fn loc(&self) -> super::SourceLocation {
         match self {
-            Decl::Var(_) => todo!(),
-            Decl::Func(_) => todo!(),
-            Decl::Class(_) => todo!(),
-            Decl::Import(_) => todo!(),
-            Decl::Export(_) => todo!(),
+            Decl::Var(inner) => inner.loc(),
+            Decl::Func(inner) => inner.loc(),
+            Decl::Class(inner) => inner.loc(),
+            Decl::Import(inner) => inner.loc(),
+            Decl::Export(inner) => inner.loc(),
         }
     }
 }
@@ -304,14 +310,23 @@ impl<'a> Node for ModExportSpecifier<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub enum NamedExportDecl<'a> {
     Decl(Decl<'a>),
-    Specifier(Vec<ExportSpecifier<'a>>, Option<Lit<'a>>),
+    Specifier(ExportList<'a>, Option<Slice<'a>>, Option<Lit<'a>>),
 }
 
 impl<'a> Node for NamedExportDecl<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
             NamedExportDecl::Decl(inner) => inner.loc(),
-            NamedExportDecl::Specifier(_, _) => todo!(),
+            NamedExportDecl::Specifier(list, _, module) => {
+                if let Some(module) = module {
+                    SourceLocation {
+                        start: list.loc().start,
+                        end: module.loc().end,
+                    }
+                } else {
+                    list.loc()
+                }
+            }
         }
     }
 }

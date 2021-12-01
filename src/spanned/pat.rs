@@ -12,6 +12,12 @@ pub enum Pat<'a> {
     Assign(AssignPat<'a>),
 }
 
+impl<'a> From<Pat<'a>> for crate::pat::Pat<'a> {
+    fn from(_: Pat<'a>) -> Self {
+        todo!()
+    }
+}
+
 impl<'a> Node for Pat<'a> {
     fn loc(&self) -> super::SourceLocation {
         match self {

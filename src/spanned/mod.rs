@@ -25,6 +25,20 @@ impl<'a> Node for Ident<'a> {
     }
 }
 
+impl<'a> From<Ident<'a>> for crate::Ident<'a> {
+    fn from(other: Ident<'a>) -> Self {
+        Self {
+            name: other.slice.source,
+        }
+    }
+}
+
+impl<'a> Ident<'a> {
+    pub fn name(&self) -> Cow<'a, str> {
+        self.slice.source.clone()
+    }
+}
+
 /// A fully parsed javascript program.
 ///
 /// It is essentially a collection of `ProgramPart`s
@@ -38,18 +52,21 @@ pub enum Program<'a> {
     Script(Vec<ProgramPart<'a>>),
 }
 
+impl<'a> From<Program<'a>> for crate::Program<'a> {
+    fn from(other: Program<'a>) -> Self {
+        match other {
+            Program::Mod(inner) => Self::Mod(inner.into_iter().map(From::from).collect()),
+            Program::Script(inner) => Self::Script(inner.into_iter().map(From::from).collect()),
+        }
+    }
+}
+
 impl<'a> Node for Program<'a> {
     fn loc(&self) -> SourceLocation {
-        let start = Position { line: 1, column: 1 };
-        let end = if let Some(last) = match self {
-            Self::Mod(inner) => inner.last(),
-            Self::Script(inner) => inner.last(),
-        } {
-            last.loc().end.clone()
-        } else {
-            start.clone()
-        };
-        SourceLocation { start, end }
+        match self {
+            Self::Mod(inner) => inner.loc(),
+            Self::Script(inner) => inner.loc(),
+        }
     }
 }
 
@@ -59,6 +76,20 @@ impl<'a> Program<'a> {
     }
     pub fn script(parts: Vec<ProgramPart<'a>>) -> Self {
         Program::Script(parts)
+    }
+}
+
+impl<'a> Node for Vec<ProgramPart<'a>> {
+    fn loc(&self) -> SourceLocation {
+        let start = self
+            .first()
+            .map(|p| p.loc())
+            .unwrap_or_else(SourceLocation::zero);
+        let end = self.last().map(|p| p.loc()).unwrap_or(start);
+        SourceLocation {
+            start: start.start,
+            end: end.end,
+        }
     }
 }
 
@@ -72,6 +103,16 @@ pub enum ProgramPart<'a> {
     Decl(Decl<'a>),
     /// Any other kind of statement
     Stmt(Stmt<'a>),
+}
+
+impl<'a> From<ProgramPart<'a>> for crate::ProgramPart<'a> {
+    fn from(other: ProgramPart<'a>) -> Self {
+        match other {
+            ProgramPart::Dir(inner) => Self::Dir(inner.into()),
+            ProgramPart::Decl(inner) => Self::Decl(inner.into()),
+            ProgramPart::Stmt(inner) => Self::Stmt(inner.into()),
+        }
+    }
 }
 
 impl<'a> Node for ProgramPart<'a> {
@@ -101,6 +142,15 @@ pub struct Dir<'a> {
     pub dir: Cow<'a, str>,
 }
 
+impl<'a> From<Dir<'a>> for crate::Dir<'a> {
+    fn from(other: Dir<'a>) -> Self {
+        Self {
+            expr: other.expr.into(),
+            dir: other.dir,
+        }
+    }
+}
+
 impl<'a> Node for Dir<'a> {
     fn loc(&self) -> SourceLocation {
         self.expr.loc()
@@ -122,10 +172,24 @@ impl<'a> Node for Dir<'a> {
 pub struct Func<'a> {
     pub keyword: Slice<'a>,
     pub id: Option<Ident<'a>>,
+    pub open_paren: Slice<'a>,
     pub params: Vec<FuncArg<'a>>,
+    pub close_paren: Slice<'a>,
     pub body: FuncBody<'a>,
     pub generator: bool,
     pub is_async: bool,
+}
+
+impl<'a> From<Func<'a>> for crate::Func<'a> {
+    fn from(other: Func<'a>) -> Self {
+        Self {
+            id: other.id.map(From::from),
+            params: other.params.into_iter().map(From::from).collect(),
+            body: other.body.into(),
+            generator: other.generator,
+            is_async: other.is_async,
+        }
+    }
 }
 
 impl<'a> Node for Func<'a> {
@@ -136,31 +200,20 @@ impl<'a> Node for Func<'a> {
     }
 }
 
-impl<'a> Func<'a> {
-    pub fn new(
-        keyword: Slice<'a>,
-        id: Option<Ident<'a>>,
-        params: Vec<FuncArg<'a>>,
-        body: FuncBody<'a>,
-        generator: bool,
-        is_async: bool,
-    ) -> Self {
-        Func {
-            keyword,
-            id,
-            params,
-            body,
-            generator,
-            is_async,
-        }
-    }
-}
-
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
 pub enum FuncArg<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
+}
+
+impl<'a> From<FuncArg<'a>> for crate::FuncArg<'a> {
+    fn from(other: FuncArg<'a>) -> Self {
+        match other {
+            FuncArg::Expr(inner) => Self::Expr(inner.into()),
+            FuncArg::Pat(inner) => Self::Pat(inner.into()),
+        }
+    }
 }
 
 impl<'a> Node for FuncArg<'a> {
@@ -178,6 +231,12 @@ pub struct FuncBody<'a> {
     pub open_brace: Slice<'a>,
     pub stmts: Vec<ProgramPart<'a>>,
     pub close_brace: Slice<'a>,
+}
+
+impl<'a> From<FuncBody<'a>> for crate::FuncBody<'a> {
+    fn from(other: FuncBody<'a>) -> Self {
+        Self(other.stmts.into_iter().map(From::from).collect())
+    }
 }
 
 impl<'a> Node for FuncBody<'a> {
@@ -217,16 +276,26 @@ impl<'a> Node for FuncBody<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct Class<'a> {
-    pub class: Slice<'a>,
+    pub keyword: Slice<'a>,
     pub id: Option<Ident<'a>>,
     pub super_class: Option<Box<Expr<'a>>>,
     pub body: ClassBody<'a>,
 }
 
+impl<'a> From<Class<'a>> for crate::Class<'a> {
+    fn from(other: Class<'a>) -> Self {
+        Self {
+            id: other.id.map(From::from),
+            super_class: other.super_class.map(|e| Box::new(From::from(*e))),
+            body: other.body.into(),
+        }
+    }
+}
+
 impl<'a> Node for Class<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.class.loc.start,
+            start: self.keyword.loc.start,
             end: self.body.close_brace.loc.end,
         }
     }
@@ -237,6 +306,12 @@ pub struct ClassBody<'a> {
     pub open_brace: Slice<'a>,
     pub props: Vec<Prop<'a>>,
     pub close_brace: Slice<'a>,
+}
+
+impl<'a> From<ClassBody<'a>> for crate::ClassBody<'a> {
+    fn from(other: ClassBody<'a>) -> Self {
+        Self(other.props.into_iter().map(From::from).collect())
+    }
 }
 
 impl<'a> Node for ClassBody<'a> {
@@ -253,6 +328,16 @@ pub enum VarKind<'a> {
     Var(Slice<'a>),
     Let(Slice<'a>),
     Const(Slice<'a>),
+}
+
+impl<'a> From<VarKind<'a>> for crate::VarKind {
+    fn from(other: VarKind<'a>) -> Self {
+        match other {
+            VarKind::Var(_) => Self::Var,
+            VarKind::Let(_) => Self::Let,
+            VarKind::Const(_) => Self::Const,
+        }
+    }
 }
 
 impl<'a> Node for VarKind<'a> {
@@ -283,6 +368,26 @@ pub enum AssignOp<'a> {
     PowerOfEqual(Slice<'a>),
 }
 
+impl<'a> From<AssignOp<'a>> for crate::AssignOp {
+    fn from(other: AssignOp<'a>) -> Self {
+        match other {
+            AssignOp::Equal(_) => Self::Equal,
+            AssignOp::PlusEqual(_) => Self::PlusEqual,
+            AssignOp::MinusEqual(_) => Self::MinusEqual,
+            AssignOp::TimesEqual(_) => Self::TimesEqual,
+            AssignOp::DivEqual(_) => Self::DivEqual,
+            AssignOp::ModEqual(_) => Self::ModEqual,
+            AssignOp::LeftShiftEqual(_) => Self::LeftShiftEqual,
+            AssignOp::RightShiftEqual(_) => Self::RightShiftEqual,
+            AssignOp::UnsignedRightShiftEqual(_) => Self::UnsignedRightShiftEqual,
+            AssignOp::OrEqual(_) => Self::OrEqual,
+            AssignOp::XOrEqual(_) => Self::XOrEqual,
+            AssignOp::AndEqual(_) => Self::AndEqual,
+            AssignOp::PowerOfEqual(_) => Self::PowerOfEqual,
+        }
+    }
+}
+
 impl<'a> Node for AssignOp<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -308,6 +413,15 @@ impl<'a> Node for AssignOp<'a> {
 pub enum LogicalOp<'a> {
     Or(Slice<'a>),
     And(Slice<'a>),
+}
+
+impl<'a> From<LogicalOp<'a>> for crate::LogicalOp {
+    fn from(other: LogicalOp<'a>) -> Self {
+        match other {
+            LogicalOp::Or(_) => Self::Or,
+            LogicalOp::And(_) => Self::And,
+        }
+    }
 }
 
 impl<'a> Node for LogicalOp<'a> {
@@ -346,6 +460,35 @@ pub enum BinaryOp<'a> {
     PowerOf(Slice<'a>),
 }
 
+impl<'a> From<BinaryOp<'a>> for crate::BinaryOp {
+    fn from(other: BinaryOp<'a>) -> Self {
+        match other {
+            BinaryOp::Equal(_) => Self::Equal,
+            BinaryOp::NotEqual(_) => Self::NotEqual,
+            BinaryOp::StrictEqual(_) => Self::StrictEqual,
+            BinaryOp::StrictNotEqual(_) => Self::StrictNotEqual,
+            BinaryOp::LessThan(_) => Self::LessThan,
+            BinaryOp::GreaterThan(_) => Self::GreaterThan,
+            BinaryOp::LessThanEqual(_) => Self::LessThanEqual,
+            BinaryOp::GreaterThanEqual(_) => Self::GreaterThanEqual,
+            BinaryOp::LeftShift(_) => Self::LeftShift,
+            BinaryOp::RightShift(_) => Self::RightShift,
+            BinaryOp::UnsignedRightShift(_) => Self::UnsignedRightShift,
+            BinaryOp::Plus(_) => Self::Plus,
+            BinaryOp::Minus(_) => Self::Minus,
+            BinaryOp::Times(_) => Self::Times,
+            BinaryOp::Over(_) => Self::Over,
+            BinaryOp::Mod(_) => Self::Mod,
+            BinaryOp::Or(_) => Self::Or,
+            BinaryOp::XOr(_) => Self::XOr,
+            BinaryOp::And(_) => Self::And,
+            BinaryOp::In(_) => Self::In,
+            BinaryOp::InstanceOf(_) => Self::InstanceOf,
+            BinaryOp::PowerOf(_) => Self::PowerOf,
+        }
+    }
+}
+
 impl<'a> Node for BinaryOp<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -382,6 +525,15 @@ pub enum UpdateOp<'a> {
     Decrement(Slice<'a>),
 }
 
+impl<'a> From<UpdateOp<'a>> for crate::UpdateOp {
+    fn from(other: UpdateOp<'a>) -> Self {
+        match other {
+            UpdateOp::Increment(_) => Self::Increment,
+            UpdateOp::Decrement(_) => Self::Decrement,
+        }
+    }
+}
+
 impl<'a> Node for UpdateOp<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -402,6 +554,20 @@ pub enum UnaryOp<'a> {
     TypeOf(Slice<'a>),
     Void(Slice<'a>),
     Delete(Slice<'a>),
+}
+
+impl<'a> From<UnaryOp<'a>> for crate::UnaryOp {
+    fn from(other: UnaryOp<'a>) -> Self {
+        match other {
+            UnaryOp::Minus(_) => Self::Minus,
+            UnaryOp::Plus(_) => Self::Plus,
+            UnaryOp::Not(_) => Self::Not,
+            UnaryOp::Tilde(_) => Self::Tilde,
+            UnaryOp::TypeOf(_) => Self::TypeOf,
+            UnaryOp::Void(_) => Self::Void,
+            UnaryOp::Delete(_) => Self::Delete,
+        }
+    }
 }
 
 impl<'a> Node for UnaryOp<'a> {
