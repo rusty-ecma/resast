@@ -39,8 +39,17 @@ pub enum Decl<'a> {
 }
 
 impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
-    fn from(_: Decl<'a>) -> Self {
-        todo!()
+    fn from(other: Decl<'a>) -> Self {
+        match other {
+            Decl::Var(inner) => Self::Var(
+                inner.keyword.into(),
+                inner.decls.into_iter().map(From::from).collect(),
+            ),
+            Decl::Func(inner) => Self::Func(inner.into()),
+            Decl::Class(inner) => Self::Class(inner.into()),
+            Decl::Import(inner) => Self::Import(Box::new(From::from(*inner))),
+            Decl::Export(inner) => Self::Export(Box::new(From::from(*inner))),
+        }
     }
 }
 
@@ -95,6 +104,15 @@ impl<'a> Node for VarDecl<'a> {
     }
 }
 
+impl<'a> From<VarDecl<'a>> for crate::decl::VarDecl<'a> {
+    fn from(other: VarDecl<'a>) -> Self {
+        Self {
+            id: other.id.into(),
+            init: other.init.map(From::from),
+        }
+    }
+}
+
 /// A module declaration, This would only be available
 /// in an ES Mod, it would be either an import or
 /// export at the top level
@@ -121,16 +139,26 @@ impl<'a> Node for ModDecl<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ModImport<'a> {
-    pub keyword: Slice<'a>,
+    pub keyword_import: Slice<'a>,
     pub specifiers: Vec<ImportSpecifier<'a>>,
+    pub keyword_from: Slice<'a>,
     pub source: Lit<'a>,
 }
 
 impl<'a> Node for ModImport<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword.loc.start,
+            start: self.keyword_import.loc.start,
             end: self.source.loc().end,
+        }
+    }
+}
+
+impl<'a> From<ModImport<'a>> for crate::decl::ModImport<'a> {
+    fn from(other: ModImport<'a>) -> Self {
+        Self {
+            source: other.source.into(),
+            specifiers: other.specifiers.into_iter().map(From::from).collect(),
         }
     }
 }
@@ -172,6 +200,18 @@ impl<'a> Node for ImportSpecifier<'a> {
     }
 }
 
+impl<'a> From<ImportSpecifier<'a>> for crate::decl::ImportSpecifier<'a> {
+    fn from(other: ImportSpecifier<'a>) -> Self {
+        match other {
+            ImportSpecifier::Normal(inner) => {
+                Self::Normal(inner.specs.into_iter().map(From::from).collect())
+            }
+            ImportSpecifier::Default(inner) => Self::Default(inner.into()),
+            ImportSpecifier::Namespace(inner) => Self::Namespace(inner.into()),
+        }
+    }
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpecs<'a> {
     pub open_brace: Slice<'a>,
@@ -184,6 +224,18 @@ impl<'a> Node for NormalImportSpecs<'a> {
         SourceLocation {
             start: self.open_brace.loc.start,
             end: self.close_brace.loc.end,
+        }
+    }
+}
+
+impl<'a> From<NormalImportSpec<'a>> for crate::decl::NormalImportSpec<'a> {
+    fn from(other: NormalImportSpec<'a>) -> Self {
+        Self {
+            local: other.local.into(),
+            imported: other
+                .alias
+                .map(From::from)
+                .unwrap_or_else(|| crate::Ident::from("")),
         }
     }
 }
@@ -210,16 +262,17 @@ impl<'a> Node for NormalImportSpec<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DefaultImportSpec<'a> {
     pub id: Ident<'a>,
-    pub keyword: Slice<'a>,
-    pub module: Lit<'a>,
+}
+
+impl<'a> From<DefaultImportSpec<'a>> for crate::Ident<'a> {
+    fn from(other: DefaultImportSpec<'a>) -> Self {
+        other.id.into()
+    }
 }
 
 impl<'a> Node for DefaultImportSpec<'a> {
     fn loc(&self) -> SourceLocation {
-        SourceLocation {
-            start: self.id.loc().start,
-            end: self.module.loc().end,
-        }
+        self.id.loc()
     }
 }
 
@@ -239,6 +292,12 @@ impl<'a> Node for NamespaceImportSpec<'a> {
     }
 }
 
+impl<'a> From<NamespaceImportSpec<'a>> for crate::Ident<'a> {
+    fn from(other: NamespaceImportSpec<'a>) -> Self {
+        other.ident.into()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModExport<'a> {
     pub keyword: Slice<'a>,
@@ -254,6 +313,12 @@ impl<'a> Node for ModExport<'a> {
     }
 }
 
+impl<'a> From<ModExport<'a>> for crate::decl::ModExport<'a> {
+    fn from(other: ModExport<'a>) -> Self {
+        other.spec.into()
+    }
+}
+
 /// Something exported from this module
 #[derive(Debug, Clone, PartialEq)]
 pub enum ModExportSpecifier<'a> {
@@ -264,7 +329,7 @@ pub enum ModExportSpecifier<'a> {
     /// ```
     Default {
         keyword: Slice<'a>,
-        value: ExportDeclValue<'a>,
+        value: DefaultExportDeclValue<'a>,
     },
     ///```js
     /// export {foo} from 'mod';
@@ -303,6 +368,20 @@ impl<'a> Node for ModExportSpecifier<'a> {
     }
 }
 
+impl<'a> From<ModExportSpecifier<'a>> for crate::decl::ModExport<'a> {
+    fn from(other: ModExportSpecifier<'a>) -> Self {
+        match other {
+            ModExportSpecifier::Default { keyword: _, value } => Self::Default(value.into()),
+            ModExportSpecifier::Named(inner) => Self::Named(inner.into()),
+            ModExportSpecifier::All {
+                star: _,
+                keyword: _,
+                name,
+            } => Self::All(name.into()),
+        }
+    }
+}
+
 /// An export that has a name
 /// ```js
 /// export function thing() {}
@@ -310,23 +389,26 @@ impl<'a> Node for ModExportSpecifier<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub enum NamedExportDecl<'a> {
     Decl(Decl<'a>),
-    Specifier(ExportList<'a>, Option<Slice<'a>>, Option<Lit<'a>>),
+    Specifier(NamedExportSpec<'a>),
 }
 
 impl<'a> Node for NamedExportDecl<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
             NamedExportDecl::Decl(inner) => inner.loc(),
-            NamedExportDecl::Specifier(list, _, module) => {
-                if let Some(module) = module {
-                    SourceLocation {
-                        start: list.loc().start,
-                        end: module.loc().end,
-                    }
-                } else {
-                    list.loc()
-                }
-            }
+            NamedExportDecl::Specifier(inner) => inner.loc(),
+        }
+    }
+}
+
+impl<'a> From<NamedExportDecl<'a>> for crate::decl::NamedExportDecl<'a> {
+    fn from(other: NamedExportDecl<'a>) -> Self {
+        match other {
+            NamedExportDecl::Decl(inner) => Self::Decl(inner.into()),
+            NamedExportDecl::Specifier(inner) => Self::Specifier(
+                inner.list.elements.into_iter().map(From::from).collect(),
+                inner.source.map(|s| s.module.into()),
+            ),
         }
     }
 }
@@ -334,7 +416,7 @@ impl<'a> Node for NamedExportDecl<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DefaultExportDecl<'a> {
     pub keyword: Slice<'a>,
-    pub value: ExportDeclValue<'a>,
+    pub value: DefaultExportDeclValue<'a>,
 }
 
 impl<'a> Node for DefaultExportDecl<'a> {
@@ -363,6 +445,64 @@ impl<'a> Node for ExportDeclValue<'a> {
             ExportDeclValue::Decl(inner) => inner.loc(),
             ExportDeclValue::Expr(inner) => inner.loc(),
             ExportDeclValue::List(inner) => inner.loc(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum DefaultExportDeclValue<'a> {
+    Decl(Decl<'a>),
+    Expr(Expr<'a>),
+}
+
+impl<'a> Node for DefaultExportDeclValue<'a> {
+    fn loc(&self) -> SourceLocation {
+        match self {
+            Self::Decl(inner) => inner.loc(),
+            Self::Expr(inner) => inner.loc(),
+        }
+    }
+}
+
+impl<'a> From<DefaultExportDeclValue<'a>> for crate::decl::DefaultExportDecl<'a> {
+    fn from(other: DefaultExportDeclValue<'a>) -> Self {
+        match other {
+            DefaultExportDeclValue::Decl(inner) => Self::Decl(inner.into()),
+            DefaultExportDeclValue::Expr(inner) => Self::Expr(inner.into()),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct NamedExportSpec<'a> {
+    pub list: ExportList<'a>,
+    pub source: Option<NamedExportSource<'a>>,
+}
+
+impl<'a> Node for NamedExportSpec<'a> {
+    fn loc(&self) -> SourceLocation {
+        if let Some(source) = &self.source {
+            SourceLocation {
+                start: self.list.loc().start,
+                end: source.loc().end,
+            }
+        } else {
+            self.list.loc()
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct NamedExportSource<'a> {
+    pub keyword_from: Slice<'a>,
+    pub module: Lit<'a>,
+}
+
+impl<'a> Node for NamedExportSource<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword_from.loc.start,
+            end: self.module.loc().end,
         }
     }
 }
@@ -410,6 +550,16 @@ impl<'a> Node for ExportSpecifier<'a> {
     }
 }
 
+impl<'a> From<ExportSpecifier<'a>> for crate::decl::ExportSpecifier<'a> {
+    fn from(other: ExportSpecifier<'a>) -> Self {
+        let local: crate::Ident = other.local.into();
+        Self {
+            local: local.clone(),
+            exported: other.alias.map(|a| a.ident.into()).unwrap_or(local),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Alias<'a> {
     keyword: Slice<'a>,
@@ -422,5 +572,11 @@ impl<'a> Node for Alias<'a> {
             start: self.keyword.loc.start,
             end: self.ident.loc().end,
         }
+    }
+}
+
+impl<'a> From<Alias<'a>> for crate::Ident<'a> {
+    fn from(other: Alias<'a>) -> Self {
+        other.ident.into()
     }
 }

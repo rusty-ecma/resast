@@ -87,6 +87,7 @@ pub enum Expr<'a> {
     /// --2
     /// ```
     Update(UpdateExpr<'a>),
+    Wrapped(Box<WrappedExpr<'a>>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<'a>),
 }
@@ -128,6 +129,7 @@ impl<'a> From<Expr<'a>> for crate::Expr<'a> {
             Expr::Unary(inner) => Self::Unary(inner.into()),
             Expr::Update(inner) => Self::Update(inner.into()),
             Expr::Yield(inner) => Self::Yield(inner.into()),
+            Expr::Wrapped(inner) => inner.expr.into(),
         }
     }
 }
@@ -160,6 +162,7 @@ impl<'a> Node for Expr<'a> {
             Expr::Unary(inner) => inner.loc(),
             Expr::Update(inner) => inner.loc(),
             Expr::Yield(inner) => inner.loc(),
+            Expr::Wrapped(inner) => inner.loc(),
         }
     }
 }
@@ -1285,6 +1288,22 @@ impl<'a> Node for RegEx<'a> {
         SourceLocation {
             start: self.open_slash.loc.start,
             end,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct WrappedExpr<'a> {
+    pub open_paren: Slice<'a>,
+    pub expr: Expr<'a>,
+    pub close_paren: Slice<'a>,
+}
+
+impl<'a> Node for WrappedExpr<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.open_paren.loc.start,
+            end: self.close_paren.loc.end,
         }
     }
 }

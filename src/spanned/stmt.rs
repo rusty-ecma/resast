@@ -178,13 +178,13 @@ impl<'a> From<Stmt<'a>> for crate::stmt::Stmt<'a> {
         match other {
             Stmt::Expr(inner) => Self::Expr(inner.into()),
             Stmt::Block(inner) => Self::Block(inner.into()),
-            Stmt::Empty(inner) => Self::Empty(inner.into()),
-            Stmt::Debugger(inner) => Self::Debugger(inner.into()),
+            Stmt::Empty(_) => Self::Empty,
+            Stmt::Debugger(_) => Self::Debugger,
             Stmt::With(inner) => Self::With(inner.into()),
-            Stmt::Return(inner) => Self::Return(inner.into()),
+            Stmt::Return(inner) => Self::Return(inner.map(From::from)),
             Stmt::Labeled(inner) => Self::Labeled(inner.into()),
-            Stmt::Break(inner) => Self::Break(inner.into()),
-            Stmt::Continue(inner) => Self::Continue(inner.into()),
+            Stmt::Break(inner) => Self::Break(inner.map(From::from)),
+            Stmt::Continue(inner) => Self::Continue(inner.map(From::from)),
             Stmt::If(inner) => Self::If(inner.into()),
             Stmt::Switch(inner) => Self::Switch(inner.into()),
             Stmt::Throw(inner) => Self::Throw(inner.into()),
@@ -194,7 +194,7 @@ impl<'a> From<Stmt<'a>> for crate::stmt::Stmt<'a> {
             Stmt::For(inner) => Self::For(inner.into()),
             Stmt::ForIn(inner) => Self::ForIn(inner.into()),
             Stmt::ForOf(inner) => Self::ForOf(inner.into()),
-            Stmt::Var(inner) => Self::Var(inner.into()),
+            Stmt::Var(inner) => Self::Var(inner.into_iter().map(From::from).collect()),
         }
     }
 }
@@ -220,26 +220,38 @@ impl<'a> Node for Stmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct WithStmt<'a> {
+    pub keyword: Slice<'a>,
+    pub open_paren: Slice<'a>,
     pub object: Expr<'a>,
+    pub close_paren: Slice<'a>,
     pub body: Box<Stmt<'a>>,
 }
 
 impl<'a> Node for WithStmt<'a> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.object.loc().start,
+            start: self.keyword.loc.start,
             end: self.body.loc().end,
         }
     }
 }
 
-/// A break statement
+impl<'a> From<WithStmt<'a>> for crate::stmt::WithStmt<'a> {
+    fn from(other: WithStmt<'a>) -> Self {
+        Self {
+            object: other.object.into(),
+            body: Box::new(From::from(*other.body)),
+        }
+    }
+}
+
+/// A labeled statement
 /// ```js
 /// label: {
 ///     break label;
 /// }
-/// while (true) {
-///     break;
+/// loop: while (true) {
+///     break loop;
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
@@ -254,6 +266,15 @@ impl<'a> Node for LabeledStmt<'a> {
         SourceLocation {
             start: self.label.loc().start,
             end: self.body.loc().end,
+        }
+    }
+}
+
+impl<'a> From<LabeledStmt<'a>> for crate::stmt::LabeledStmt<'a> {
+    fn from(other: LabeledStmt<'a>) -> Self {
+        Self {
+            label: other.label.into(),
+            body: Box::new(From::from(*other.body)),
         }
     }
 }
@@ -285,6 +306,16 @@ impl<'a> Node for IfStmt<'a> {
             self.consequent.loc().end
         };
         SourceLocation { start, end }
+    }
+}
+
+impl<'a> From<IfStmt<'a>> for crate::stmt::IfStmt<'a> {
+    fn from(other: IfStmt<'a>) -> Self {
+        Self {
+            test: other.test.into(),
+            consequent: Box::new(From::from(*other.consequent)),
+            alternate: other.alternate.map(|s| Box::new(From::from(*s))),
+        }
     }
 }
 
@@ -322,6 +353,15 @@ impl<'a> Node for SwitchStmt<'a> {
     }
 }
 
+impl<'a> From<SwitchStmt<'a>> for crate::stmt::SwitchStmt<'a> {
+    fn from(other: SwitchStmt<'a>) -> Self {
+        Self {
+            discriminant: other.discriminant.into(),
+            cases: other.cases.into_iter().map(From::from).collect(),
+        }
+    }
+}
+
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
 pub struct SwitchCase<'a> {
@@ -341,6 +381,15 @@ impl<'a> Node for SwitchCase<'a> {
         SourceLocation {
             start: self.keyword.loc.start,
             end,
+        }
+    }
+}
+
+impl<'a> From<SwitchCase<'a>> for crate::stmt::SwitchCase<'a> {
+    fn from(other: SwitchCase<'a>) -> Self {
+        Self {
+            test: other.test.map(From::from),
+            consequent: other.consequent.into_iter().map(From::from).collect(),
         }
     }
 }
@@ -402,6 +451,16 @@ impl<'a> Node for TryStmt<'a> {
     }
 }
 
+impl<'a> From<TryStmt<'a>> for crate::stmt::TryStmt<'a> {
+    fn from(other: TryStmt<'a>) -> Self {
+        Self {
+            block: other.block.into(),
+            handler: other.handler.map(From::from),
+            finalizer: other.finalizer.map(From::from),
+        }
+    }
+}
+
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
 pub struct CatchClause<'a> {
@@ -415,6 +474,15 @@ impl<'a> Node for CatchClause<'a> {
         SourceLocation {
             start: self.keyword.loc.start,
             end: self.body.loc().end,
+        }
+    }
+}
+
+impl<'a> From<CatchClause<'a>> for crate::stmt::CatchClause<'a> {
+    fn from(other: CatchClause<'a>) -> Self {
+        Self {
+            param: other.param.map(|a| a.param.into()),
+            body: other.body.into(),
         }
     }
 }
@@ -442,7 +510,6 @@ impl<'a> Node for CatchArg<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FinallyClause<'a> {
     pub keyword: Slice<'a>,
-    pub param: Option<Pat<'a>>,
     pub body: BlockStmt<'a>,
 }
 
@@ -452,6 +519,12 @@ impl<'a> Node for FinallyClause<'a> {
             start: self.keyword.loc.start,
             end: self.body.loc().end,
         }
+    }
+}
+
+impl<'a> From<FinallyClause<'a>> for crate::stmt::BlockStmt<'a> {
+    fn from(other: FinallyClause<'a>) -> Self {
+        other.body.into()
     }
 }
 
@@ -487,6 +560,15 @@ impl<'a> Node for WhileStmt<'a> {
     }
 }
 
+impl<'a> From<WhileStmt<'a>> for crate::stmt::WhileStmt<'a> {
+    fn from(other: WhileStmt<'a>) -> Self {
+        Self {
+            test: other.test.into(),
+            body: Box::new(From::from(*other.body)),
+        }
+    }
+}
+
 /// A while loop that executes its body first
 /// ```js
 /// do {
@@ -514,6 +596,23 @@ impl<'a> Node for DoWhileStmt<'a> {
     }
 }
 
+impl<'a> From<DoWhileStmt<'a>> for crate::stmt::DoWhileStmt<'a> {
+    fn from(other: DoWhileStmt<'a>) -> Self {
+        let body = other
+            .body
+            .into_iter()
+            .map(From::from)
+            .map(crate::ProgramPart::Stmt)
+            .collect();
+        let body = crate::stmt::BlockStmt(body);
+        let body = crate::stmt::Stmt::Block(body);
+        Self {
+            test: other.test.into(),
+            body: Box::new(body),
+        }
+    }
+}
+
 /// A "c-style" for loop
 /// ```js
 /// for (var i = 0; i < 100; i++) console.log(i);
@@ -526,7 +625,9 @@ pub struct ForStmt<'a> {
     pub keyword: Slice<'a>,
     pub open_paren: Slice<'a>,
     pub init: Option<LoopInit<'a>>,
+    pub semi1: Slice<'a>,
     pub test: Option<Expr<'a>>,
+    pub semi2: Slice<'a>,
     pub update: Option<Expr<'a>>,
     pub close_paren: Slice<'a>,
     pub body: Box<Stmt<'a>>,
@@ -537,6 +638,17 @@ impl<'a> Node for ForStmt<'a> {
         SourceLocation {
             start: self.keyword.loc.start,
             end: self.body.loc().end,
+        }
+    }
+}
+
+impl<'a> From<ForStmt<'a>> for crate::stmt::ForStmt<'a> {
+    fn from(other: ForStmt<'a>) -> Self {
+        Self {
+            init: other.init.map(From::from),
+            test: other.test.map(From::from),
+            update: other.update.map(From::from),
+            body: Box::new(From::from(*other.body)),
         }
     }
 }
@@ -565,6 +677,17 @@ impl<'a> Node for LoopInit<'a> {
                 }
             }
             LoopInit::Expr(inner) => inner.loc(),
+        }
+    }
+}
+
+impl<'a> From<LoopInit<'a>> for crate::stmt::LoopInit<'a> {
+    fn from(other: LoopInit<'a>) -> Self {
+        match other {
+            LoopInit::Expr(inner) => Self::Expr(inner.into()),
+            LoopInit::Variable(kind, decls) => {
+                Self::Variable(kind.into(), decls.into_iter().map(From::from).collect())
+            }
         }
     }
 }
@@ -600,6 +723,16 @@ impl<'a> Node for ForInStmt<'a> {
     }
 }
 
+impl<'a> From<ForInStmt<'a>> for crate::stmt::ForInStmt<'a> {
+    fn from(other: ForInStmt<'a>) -> Self {
+        Self {
+            left: other.left.into(),
+            right: other.right.into(),
+            body: Box::new(From::from(*other.body)),
+        }
+    }
+}
+
 /// A for of statement, this kind of for statement
 /// will extract the value from a generator or iterator
 /// ```js
@@ -629,6 +762,17 @@ impl<'a> Node for ForOfStmt<'a> {
     }
 }
 
+impl<'a> From<ForOfStmt<'a>> for crate::stmt::ForOfStmt<'a> {
+    fn from(other: ForOfStmt<'a>) -> Self {
+        Self {
+            left: other.left.into(),
+            right: other.right.into(),
+            body: Box::new(From::from(*other.body)),
+            is_await: other.is_await,
+        }
+    }
+}
+
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
@@ -636,6 +780,16 @@ pub enum LoopLeft<'a> {
     Expr(Expr<'a>),
     Variable(VarKind<'a>, VarDecl<'a>),
     Pat(Pat<'a>),
+}
+
+impl<'a> From<LoopLeft<'a>> for crate::stmt::LoopLeft<'a> {
+    fn from(other: LoopLeft<'a>) -> Self {
+        match other {
+            LoopLeft::Expr(inner) => Self::Expr(inner.into()),
+            LoopLeft::Variable(kind, decl) => Self::Variable(kind.into(), decl.into()),
+            LoopLeft::Pat(inner) => Self::Pat(inner.into()),
+        }
+    }
 }
 
 impl<'a> Node for LoopLeft<'a> {
