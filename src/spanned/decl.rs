@@ -141,7 +141,7 @@ impl<'a> Node for ModDecl<'a> {
 pub struct ModImport<'a> {
     pub keyword_import: Slice<'a>,
     pub specifiers: Vec<ImportSpecifier<'a>>,
-    pub keyword_from: Slice<'a>,
+    pub keyword_from: Option<Slice<'a>>,
     pub source: Lit<'a>,
 }
 

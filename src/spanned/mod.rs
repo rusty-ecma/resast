@@ -586,14 +586,14 @@ impl<'a> Node for UnaryOp<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Slice<'a> {
-    source: Cow<'a, str>,
-    loc: SourceLocation,
+    pub source: Cow<'a, str>,
+    pub loc: SourceLocation,
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct SourceLocation {
-    start: Position,
-    end: Position,
+    pub start: Position,
+    pub end: Position,
 }
 
 impl SourceLocation {
