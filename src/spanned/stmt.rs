@@ -489,20 +489,16 @@ impl<'a> From<CatchClause<'a>> for crate::stmt::CatchClause<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CatchArg<'a> {
-    pub open_paren: Option<Slice<'a>>,
+    pub open_paren: Slice<'a>,
     pub param: Pat<'a>,
-    pub close_paren: Option<Slice<'a>>,
+    pub close_paren: Slice<'a>,
 }
 
 impl<'a> Node for CatchArg<'a> {
     fn loc(&self) -> SourceLocation {
-        if let (Some(open), Some(close)) = (&self.open_paren, &self.close_paren) {
-            SourceLocation {
-                start: open.loc.start,
-                end: close.loc.start,
-            }
-        } else {
-            self.param.loc()
+        SourceLocation {
+            start: self.open_paren.loc.start,
+            end: self.close_paren.loc.end,
         }
     }
 }
@@ -578,9 +574,7 @@ impl<'a> From<WhileStmt<'a>> for crate::stmt::WhileStmt<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct DoWhileStmt<'a> {
     pub keyword_do: Slice<'a>,
-    pub open_brace: Slice<'a>,
-    pub body: Vec<Stmt<'a>>,
-    pub close_brace: Slice<'a>,
+    pub body: Box<Stmt<'a>>,
     pub keyword_while: Slice<'a>,
     pub open_paren: Slice<'a>,
     pub test: Expr<'a>,
@@ -598,17 +592,9 @@ impl<'a> Node for DoWhileStmt<'a> {
 
 impl<'a> From<DoWhileStmt<'a>> for crate::stmt::DoWhileStmt<'a> {
     fn from(other: DoWhileStmt<'a>) -> Self {
-        let body = other
-            .body
-            .into_iter()
-            .map(From::from)
-            .map(crate::ProgramPart::Stmt)
-            .collect();
-        let body = crate::stmt::BlockStmt(body);
-        let body = crate::stmt::Stmt::Block(body);
         Self {
             test: other.test.into(),
-            body: Box::new(body),
+            body: Box::new(From::from(*other.body)),
         }
     }
 }
@@ -711,6 +697,7 @@ pub struct ForInStmt<'a> {
     pub left: LoopLeft<'a>,
     pub keyword_in: Slice<'a>,
     pub right: Expr<'a>,
+    pub close_paren: Slice<'a>,
     pub body: Box<Stmt<'a>>,
 }
 

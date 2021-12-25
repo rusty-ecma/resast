@@ -270,7 +270,7 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                     body: inner.body.into(),
                     generator: inner.star.is_some(),
                     id: None,
-                    is_async: inner.keyword.is_some(),
+                    is_async: inner.keyword_async.is_some(),
                     params: inner.params.into_iter().map(From::from).collect(),
                 })),
                 kind: crate::PropKind::Method,
@@ -357,7 +357,7 @@ impl<'a> Prop<'a> {
     }
     pub fn is_async(&self) -> bool {
         if let Self::Method(meth) = self {
-            meth.keyword.is_some()
+            meth.keyword_async.is_some()
         } else {
             false
         }
@@ -420,9 +420,9 @@ impl<'a> Node for PropInitKey<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropMethod<'a> {
-    pub keyword: Option<Slice<'a>>,
-    pub star: Option<Slice<'a>>,
+    pub keyword_async: Option<Slice<'a>>,
     pub id: PropInitKey<'a>,
+    pub star: Option<Slice<'a>>,
     pub open_paren: Slice<'a>,
     pub params: Vec<FuncArg<'a>>,
     pub close_paren: Slice<'a>,
@@ -431,7 +431,7 @@ pub struct PropMethod<'a> {
 
 impl<'a> Node for PropMethod<'a> {
     fn loc(&self) -> SourceLocation {
-        let start = if let Some(keyword) = &self.keyword {
+        let start = if let Some(keyword) = &self.keyword_async {
             keyword.loc.start
         } else if let Some(star) = &self.star {
             star.loc.start
@@ -441,6 +441,18 @@ impl<'a> Node for PropMethod<'a> {
         SourceLocation {
             start,
             end: self.body.loc().end,
+        }
+    }
+}
+
+impl<'a> From<PropMethod<'a>> for crate::Func<'a> {
+    fn from(other: PropMethod<'a>) -> Self {
+        crate::Func {
+            id: None,
+            params: other.params.into_iter().map(From::from).collect(),
+            body: other.body.into(),
+            generator: other.star.is_some(),
+            is_async: other.keyword_async.is_some(),
         }
     }
 }
@@ -533,6 +545,7 @@ impl<'a> Node for PropKey<'a> {
 pub enum PropValue<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
+    Method(PropMethod<'a>),
 }
 
 impl<'a> From<PropValue<'a>> for crate::expr::PropValue<'a> {
@@ -540,6 +553,9 @@ impl<'a> From<PropValue<'a>> for crate::expr::PropValue<'a> {
         match other {
             PropValue::Expr(inner) => Self::Expr(inner.into()),
             PropValue::Pat(inner) => Self::Pat(inner.into()),
+            PropValue::Method(inner) => {
+                Self::Expr(crate::expr::Expr::Func(inner.into()))
+            }
         }
     }
 }
@@ -549,6 +565,7 @@ impl<'a> Node for PropValue<'a> {
         match self {
             PropValue::Expr(inner) => inner.loc(),
             PropValue::Pat(inner) => inner.loc(),
+            PropValue::Method(inner) => inner.loc(),
         }
     }
 }
@@ -557,15 +574,20 @@ impl<'a> Node for PropValue<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct UnaryExpr<'a> {
     pub operator: UnaryOp<'a>,
-    pub prefix: bool,
     pub argument: Box<Expr<'a>>,
+}
+
+impl<'a> UnaryExpr<'a> {
+    pub fn prefix(&self) -> bool {
+        self.operator.loc() > self.argument.loc()
+    }
 }
 
 impl<'a> From<UnaryExpr<'a>> for crate::expr::UnaryExpr<'a> {
     fn from(other: UnaryExpr<'a>) -> Self {
         Self {
+            prefix: other.prefix(),
             operator: other.operator.into(),
-            prefix: other.prefix,
             argument: Box::new(From::from(*other.argument)),
         }
     }
@@ -573,7 +595,7 @@ impl<'a> From<UnaryExpr<'a>> for crate::expr::UnaryExpr<'a> {
 
 impl<'a> Node for UnaryExpr<'a> {
     fn loc(&self) -> SourceLocation {
-        let (start, end) = if self.prefix {
+        let (start, end) = if self.prefix() {
             (self.operator.loc().start, self.argument.loc().end)
         } else {
             (self.argument.loc().start, self.operator.loc().end)
@@ -587,22 +609,28 @@ impl<'a> Node for UnaryExpr<'a> {
 pub struct UpdateExpr<'a> {
     pub operator: UpdateOp<'a>,
     pub argument: Box<Expr<'a>>,
-    pub prefix: bool,
+}
+
+impl<'a> UpdateExpr<'a> {
+    pub fn prefix(&self) -> bool {
+        self.operator.loc() > self.argument.loc()
+    }
 }
 
 impl<'a> From<UpdateExpr<'a>> for crate::expr::UpdateExpr<'a> {
     fn from(other: UpdateExpr<'a>) -> Self {
         Self {
+            prefix: other.prefix(),
             operator: other.operator.into(),
             argument: Box::new(From::from(*other.argument)),
-            prefix: other.prefix,
         }
     }
 }
 
 impl<'a> Node for UpdateExpr<'a> {
     fn loc(&self) -> SourceLocation {
-        let (start, end) = if self.prefix {
+        
+        let (start, end) = if self.prefix() {
             (self.operator.loc().start, self.argument.loc().end)
         } else {
             (self.argument.loc().start, self.operator.loc().end)

@@ -168,7 +168,6 @@ impl<'a> Node for Dir<'a> {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct Func<'a> {
     pub keyword: Slice<'a>,
     pub id: Option<Ident<'a>>,
@@ -176,25 +175,38 @@ pub struct Func<'a> {
     pub params: Vec<FuncArg<'a>>,
     pub close_paren: Slice<'a>,
     pub body: FuncBody<'a>,
-    pub generator: bool,
-    pub is_async: bool,
+    pub star: Option<Slice<'a>>,
+    pub keyword_async: Option<Slice<'a>>,
+}
+
+impl<'a> Func<'a> {
+    pub fn is_async(&self) -> bool {
+        self.keyword_async.is_some()
+    }
+    pub fn generator(&self) -> bool {
+        self.star.is_some()
+    }
 }
 
 impl<'a> From<Func<'a>> for crate::Func<'a> {
     fn from(other: Func<'a>) -> Self {
         Self {
+            generator: other.generator(),
+            is_async: other.is_async(),
             id: other.id.map(From::from),
             params: other.params.into_iter().map(From::from).collect(),
             body: other.body.into(),
-            generator: other.generator,
-            is_async: other.is_async,
         }
     }
 }
 
 impl<'a> Node for Func<'a> {
     fn loc(&self) -> SourceLocation {
-        let start = self.keyword.loc.start.clone();
+        let start = if let Some(keyword) = &self.keyword_async {
+            keyword.loc.start
+        } else {
+            self.keyword.loc.start
+        };
         let end = self.body.close_brace.loc.end.clone();
         SourceLocation { start, end }
     }
@@ -590,7 +602,7 @@ pub struct Slice<'a> {
     pub loc: SourceLocation,
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy, PartialOrd)]
 pub struct SourceLocation {
     pub start: Position,
     pub end: Position,
@@ -605,7 +617,7 @@ impl SourceLocation {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy, PartialOrd)]
 pub struct Position {
     pub line: usize,
     pub column: usize,

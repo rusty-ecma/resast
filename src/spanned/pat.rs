@@ -13,18 +13,23 @@ pub enum Pat<'a> {
 }
 
 impl<'a> From<Pat<'a>> for crate::pat::Pat<'a> {
-    fn from(_: Pat<'a>) -> Self {
-        todo!()
+    fn from(other: Pat<'a>) -> Self {
+        match other {
+            Pat::Ident(inner) => Self::Ident(inner.into()),
+            Pat::Obj(inner) => Self::Obj(inner.into()),
+            Pat::Array(inner) => Self::Array(inner.into()),
+            Pat::Assign(inner) => Self::Assign(inner.into()),
+        }
     }
 }
 
 impl<'a> Node for Pat<'a> {
     fn loc(&self) -> super::SourceLocation {
         match self {
-            Pat::Ident(_) => todo!(),
-            Pat::Obj(_) => todo!(),
-            Pat::Array(_) => todo!(),
-            Pat::Assign(_) => todo!(),
+            Pat::Ident(inner) => inner.loc(),
+            Pat::Obj(inner) => inner.loc(),
+            Pat::Array(inner) => inner.loc(),
+            Pat::Assign(inner) => inner.loc(),
         }
     }
 }
@@ -32,7 +37,7 @@ impl<'a> Node for Pat<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayPat<'a> {
     pub open_bracket: Slice<'a>,
-    pub elements: Vec<Option<ArrayPatPart<'a>>>,
+    pub elements: Vec<ArrayElement<'a>>,
     pub close_bracket: Slice<'a>,
 }
 
@@ -45,10 +50,41 @@ impl<'a> Node for ArrayPat<'a> {
     }
 }
 
+impl<'a> From<ArrayPat<'a>> for Vec<Option<crate::pat::ArrayPatPart<'a>>> {
+    fn from(other: ArrayPat<'a>) -> Self {
+        other.elements.into_iter().map(From::from).collect()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ArrayElement<'a> {
+    pub part: Option<ArrayPatPart<'a>>,
+    pub comma: Option<Slice<'a>>,
+}
+
+impl<'a> From<ArrayElement<'a>> for Option<crate::pat::ArrayPatPart<'a>> {
+    fn from(other: ArrayElement<'a>) -> Self {
+        other.part.map(From::from)
+    }
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum ArrayPatPart<'a> {
     Pat(Pat<'a>),
     Expr(Expr<'a>),
+    Rest(RestPat<'a>),
+}
+
+impl<'a> From<ArrayPatPart<'a>> for crate::pat::ArrayPatPart<'a> {
+    fn from(other: ArrayPatPart<'a>) -> Self {
+        match other {
+            ArrayPatPart::Pat(inner) => Self::Pat(inner.into()),
+            ArrayPatPart::Expr(inner) => Self::Expr(inner.into()),
+            ArrayPatPart::Rest(inner) => {
+                Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
+            }
+        }
+    }
 }
 
 impl<'a> Node for ArrayPatPart<'a> {
@@ -56,6 +92,7 @@ impl<'a> Node for ArrayPatPart<'a> {
         match self {
             ArrayPatPart::Pat(inner) => inner.loc(),
             ArrayPatPart::Expr(inner) => inner.loc(),
+            ArrayPatPart::Rest(inner) => inner.loc(),
         }
     }
 }
@@ -77,18 +114,45 @@ impl<'a> Node for ObjPat<'a> {
     }
 }
 
+impl<'a> From<ObjPat<'a>> for crate::pat::ObjPat<'a> {
+    fn from(other: ObjPat<'a>) -> Self {
+        other.props.into_iter().map(From::from).collect()
+    }
+}
+
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone)]
 pub enum ObjPatPart<'a> {
-    Assign(Prop<'a>),
+    Assign {
+        prop: Prop<'a>,
+        comma: Option<Slice<'a>>,
+    },
     Rest(Box<RestPat<'a>>),
 }
 
 impl<'a> Node for ObjPatPart<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
-            ObjPatPart::Assign(inner) => inner.loc(),
+            ObjPatPart::Assign { prop, comma } => {
+                if let Some(slice) = comma {
+                    SourceLocation {
+                        start: prop.loc().start,
+                        end: slice.loc.end,
+                    }
+                } else {
+                    prop.loc()
+                }
+            }
             ObjPatPart::Rest(inner) => inner.loc(),
+        }
+    }
+}
+
+impl<'a> From<ObjPatPart<'a>> for crate::pat::ObjPatPart<'a> {
+    fn from(other: ObjPatPart<'a>) -> Self {
+        match other {
+            ObjPatPart::Assign { prop, comma: _ } => Self::Assign(prop.into()),
+            ObjPatPart::Rest(inner) => Self::Rest(Box::new(From::from(inner.pat))),
         }
     }
 }
@@ -112,6 +176,7 @@ impl<'a> Node for RestPat<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct AssignPat<'a> {
     pub left: Box<Pat<'a>>,
+    pub eq: Slice<'a>,
     pub right: Box<Expr<'a>>,
 }
 
@@ -120,6 +185,15 @@ impl<'a> Node for AssignPat<'a> {
         SourceLocation {
             start: self.left.loc().start,
             end: self.right.loc().end,
+        }
+    }
+}
+
+impl<'a> From<AssignPat<'a>> for crate::pat::AssignPat<'a> {
+    fn from(other: AssignPat<'a>) -> Self {
+        Self {
+            left: Box::new(From::from(*other.left)),
+            right: Box::new(From::from(*other.right)),
         }
     }
 }
