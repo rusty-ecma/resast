@@ -10,6 +10,8 @@ use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
+use self::pat::RestPat;
+
 pub trait Node {
     fn loc(&self) -> SourceLocation;
 }
@@ -29,6 +31,14 @@ impl<'a> From<Ident<'a>> for crate::Ident<'a> {
     fn from(other: Ident<'a>) -> Self {
         Self {
             name: other.slice.source,
+        }
+    }
+}
+
+impl<'a> From<Slice<'a>> for Ident<'a> {
+    fn from(slice: Slice<'a>) -> Self {
+        Self {
+            slice,
         }
     }
 }
@@ -140,6 +150,7 @@ impl<'a> ProgramPart<'a> {
 pub struct Dir<'a> {
     pub expr: Lit<'a>,
     pub dir: Cow<'a, str>,
+    pub semi_colon: Option<Slice<'a>>,
 }
 
 impl<'a> From<Dir<'a>> for crate::Dir<'a> {
@@ -172,7 +183,7 @@ pub struct Func<'a> {
     pub keyword: Slice<'a>,
     pub id: Option<Ident<'a>>,
     pub open_paren: Slice<'a>,
-    pub params: Vec<FuncArg<'a>>,
+    pub params: Vec<ListEntry<'a, FuncArg<'a>>>,
     pub close_paren: Slice<'a>,
     pub body: FuncBody<'a>,
     pub star: Option<Slice<'a>>,
@@ -194,7 +205,7 @@ impl<'a> From<Func<'a>> for crate::Func<'a> {
             generator: other.generator(),
             is_async: other.is_async(),
             id: other.id.map(From::from),
-            params: other.params.into_iter().map(From::from).collect(),
+            params: other.params.into_iter().map(|e| From::from(e.item)).collect(),
             body: other.body.into(),
         }
     }
@@ -212,11 +223,36 @@ impl<'a> Node for Func<'a> {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct FuncArgEntry<'a> {
+    pub value: FuncArg<'a>,
+    pub comma: Option<Slice<'a>>,
+}
+
+impl<'a> From<FuncArgEntry<'a>> for crate::FuncArg<'a> {
+    fn from(other: FuncArgEntry<'a>) -> Self {
+        other.value.into()
+    }
+}
+
+impl<'a> Node for FuncArgEntry<'a> {
+    fn loc(&self) -> SourceLocation {
+        if let Some(comma) = &self.comma {
+            return SourceLocation {
+                start: self.value.loc().start,
+                end: comma.loc.end,
+            }
+        }
+        self.value.loc()
+    }
+}
+
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
 pub enum FuncArg<'a> {
     Expr(Expr<'a>),
     Pat(Pat<'a>),
+    Rest(Box<RestPat<'a>>),
 }
 
 impl<'a> From<FuncArg<'a>> for crate::FuncArg<'a> {
@@ -224,6 +260,7 @@ impl<'a> From<FuncArg<'a>> for crate::FuncArg<'a> {
         match other {
             FuncArg::Expr(inner) => Self::Expr(inner.into()),
             FuncArg::Pat(inner) => Self::Pat(inner.into()),
+            FuncArg::Rest(inner) => Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into()))),
         }
     }
 }
@@ -233,6 +270,7 @@ impl<'a> Node for FuncArg<'a> {
         match self {
             FuncArg::Expr(inner) => inner.loc(),
             FuncArg::Pat(inner) => inner.loc(),
+            FuncArg::Rest(inner) => inner.loc(),
         }
     }
 }
@@ -337,7 +375,7 @@ impl<'a> Node for ClassBody<'a> {
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq)]
 pub enum VarKind<'a> {
-    Var(Slice<'a>),
+    Var(Option<Slice<'a>>),
     Let(Slice<'a>),
     Const(Slice<'a>),
 }
@@ -355,10 +393,17 @@ impl<'a> From<VarKind<'a>> for crate::VarKind {
 impl<'a> Node for VarKind<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
-            VarKind::Var(slice) => slice.loc,
+            VarKind::Var(Some(slice)) => slice.loc,
             VarKind::Let(slice) => slice.loc,
             VarKind::Const(slice) => slice.loc,
+            _ => SourceLocation::zero()
         }
+    }
+}
+
+impl<'a> VarKind<'a> {
+    pub fn is_var(&self) -> bool {
+        matches!(self, VarKind::Var(_))
     }
 }
 
@@ -621,4 +666,54 @@ impl SourceLocation {
 pub struct Position {
     pub line: usize,
     pub column: usize,
+}
+
+impl std::ops::Add for Position {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            line: self.line + rhs.line,
+            column: self.column + rhs.column,
+        }
+    }
+}
+
+impl std::ops::Sub for Position {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            line: self.line - rhs.line,
+            column: self.column - rhs.column,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListEntry<'a, T> {
+    pub item: T,
+    pub comma: Option<Slice<'a>>
+}
+
+impl<'a, T> ListEntry<'a, T> {
+    pub fn no_comma(item: T) -> Self {
+        Self {
+            item,
+            comma: None
+        }
+    }
+}
+
+impl<'a, T> Node for ListEntry<'a, T>
+where T: Node {
+    fn loc(&self) -> SourceLocation {
+        if let Some(comma) = &self.comma {
+            return SourceLocation {
+                start: self.item.loc().start,
+                end: comma.loc.end,
+            }
+        }
+        self.item.loc()
+    }
 }

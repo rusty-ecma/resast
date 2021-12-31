@@ -3,7 +3,7 @@ use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Class, Func, Ident};
 
-use super::{Node, Slice, SourceLocation};
+use super::{Node, Slice, SourceLocation, ListEntry};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
@@ -43,7 +43,7 @@ impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
         match other {
             Decl::Var(inner) => Self::Var(
                 inner.keyword.into(),
-                inner.decls.into_iter().map(From::from).collect(),
+                inner.decls.into_iter().map(|e| e.item.into()).collect(),
             ),
             Decl::Func(inner) => Self::Func(inner.into()),
             Decl::Class(inner) => Self::Class(inner.into()),
@@ -68,7 +68,7 @@ impl<'a> Node for Decl<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VarDecls<'a> {
     pub keyword: VarKind<'a>,
-    pub decls: Vec<VarDecl<'a>>,
+    pub decls: Vec<ListEntry<'a, VarDecl<'a>>>,
 }
 
 impl<'a> Node for VarDecls<'a> {
@@ -88,7 +88,8 @@ impl<'a> Node for VarDecls<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VarDecl<'a> {
     pub id: Pat<'a>,
-    pub init: Option<Expr<'a>>,
+    pub eq: Option<Slice<'a>>,
+    pub init: Option<Expr<'a>>
 }
 
 impl<'a> Node for VarDecl<'a> {
@@ -140,9 +141,10 @@ impl<'a> Node for ModDecl<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct ModImport<'a> {
     pub keyword_import: Slice<'a>,
-    pub specifiers: Vec<ImportSpecifier<'a>>,
+    pub specifiers: Vec<ListEntry<'a, ImportSpecifier<'a>>>,
     pub keyword_from: Option<Slice<'a>>,
     pub source: Lit<'a>,
+    pub semi_colon: Option<Slice<'a>>,
 }
 
 impl<'a> Node for ModImport<'a> {
@@ -158,7 +160,7 @@ impl<'a> From<ModImport<'a>> for crate::decl::ModImport<'a> {
     fn from(other: ModImport<'a>) -> Self {
         Self {
             source: other.source.into(),
-            specifiers: other.specifiers.into_iter().map(From::from).collect(),
+            specifiers: other.specifiers.into_iter().map(|e| e.item.into()).collect(),
         }
     }
 }
@@ -171,7 +173,9 @@ pub enum ImportSpecifier<'a> {
     ///
     /// ```js
     /// import {Thing} from './stuff.js';
-    /// import {People as Persons} from './places.js';
+    /// //     ^^^^^^^
+    /// import {People as Persons, x} from './places.js';
+    /// //     ^^^^^^^^^^^^^^^^^^^^^^
     /// ```
     Normal(NormalImportSpecs<'a>),
     /// A specifier that has been exported with the
@@ -562,8 +566,8 @@ impl<'a> From<ExportSpecifier<'a>> for crate::decl::ExportSpecifier<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Alias<'a> {
-    keyword: Slice<'a>,
-    ident: Ident<'a>,
+    pub keyword: Slice<'a>,
+    pub ident: Ident<'a>,
 }
 
 impl<'a> Node for Alias<'a> {

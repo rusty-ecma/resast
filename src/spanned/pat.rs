@@ -1,7 +1,7 @@
 use crate::spanned::expr::{Expr, Prop};
 use crate::spanned::Ident;
 
-use super::{Node, Slice, SourceLocation};
+use super::{Node, Slice, SourceLocation, ListEntry, AssignOp};
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(Debug, Clone, PartialEq)]
@@ -37,7 +37,7 @@ impl<'a> Node for Pat<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayPat<'a> {
     pub open_bracket: Slice<'a>,
-    pub elements: Vec<ArrayElement<'a>>,
+    pub elements: Vec<ListEntry<'a, Option<ArrayPatPart<'a>>>>,
     pub close_bracket: Slice<'a>,
 }
 
@@ -52,7 +52,7 @@ impl<'a> Node for ArrayPat<'a> {
 
 impl<'a> From<ArrayPat<'a>> for Vec<Option<crate::pat::ArrayPatPart<'a>>> {
     fn from(other: ArrayPat<'a>) -> Self {
-        other.elements.into_iter().map(From::from).collect()
+        other.elements.into_iter().map(|e| e.item.map(Into::into)).collect()
     }
 }
 
@@ -97,11 +97,13 @@ impl<'a> Node for ArrayPatPart<'a> {
     }
 }
 
+type ObjEntry<'a> = ListEntry<'a, ObjPatPart<'a>>;
+
 /// similar to an `ObjectExpr`
 #[derive(PartialEq, Debug, Clone)]
 pub struct ObjPat<'a> {
     pub open_brace: Slice<'a>,
-    pub props: Vec<ObjPatPart<'a>>,
+    pub props: Vec<ObjEntry<'a>>,
     pub close_brace: Slice<'a>,
 }
 
@@ -116,32 +118,22 @@ impl<'a> Node for ObjPat<'a> {
 
 impl<'a> From<ObjPat<'a>> for crate::pat::ObjPat<'a> {
     fn from(other: ObjPat<'a>) -> Self {
-        other.props.into_iter().map(From::from).collect()
+        other.props.into_iter().map(|e| e.item.into()).collect()
     }
 }
 
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone)]
 pub enum ObjPatPart<'a> {
-    Assign {
-        prop: Prop<'a>,
-        comma: Option<Slice<'a>>,
-    },
+    Assign(Prop<'a>),
     Rest(Box<RestPat<'a>>),
 }
 
 impl<'a> Node for ObjPatPart<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
-            ObjPatPart::Assign { prop, comma } => {
-                if let Some(slice) = comma {
-                    SourceLocation {
-                        start: prop.loc().start,
-                        end: slice.loc.end,
-                    }
-                } else {
-                    prop.loc()
-                }
+            ObjPatPart::Assign(prop) => {
+                prop.loc()
             }
             ObjPatPart::Rest(inner) => inner.loc(),
         }
@@ -151,7 +143,7 @@ impl<'a> Node for ObjPatPart<'a> {
 impl<'a> From<ObjPatPart<'a>> for crate::pat::ObjPatPart<'a> {
     fn from(other: ObjPatPart<'a>) -> Self {
         match other {
-            ObjPatPart::Assign { prop, comma: _ } => Self::Assign(prop.into()),
+            ObjPatPart::Assign(prop) => Self::Assign(prop.into()),
             ObjPatPart::Rest(inner) => Self::Rest(Box::new(From::from(inner.pat))),
         }
     }
@@ -176,7 +168,7 @@ impl<'a> Node for RestPat<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct AssignPat<'a> {
     pub left: Box<Pat<'a>>,
-    pub eq: Slice<'a>,
+    pub operator: AssignOp<'a>,
     pub right: Box<Expr<'a>>,
 }
 

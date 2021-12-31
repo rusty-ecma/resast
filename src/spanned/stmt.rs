@@ -4,18 +4,26 @@ use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Ident, ProgramPart};
 
-use super::{Node, Slice, SourceLocation};
+use super::decl::VarDecls;
+use super::{Node, Slice, SourceLocation, ListEntry};
+
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
 pub enum Stmt<'a> {
     /// Any expression
-    Expr(Expr<'a>),
+    Expr {
+        expr: Expr<'a>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A collection of program parts wrapped in curly braces
     Block(BlockStmt<'a>),
     /// A single semi-colon
     Empty(Slice<'a>),
     /// The contextual keyword `debugger`
-    Debugger(Slice<'a>),
+    Debugger {
+        keyword: Slice<'a>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A with statement, this puts one object at the top of
     /// the identifier search tree.
     /// > note: this cannot be used in a strict context
@@ -38,7 +46,11 @@ pub enum Stmt<'a> {
     /// function stuff() {
     ///     return;
     /// }
-    Return(Option<Expr<'a>>),
+    Return {
+        keyword: Slice<'a>,
+        value: Option<Expr<'a>>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A labeled statement
     /// ```js
     /// label: {
@@ -55,7 +67,11 @@ pub enum Stmt<'a> {
     ///     break;
     /// }
     /// ```
-    Break(Option<Ident<'a>>),
+    Break {
+        keyword: Slice<'a>,
+        label: Option<Ident<'a>>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A short circuit continuation of a loop
     /// ```js
     /// label: while (true) {
@@ -66,7 +82,11 @@ pub enum Stmt<'a> {
     ///     }
     /// }
     /// ```
-    Continue(Option<Ident<'a>>),
+    Continue {
+        keyword: Slice<'a>,
+        label: Option<Ident<'a>>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// An if statement
     /// ```js
     /// if (1 < 2) {
@@ -101,7 +121,11 @@ pub enum Stmt<'a> {
     ///     throw new Error('hohoho');
     /// }
     /// ```
-    Throw(Expr<'a>),
+    Throw {
+        keyword: Slice<'a>,
+        expr: Expr<'a>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A try/catch block
     /// ```js
     /// try {
@@ -170,38 +194,144 @@ pub enum Stmt<'a> {
     /// var x;
     /// var x, y = 'huh?';
     /// ```
-    Var(Vec<VarDecl<'a>>),
+    Var {
+        decls: VarDecls<'a>,
+        semi_colon: Option<Slice<'a>>,
+    },
 }
 
 impl<'a> From<Stmt<'a>> for crate::stmt::Stmt<'a> {
     fn from(other: Stmt<'a>) -> Self {
         match other {
-            Stmt::Expr(inner) => Self::Expr(inner.into()),
+            Stmt::Expr {
+                expr,
+                ..
+             } => Self::Expr(expr.into()),
             Stmt::Block(inner) => Self::Block(inner.into()),
             Stmt::Empty(_) => Self::Empty,
-            Stmt::Debugger(_) => Self::Debugger,
+            Stmt::Debugger {
+                ..
+            } => Self::Debugger,
             Stmt::With(inner) => Self::With(inner.into()),
-            Stmt::Return(inner) => Self::Return(inner.map(From::from)),
+            Stmt::Return { value, .. } => Self::Return(value.map(From::from)),
             Stmt::Labeled(inner) => Self::Labeled(inner.into()),
-            Stmt::Break(inner) => Self::Break(inner.map(From::from)),
-            Stmt::Continue(inner) => Self::Continue(inner.map(From::from)),
+            Stmt::Break { label, .. } => Self::Break(label.map(From::from)),
+            Stmt::Continue{ label, .. } => Self::Continue(label.map(From::from)),
             Stmt::If(inner) => Self::If(inner.into()),
             Stmt::Switch(inner) => Self::Switch(inner.into()),
-            Stmt::Throw(inner) => Self::Throw(inner.into()),
+            Stmt::Throw { expr, ..
+             } => Self::Throw(expr.into()),
             Stmt::Try(inner) => Self::Try(inner.into()),
             Stmt::While(inner) => Self::While(inner.into()),
             Stmt::DoWhile(inner) => Self::DoWhile(inner.into()),
             Stmt::For(inner) => Self::For(inner.into()),
             Stmt::ForIn(inner) => Self::ForIn(inner.into()),
             Stmt::ForOf(inner) => Self::ForOf(inner.into()),
-            Stmt::Var(inner) => Self::Var(inner.into_iter().map(From::from).collect()),
+            Stmt::Var { decls, .. } => Self::Var(decls.decls.into_iter().map(|e| e.item.into()).collect()),
         }
     }
 }
 
 impl<'a> Node for Stmt<'a> {
     fn loc(&self) -> super::SourceLocation {
-        todo!()
+        match self {
+            Stmt::Expr { expr, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: expr.loc().start,
+                        end: semi.loc.end,
+                    }
+                }
+                expr.loc()
+            },
+            Stmt::Block(inner) => inner.loc(),
+            Stmt::Empty(inner) => inner.loc,
+            Stmt::Debugger { keyword, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: semi.loc.end,
+                    }
+                }
+                keyword.loc
+            },
+            Stmt::With(inner) => inner.loc(),
+            Stmt::Return { keyword, value, semi_colon } =>  {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: semi.loc.end,
+                    }
+                }
+                if let Some(value) = value {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: value.loc().end,
+                    }
+                }
+                keyword.loc
+            },
+            Stmt::Labeled(inner) => inner.loc(),
+            Stmt::Break { keyword, label, semi_colon } => {
+                if let Some(semi_colon) = semi_colon {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: semi_colon.loc.end,
+                    }
+                } 
+                if let Some(label) = label {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: label.loc().end
+                    }
+                }
+                keyword.loc
+            },
+            Stmt::Continue { keyword, label, semi_colon } => {
+                if let Some(semi_colon) = semi_colon {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: semi_colon.loc.end,
+                    }
+                }
+                if let Some(label) = label {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: label.loc().end
+                    }
+                }
+                keyword.loc
+            },
+            Stmt::If(inner) => inner.loc(),
+            Stmt::Switch(inner) => inner.loc(),
+            Stmt::Throw { keyword, expr, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: keyword.loc.start,
+                        end: semi.loc.end,
+                    }
+                }
+                SourceLocation {
+                    start: keyword.loc.start,
+                    end: expr.loc().end,
+                }
+            },
+            Stmt::Try(inner) => inner.loc(),
+            Stmt::While(inner) => inner.loc(),
+            Stmt::DoWhile(inner) => inner.loc(),
+            Stmt::For(inner) => inner.loc(),
+            Stmt::ForIn(inner) => inner.loc(),
+            Stmt::ForOf(inner) => inner.loc(),
+            Stmt::Var { decls, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: decls.loc().start,
+                        end: semi.loc.end,
+                    }
+                }
+                decls.loc()
+            },
+        }
     }
 }
 
@@ -645,7 +775,7 @@ impl<'a> From<ForStmt<'a>> for crate::stmt::ForStmt<'a> {
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
 pub enum LoopInit<'a> {
-    Variable(VarKind<'a>, Vec<VarDecl<'a>>),
+    Variable(VarKind<'a>, Vec<ListEntry<'a, VarDecl<'a>>>),
     Expr(Expr<'a>),
 }
 
@@ -672,7 +802,7 @@ impl<'a> From<LoopInit<'a>> for crate::stmt::LoopInit<'a> {
         match other {
             LoopInit::Expr(inner) => Self::Expr(inner.into()),
             LoopInit::Variable(kind, decls) => {
-                Self::Variable(kind.into(), decls.into_iter().map(From::from).collect())
+                Self::Variable(kind.into(), decls.into_iter().map(|e| e.item.into()).collect())
             }
         }
     }
