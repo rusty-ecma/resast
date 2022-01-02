@@ -234,19 +234,22 @@ impl<'a> Node for NormalImportSpecs<'a> {
 
 impl<'a> From<NormalImportSpec<'a>> for crate::decl::NormalImportSpec<'a> {
     fn from(other: NormalImportSpec<'a>) -> Self {
+        let imported: crate::Ident = other.imported.into();
+        let local: crate::Ident = if let Some(alias) = other.alias {
+            alias.into()
+        } else {
+            imported.clone()
+        };
         Self {
-            local: other.local.into(),
-            imported: other
-                .alias
-                .map(From::from)
-                .unwrap_or_else(|| crate::Ident::from("")),
+            local,
+            imported,
         }
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpec<'a> {
-    pub local: Ident<'a>,
+    pub imported: Ident<'a>,
     pub alias: Option<Alias<'a>>,
 }
 
@@ -254,11 +257,11 @@ impl<'a> Node for NormalImportSpec<'a> {
     fn loc(&self) -> SourceLocation {
         if let Some(alias) = &self.alias {
             SourceLocation {
-                start: self.local.loc().start,
+                start: self.imported.loc().start,
                 end: alias.loc().end,
             }
         } else {
-            self.local.loc()
+            self.imported.loc()
         }
     }
 }
@@ -410,7 +413,7 @@ impl<'a> From<NamedExportDecl<'a>> for crate::decl::NamedExportDecl<'a> {
         match other {
             NamedExportDecl::Decl(inner) => Self::Decl(inner.into()),
             NamedExportDecl::Specifier(inner) => Self::Specifier(
-                inner.list.elements.into_iter().map(From::from).collect(),
+                inner.list.elements.into_iter().map(|e| e.item.into()).collect(),
                 inner.source.map(|s| s.module.into()),
             ),
         }
@@ -514,7 +517,7 @@ impl<'a> Node for NamedExportSource<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExportList<'a> {
     pub open_brace: Slice<'a>,
-    pub elements: Vec<ExportSpecifier<'a>>,
+    pub elements: Vec<ListEntry<'a, ExportSpecifier<'a>>>,
     pub close_brace: Slice<'a>,
 }
 

@@ -647,7 +647,7 @@ pub struct Slice<'a> {
     pub loc: SourceLocation,
 }
 
-#[derive(Debug, Clone, PartialEq, Copy, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct SourceLocation {
     pub start: Position,
     pub end: Position,
@@ -662,10 +662,30 @@ impl SourceLocation {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Copy, PartialOrd)]
+impl core::cmp::PartialOrd for SourceLocation {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self.start.partial_cmp(&other.start) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
+        self.end.partial_cmp(&other.end)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Position {
     pub line: usize,
     pub column: usize,
+}
+
+impl std::cmp::PartialOrd for Position {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        let line = self.line.partial_cmp(&other.line)?;
+        if matches!(line, core::cmp::Ordering::Equal) {
+            return self.column.partial_cmp(&other.column)
+        }
+        Some(line)
+    }
 }
 
 impl std::ops::Add for Position {

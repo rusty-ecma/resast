@@ -268,6 +268,7 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                 is_static: false,
             },
             Prop::Method(inner) => Self {
+                computed: inner.id.brackets.is_some(),
                 key: inner.id.into(),
                 value: crate::prelude::PropValue::Expr(crate::Expr::Func(crate::Func {
                     body: inner.body.into(),
@@ -276,11 +277,10 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                     is_async: inner.keyword_async.is_some(),
                     params: inner.params.into_iter().map(|e| e.item.into()).collect(),
                 })),
-                kind: crate::PropKind::Init,
+                kind: crate::PropKind::Method,
                 method: true,
-                computed: false,
                 short_hand: false,
-                is_static: false,
+                is_static: inner.keyword_static.is_some(),
             },
             Prop::Ctor(inner) => Self {
                 computed: inner.keyword.brackets.is_some(),
@@ -290,11 +290,11 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                     generator: false,
                     id: None,
                     is_async: false,
-                    params: inner.params.into_iter().map(From::from).collect(),
+                    params: inner.params.into_iter().map(|e| e.item.into()).collect(),
                 })),
                 kind: crate::PropKind::Ctor,
                 is_static: false,
-                method: false,
+                method: true,
                 short_hand: false,
             },
             Prop::Get(inner) => Self {
@@ -310,7 +310,7 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                 kind: crate::PropKind::Get,
                 method: false,
                 short_hand: false,
-                is_static: false,
+                is_static: inner.keyword_static.is_some(),
             },
             Prop::Set(inner) => Self {
                 computed: inner.id.brackets.is_some(),
@@ -325,7 +325,7 @@ impl<'a> From<Prop<'a>> for crate::expr::Prop<'a> {
                 kind: crate::PropKind::Set,
                 method: false,
                 short_hand: false,
-                is_static: false,
+                is_static: inner.keyword_static.is_some(),
             },
         }
     }
@@ -465,7 +465,7 @@ impl<'a> From<PropMethod<'a>> for crate::Func<'a> {
 pub struct PropCtor<'a> {
     pub keyword: PropInitKey<'a>,
     pub open_paren: Slice<'a>,
-    pub params: Vec<FuncArg<'a>>,
+    pub params: Vec<ListEntry<'a, FuncArg<'a>>>,
     pub close_paren: Slice<'a>,
     pub body: FuncBody<'a>,
 }
@@ -597,7 +597,7 @@ pub struct UnaryExpr<'a> {
 
 impl<'a> UnaryExpr<'a> {
     pub fn prefix(&self) -> bool {
-        self.operator.loc() > self.argument.loc()
+        self.operator.loc() < self.argument.loc()
     }
 }
 
@@ -631,29 +631,36 @@ pub struct UpdateExpr<'a> {
 
 impl<'a> UpdateExpr<'a> {
     pub fn prefix(&self) -> bool {
-        self.operator.loc() > self.argument.loc()
+        self.operator.loc().start < self.argument.loc().start
     }
 }
 
 impl<'a> From<UpdateExpr<'a>> for crate::expr::UpdateExpr<'a> {
     fn from(other: UpdateExpr<'a>) -> Self {
-        Self {
+        let ret = Self {
             prefix: other.prefix(),
             operator: other.operator.into(),
             argument: Box::new(From::from(*other.argument)),
-        }
+        };
+        ret
     }
 }
 
 impl<'a> Node for UpdateExpr<'a> {
     fn loc(&self) -> SourceLocation {
-        
-        let (start, end) = if self.prefix() {
-            (self.operator.loc().start, self.argument.loc().end)
+        let op = self.operator.loc();
+        let arg = self.argument.loc();
+        if op < arg {
+            SourceLocation {
+                start: op.start,
+                end: arg.end,
+            }
         } else {
-            (self.argument.loc().start, self.operator.loc().end)
-        };
-        SourceLocation { start, end }
+            SourceLocation {
+                start: arg.start,
+                end: op.end
+            }
+        }
     }
 }
 
