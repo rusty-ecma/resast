@@ -5,7 +5,7 @@ use crate::spanned::VarKind;
 use crate::spanned::{Ident, ProgramPart};
 
 use super::decl::VarDecls;
-use super::{Node, Slice, SourceLocation, ListEntry};
+use super::{ListEntry, Node, Slice, SourceLocation};
 
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
@@ -203,31 +203,27 @@ pub enum Stmt<'a> {
 impl<'a> From<Stmt<'a>> for crate::stmt::Stmt<'a> {
     fn from(other: Stmt<'a>) -> Self {
         match other {
-            Stmt::Expr {
-                expr,
-                ..
-             } => Self::Expr(expr.into()),
+            Stmt::Expr { expr, .. } => Self::Expr(expr.into()),
             Stmt::Block(inner) => Self::Block(inner.into()),
             Stmt::Empty(_) => Self::Empty,
-            Stmt::Debugger {
-                ..
-            } => Self::Debugger,
+            Stmt::Debugger { .. } => Self::Debugger,
             Stmt::With(inner) => Self::With(inner.into()),
             Stmt::Return { value, .. } => Self::Return(value.map(From::from)),
             Stmt::Labeled(inner) => Self::Labeled(inner.into()),
             Stmt::Break { label, .. } => Self::Break(label.map(From::from)),
-            Stmt::Continue{ label, .. } => Self::Continue(label.map(From::from)),
+            Stmt::Continue { label, .. } => Self::Continue(label.map(From::from)),
             Stmt::If(inner) => Self::If(inner.into()),
             Stmt::Switch(inner) => Self::Switch(inner.into()),
-            Stmt::Throw { expr, ..
-             } => Self::Throw(expr.into()),
+            Stmt::Throw { expr, .. } => Self::Throw(expr.into()),
             Stmt::Try(inner) => Self::Try(inner.into()),
             Stmt::While(inner) => Self::While(inner.into()),
             Stmt::DoWhile(inner) => Self::DoWhile(inner.into()),
             Stmt::For(inner) => Self::For(inner.into()),
             Stmt::ForIn(inner) => Self::ForIn(inner.into()),
             Stmt::ForOf(inner) => Self::ForOf(inner.into()),
-            Stmt::Var { decls, .. } => Self::Var(decls.decls.into_iter().map(|e| e.item.into()).collect()),
+            Stmt::Var { decls, .. } => {
+                Self::Var(decls.decls.into_iter().map(|e| e.item.into()).collect())
+            }
         }
     }
 }
@@ -240,82 +236,101 @@ impl<'a> Node for Stmt<'a> {
                     return SourceLocation {
                         start: expr.loc().start,
                         end: semi.loc.end,
-                    }
+                    };
                 }
                 expr.loc()
-            },
+            }
             Stmt::Block(inner) => inner.loc(),
             Stmt::Empty(inner) => inner.loc,
-            Stmt::Debugger { keyword, semi_colon } => {
+            Stmt::Debugger {
+                keyword,
+                semi_colon,
+            } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: semi.loc.end,
-                    }
+                    };
                 }
                 keyword.loc
-            },
+            }
             Stmt::With(inner) => inner.loc(),
-            Stmt::Return { keyword, value, semi_colon } =>  {
+            Stmt::Return {
+                keyword,
+                value,
+                semi_colon,
+            } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: semi.loc.end,
-                    }
+                    };
                 }
                 if let Some(value) = value {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: value.loc().end,
-                    }
+                    };
                 }
                 keyword.loc
-            },
+            }
             Stmt::Labeled(inner) => inner.loc(),
-            Stmt::Break { keyword, label, semi_colon } => {
+            Stmt::Break {
+                keyword,
+                label,
+                semi_colon,
+            } => {
                 if let Some(semi_colon) = semi_colon {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: semi_colon.loc.end,
-                    }
-                } 
+                    };
+                }
                 if let Some(label) = label {
                     return SourceLocation {
                         start: keyword.loc.start,
-                        end: label.loc().end
-                    }
+                        end: label.loc().end,
+                    };
                 }
                 keyword.loc
-            },
-            Stmt::Continue { keyword, label, semi_colon } => {
+            }
+            Stmt::Continue {
+                keyword,
+                label,
+                semi_colon,
+            } => {
                 if let Some(semi_colon) = semi_colon {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: semi_colon.loc.end,
-                    }
+                    };
                 }
                 if let Some(label) = label {
                     return SourceLocation {
                         start: keyword.loc.start,
-                        end: label.loc().end
-                    }
+                        end: label.loc().end,
+                    };
                 }
                 keyword.loc
-            },
+            }
             Stmt::If(inner) => inner.loc(),
             Stmt::Switch(inner) => inner.loc(),
-            Stmt::Throw { keyword, expr, semi_colon } => {
+            Stmt::Throw {
+                keyword,
+                expr,
+                semi_colon,
+            } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: keyword.loc.start,
                         end: semi.loc.end,
-                    }
+                    };
                 }
                 SourceLocation {
                     start: keyword.loc.start,
                     end: expr.loc().end,
                 }
-            },
+            }
             Stmt::Try(inner) => inner.loc(),
             Stmt::While(inner) => inner.loc(),
             Stmt::DoWhile(inner) => inner.loc(),
@@ -327,10 +342,10 @@ impl<'a> Node for Stmt<'a> {
                     return SourceLocation {
                         start: decls.loc().start,
                         end: semi.loc.end,
-                    }
+                    };
                 }
                 decls.loc()
-            },
+            }
         }
     }
 }
@@ -801,9 +816,10 @@ impl<'a> From<LoopInit<'a>> for crate::stmt::LoopInit<'a> {
     fn from(other: LoopInit<'a>) -> Self {
         match other {
             LoopInit::Expr(inner) => Self::Expr(inner.into()),
-            LoopInit::Variable(kind, decls) => {
-                Self::Variable(kind.into(), decls.into_iter().map(|e| e.item.into()).collect())
-            }
+            LoopInit::Variable(kind, decls) => Self::Variable(
+                kind.into(),
+                decls.into_iter().map(|e| e.item.into()).collect(),
+            ),
         }
     }
 }

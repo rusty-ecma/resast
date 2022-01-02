@@ -3,7 +3,7 @@ use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Class, Func, Ident};
 
-use super::{Node, Slice, SourceLocation, ListEntry};
+use super::{ListEntry, Node, Slice, SourceLocation};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
@@ -14,7 +14,10 @@ pub enum Decl<'a> {
     /// let y, a = 0;
     /// const q = 100
     /// ```
-    Var(VarDecls<'a>),
+    Var {
+        decls: VarDecls<'a>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// A function declaration
     /// ```js
     /// function thing() {}
@@ -30,25 +33,31 @@ pub enum Decl<'a> {
     /// import * as moment from 'moment';
     /// import Thing, {thing} from 'stuff';
     /// ```
-    Import(Box<ModImport<'a>>),
+    Import {
+        import: Box<ModImport<'a>>,
+        semi_colon: Option<Slice<'a>>,
+    },
     /// An export declaration
     /// ```js
     /// export function thing() {}
     /// ```
-    Export(Box<ModExport<'a>>),
+    Export {
+        export: Box<ModExport<'a>>,
+        semi_colon: Option<Slice<'a>>,
+    },
 }
 
 impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
     fn from(other: Decl<'a>) -> Self {
         match other {
-            Decl::Var(inner) => Self::Var(
-                inner.keyword.into(),
-                inner.decls.into_iter().map(|e| e.item.into()).collect(),
+            Decl::Var { decls, ..} => Self::Var(
+                decls.keyword.into(),
+                decls.decls.into_iter().map(|e| e.item.into()).collect(),
             ),
             Decl::Func(inner) => Self::Func(inner.into()),
             Decl::Class(inner) => Self::Class(inner.into()),
-            Decl::Import(inner) => Self::Import(Box::new(From::from(*inner))),
-            Decl::Export(inner) => Self::Export(Box::new(From::from(*inner))),
+            Decl::Import { import, .. } => Self::Import(Box::new(From::from(*import))),
+            Decl::Export { export, .. } => Self::Export(Box::new(From::from(*export))),
         }
     }
 }
@@ -56,11 +65,35 @@ impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
 impl<'a> Node for Decl<'a> {
     fn loc(&self) -> super::SourceLocation {
         match self {
-            Decl::Var(inner) => inner.loc(),
+            Decl::Var { decls, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: decls.loc().start,
+                        end: semi.loc.end,
+                    };
+                }
+                decls.loc()
+            }
             Decl::Func(inner) => inner.loc(),
             Decl::Class(inner) => inner.loc(),
-            Decl::Import(inner) => inner.loc(),
-            Decl::Export(inner) => inner.loc(),
+            Decl::Import { import, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: import.loc().start,
+                        end: semi.loc.end,
+                    };
+                }
+                import.loc()
+            }
+            Decl::Export { export, semi_colon } => {
+                if let Some(semi) = semi_colon {
+                    return SourceLocation {
+                        start: export.loc().start,
+                        end: semi.loc.end,
+                    };
+                }
+                export.loc()
+            }
         }
     }
 }
@@ -89,7 +122,7 @@ impl<'a> Node for VarDecls<'a> {
 pub struct VarDecl<'a> {
     pub id: Pat<'a>,
     pub eq: Option<Slice<'a>>,
-    pub init: Option<Expr<'a>>
+    pub init: Option<Expr<'a>>,
 }
 
 impl<'a> Node for VarDecl<'a> {
@@ -143,8 +176,7 @@ pub struct ModImport<'a> {
     pub keyword_import: Slice<'a>,
     pub specifiers: Vec<ListEntry<'a, ImportSpecifier<'a>>>,
     pub keyword_from: Option<Slice<'a>>,
-    pub source: Lit<'a>,
-    pub semi_colon: Option<Slice<'a>>,
+    pub source: Lit<'a>
 }
 
 impl<'a> Node for ModImport<'a> {
@@ -160,7 +192,11 @@ impl<'a> From<ModImport<'a>> for crate::decl::ModImport<'a> {
     fn from(other: ModImport<'a>) -> Self {
         Self {
             source: other.source.into(),
-            specifiers: other.specifiers.into_iter().map(|e| e.item.into()).collect(),
+            specifiers: other
+                .specifiers
+                .into_iter()
+                .map(|e| e.item.into())
+                .collect(),
         }
     }
 }
@@ -240,10 +276,7 @@ impl<'a> From<NormalImportSpec<'a>> for crate::decl::NormalImportSpec<'a> {
         } else {
             imported.clone()
         };
-        Self {
-            local,
-            imported,
-        }
+        Self { local, imported }
     }
 }
 
@@ -413,7 +446,12 @@ impl<'a> From<NamedExportDecl<'a>> for crate::decl::NamedExportDecl<'a> {
         match other {
             NamedExportDecl::Decl(inner) => Self::Decl(inner.into()),
             NamedExportDecl::Specifier(inner) => Self::Specifier(
-                inner.list.elements.into_iter().map(|e| e.item.into()).collect(),
+                inner
+                    .list
+                    .elements
+                    .into_iter()
+                    .map(|e| e.item.into())
+                    .collect(),
                 inner.source.map(|s| s.module.into()),
             ),
         }

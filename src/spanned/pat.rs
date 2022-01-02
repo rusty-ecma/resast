@@ -1,7 +1,7 @@
 use crate::spanned::expr::{Expr, Prop};
 use crate::spanned::Ident;
 
-use super::{Node, Slice, SourceLocation, ListEntry, AssignOp};
+use super::{AssignOp, ListEntry, Node, Slice, SourceLocation};
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(Debug, Clone, PartialEq)]
@@ -52,7 +52,11 @@ impl<'a> Node for ArrayPat<'a> {
 
 impl<'a> From<ArrayPat<'a>> for Vec<Option<crate::pat::ArrayPatPart<'a>>> {
     fn from(other: ArrayPat<'a>) -> Self {
-        other.elements.into_iter().map(|e| e.item.map(Into::into)).collect()
+        other
+            .elements
+            .into_iter()
+            .map(|e| e.item.map(Into::into))
+            .collect()
     }
 }
 
@@ -132,9 +136,7 @@ pub enum ObjPatPart<'a> {
 impl<'a> Node for ObjPatPart<'a> {
     fn loc(&self) -> SourceLocation {
         match self {
-            ObjPatPart::Assign(prop) => {
-                prop.loc()
-            }
+            ObjPatPart::Assign(prop) => prop.loc(),
             ObjPatPart::Rest(inner) => inner.loc(),
         }
     }

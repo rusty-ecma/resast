@@ -4,7 +4,7 @@ use crate::spanned::pat::Pat;
 use crate::spanned::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp};
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 
-use super::{Node, Slice, SourceLocation, FuncArgEntry, ListEntry, Position};
+use super::{FuncArgEntry, ListEntry, Node, Position, Slice, SourceLocation};
 
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
@@ -120,8 +120,10 @@ impl<'a> From<Expr<'a>> for crate::Expr<'a> {
             Expr::Member(inner) => Self::Member(inner.into()),
             Expr::MetaProp(inner) => Self::MetaProp(inner.into()),
             Expr::New(inner) => Self::New(inner.into()),
-            Expr::Obj(inner) => Self::Obj(inner.props.into_iter().map(|e|e.item.into()).collect()),
-            Expr::Sequence(inner) => Self::Sequence(inner.into_iter().map(|e| e.item.into()).collect()),
+            Expr::Obj(inner) => Self::Obj(inner.props.into_iter().map(|e| e.item.into()).collect()),
+            Expr::Sequence(inner) => {
+                Self::Sequence(inner.into_iter().map(|e| e.item.into()).collect())
+            }
             Expr::Spread(inner) => Self::Spread(Box::new(inner.expr.into())),
             Expr::Super(_) => Self::Super,
             Expr::TaggedTemplate(inner) => Self::TaggedTemplate(inner.into()),
@@ -495,7 +497,7 @@ impl<'a> Node for PropGet<'a> {
             return SourceLocation {
                 start: keyword_static.loc.start,
                 end: self.body.loc().end,
-            }
+            };
         }
         SourceLocation {
             start: self.keyword_get.loc.start,
@@ -521,7 +523,7 @@ impl<'a> Node for PropSet<'a> {
             return SourceLocation {
                 start: keyword_static.loc.start,
                 end: self.body.loc().end,
-            }
+            };
         }
         SourceLocation {
             start: self.keyword_set.loc.start,
@@ -571,9 +573,7 @@ impl<'a> From<PropValue<'a>> for crate::expr::PropValue<'a> {
         match other {
             PropValue::Expr(inner) => Self::Expr(inner.into()),
             PropValue::Pat(inner) => Self::Pat(inner.into()),
-            PropValue::Method(inner) => {
-                Self::Expr(crate::expr::Expr::Func(inner.into()))
-            }
+            PropValue::Method(inner) => Self::Expr(crate::expr::Expr::Func(inner.into())),
         }
     }
 }
@@ -658,7 +658,7 @@ impl<'a> Node for UpdateExpr<'a> {
         } else {
             SourceLocation {
                 start: arg.start,
-                end: op.end
+                end: op.end,
             }
         }
     }
@@ -1002,10 +1002,7 @@ impl<'a> Node for ArrowParamPlaceHolder<'a> {
         } else {
             Position { line: 0, column: 0 }
         };
-        SourceLocation {
-            start,
-            end,
-        }
+        SourceLocation { start, end }
     }
 }
 
@@ -1394,10 +1391,7 @@ pub struct SequenceExprEntry<'a> {
 
 impl<'a> SequenceExprEntry<'a> {
     pub fn no_comma(expr: Expr<'a>) -> Self {
-        Self {
-            expr,
-            comma: None,
-        }
+        Self { expr, comma: None }
     }
 }
 
@@ -1416,7 +1410,7 @@ impl<'a> Node for SequenceExprEntry<'a> {
             return SourceLocation {
                 start: self.expr.loc().start,
                 end: comma.loc.end,
-            }
+            };
         }
         self.expr.loc()
     }

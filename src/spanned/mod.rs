@@ -37,9 +37,7 @@ impl<'a> From<Ident<'a>> for crate::Ident<'a> {
 
 impl<'a> From<Slice<'a>> for Ident<'a> {
     fn from(slice: Slice<'a>) -> Self {
-        Self {
-            slice,
-        }
+        Self { slice }
     }
 }
 
@@ -205,7 +203,11 @@ impl<'a> From<Func<'a>> for crate::Func<'a> {
             generator: other.generator(),
             is_async: other.is_async(),
             id: other.id.map(From::from),
-            params: other.params.into_iter().map(|e| From::from(e.item)).collect(),
+            params: other
+                .params
+                .into_iter()
+                .map(|e| From::from(e.item))
+                .collect(),
             body: other.body.into(),
         }
     }
@@ -241,7 +243,7 @@ impl<'a> Node for FuncArgEntry<'a> {
             return SourceLocation {
                 start: self.value.loc().start,
                 end: comma.loc.end,
-            }
+            };
         }
         self.value.loc()
     }
@@ -260,7 +262,9 @@ impl<'a> From<FuncArg<'a>> for crate::FuncArg<'a> {
         match other {
             FuncArg::Expr(inner) => Self::Expr(inner.into()),
             FuncArg::Pat(inner) => Self::Pat(inner.into()),
-            FuncArg::Rest(inner) => Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into()))),
+            FuncArg::Rest(inner) => {
+                Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
+            }
         }
     }
 }
@@ -396,7 +400,7 @@ impl<'a> Node for VarKind<'a> {
             VarKind::Var(Some(slice)) => slice.loc,
             VarKind::Let(slice) => slice.loc,
             VarKind::Const(slice) => slice.loc,
-            _ => SourceLocation::zero()
+            _ => SourceLocation::zero(),
         }
     }
 }
@@ -682,7 +686,7 @@ impl std::cmp::PartialOrd for Position {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         let line = self.line.partial_cmp(&other.line)?;
         if matches!(line, core::cmp::Ordering::Equal) {
-            return self.column.partial_cmp(&other.column)
+            return self.column.partial_cmp(&other.column);
         }
         Some(line)
     }
@@ -713,26 +717,25 @@ impl std::ops::Sub for Position {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ListEntry<'a, T> {
     pub item: T,
-    pub comma: Option<Slice<'a>>
+    pub comma: Option<Slice<'a>>,
 }
 
 impl<'a, T> ListEntry<'a, T> {
     pub fn no_comma(item: T) -> Self {
-        Self {
-            item,
-            comma: None
-        }
+        Self { item, comma: None }
     }
 }
 
 impl<'a, T> Node for ListEntry<'a, T>
-where T: Node {
+where
+    T: Node,
+{
     fn loc(&self) -> SourceLocation {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.item.loc().start,
                 end: comma.loc.end,
-            }
+            };
         }
         self.item.loc()
     }
