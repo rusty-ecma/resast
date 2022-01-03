@@ -332,7 +332,7 @@ impl<'a> Node for FuncBody<'a> {
 pub struct Class<'a> {
     pub keyword: Slice<'a>,
     pub id: Option<Ident<'a>>,
-    pub super_class: Option<Box<Expr<'a>>>,
+    pub super_class: Option<SuperClass<'a>>,
     pub body: ClassBody<'a>,
 }
 
@@ -340,7 +340,7 @@ impl<'a> From<Class<'a>> for crate::Class<'a> {
     fn from(other: Class<'a>) -> Self {
         Self {
             id: other.id.map(From::from),
-            super_class: other.super_class.map(|e| Box::new(From::from(*e))),
+            super_class: other.super_class.map(|e| Box::new(From::from(e.expr))),
             body: other.body.into(),
         }
     }
@@ -353,6 +353,12 @@ impl<'a> Node for Class<'a> {
             end: self.body.close_brace.loc.end,
         }
     }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct SuperClass<'a> {
+    pub keyword_extends: Slice<'a>,
+    pub expr: Expr<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
