@@ -33,7 +33,7 @@ pub enum Expr<'a> {
     /// An operation that has two arguments
     Binary(BinaryExpr<'a>),
     /// A class expression see `Class`
-    Class(Class<'a>),
+    Class(Box<Class<'a>>),
     /// Calling a function or method
     Call(CallExpr<'a>),
     /// A ternery expression
@@ -110,7 +110,7 @@ impl<'a> From<Expr<'a>> for crate::Expr<'a> {
             Expr::Assign(inner) => Self::Assign(inner.into()),
             Expr::Await(inner) => Self::Await(Box::new(inner.expr.into())),
             Expr::Binary(inner) => Self::Binary(inner.into()),
-            Expr::Class(inner) => Self::Class(inner.into()),
+            Expr::Class(inner) => Self::Class((*inner).into()),
             Expr::Call(inner) => Self::Call(inner.into()),
             Expr::Conditional(inner) => Self::Conditional(inner.into()),
             Expr::Func(inner) => Self::Func(inner.into()),
