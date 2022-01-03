@@ -1,6 +1,6 @@
 [package]
 name = "resast"
-version = "0.4.0"
+version = "0.5.0-alpha.1"
 authors = ["rfm <r@robertmasen.pizza>"]
 edition = "2018"
 description = "Rusty-ECMAScript Abstract Syntax Tree"
