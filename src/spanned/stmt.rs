@@ -439,7 +439,7 @@ pub struct IfStmt<'a> {
     pub test: Expr<'a>,
     pub close_paren: Slice<'a>,
     pub consequent: Box<Stmt<'a>>,
-    pub alternate: Option<Box<Stmt<'a>>>,
+    pub alternate: Option<Box<ElseStmt<'a>>>,
 }
 
 impl<'a> Node for IfStmt<'a> {
@@ -459,7 +459,22 @@ impl<'a> From<IfStmt<'a>> for crate::stmt::IfStmt<'a> {
         Self {
             test: other.test.into(),
             consequent: Box::new(From::from(*other.consequent)),
-            alternate: other.alternate.map(|s| Box::new(From::from(*s))),
+            alternate: other.alternate.map(|s| Box::new(From::from(s.body))),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct ElseStmt<'a> {
+    pub keyword: Slice<'a>,
+    pub body: Stmt<'a>,
+}
+
+impl<'a> Node for ElseStmt<'a> {
+    fn loc(&self) -> SourceLocation {
+        SourceLocation {
+            start: self.keyword.loc.start,
+            end: self.body.loc().end,
         }
     }
 }
@@ -724,6 +739,7 @@ pub struct DoWhileStmt<'a> {
     pub open_paren: Slice<'a>,
     pub test: Expr<'a>,
     pub close_paren: Slice<'a>,
+    pub semi_colon: Option<Slice<'a>>,
 }
 
 impl<'a> Node for DoWhileStmt<'a> {

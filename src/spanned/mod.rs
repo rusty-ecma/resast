@@ -664,11 +664,20 @@ pub struct SourceLocation {
 }
 
 impl SourceLocation {
-    fn zero() -> Self {
+    pub fn new(start_line: usize, start_column: usize, end_line: usize, end_column: usize) -> Self {
         Self {
-            start: Position { line: 0, column: 0 },
-            end: Position { line: 0, column: 0 },
+            start: Position {
+                line: start_line,
+                column: start_column,
+            },
+            end: Position {
+                line: end_line,
+                column: end_column,
+            },
         }
+    }
+    fn zero() -> Self {
+        Self::new(0, 0, 0, 0)
     }
 }
 

@@ -922,6 +922,7 @@ impl<'a> Node for CallExpr<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct NewExpr<'a> {
+    pub keyword: Slice<'a>,
     pub callee: Box<Expr<'a>>,
     pub open_paren: Option<Slice<'a>>,
     pub arguments: Vec<ListEntry<'a, Expr<'a>>>,

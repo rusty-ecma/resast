@@ -50,7 +50,7 @@ pub enum Decl<'a> {
 impl<'a> From<Decl<'a>> for crate::decl::Decl<'a> {
     fn from(other: Decl<'a>) -> Self {
         match other {
-            Decl::Var { decls, ..} => Self::Var(
+            Decl::Var { decls, .. } => Self::Var(
                 decls.keyword.into(),
                 decls.decls.into_iter().map(|e| e.item.into()).collect(),
             ),
@@ -176,7 +176,7 @@ pub struct ModImport<'a> {
     pub keyword_import: Slice<'a>,
     pub specifiers: Vec<ListEntry<'a, ImportSpecifier<'a>>>,
     pub keyword_from: Option<Slice<'a>>,
-    pub source: Lit<'a>
+    pub source: Lit<'a>,
 }
 
 impl<'a> Node for ModImport<'a> {
@@ -244,7 +244,7 @@ impl<'a> From<ImportSpecifier<'a>> for crate::decl::ImportSpecifier<'a> {
     fn from(other: ImportSpecifier<'a>) -> Self {
         match other {
             ImportSpecifier::Normal(inner) => {
-                Self::Normal(inner.specs.into_iter().map(From::from).collect())
+                Self::Normal(inner.specs.into_iter().map(|e| e.item.into()).collect())
             }
             ImportSpecifier::Default(inner) => Self::Default(inner.into()),
             ImportSpecifier::Namespace(inner) => Self::Namespace(inner.into()),
@@ -255,7 +255,7 @@ impl<'a> From<ImportSpecifier<'a>> for crate::decl::ImportSpecifier<'a> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpecs<'a> {
     pub open_brace: Slice<'a>,
-    pub specs: Vec<NormalImportSpec<'a>>,
+    pub specs: Vec<ListEntry<'a, NormalImportSpec<'a>>>,
     pub close_brace: Slice<'a>,
 }
 
