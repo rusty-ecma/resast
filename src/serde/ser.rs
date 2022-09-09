@@ -178,8 +178,8 @@ impl<'a> Serialize for ImportSpecifier<'a> {
             ImportSpecifier::Normal(ref n) => {
                 let mut state = serializer.serialize_struct("Node", 7)?;
                 state.serialize_field("type", "ImportSpecifier")?;
-                state.serialize_field("local", &n.local)?;
-                state.serialize_field("imported", &n.imported)?;
+                // state.serialize_field("local", &n.)?;
+                // state.serialize_field("imported", &n.imported)?;
                 state.end()
             }
         }
@@ -1241,5 +1241,4 @@ mod test {
         let expectation = "\"𝌆☃φ 💩𝌆☃φ 𝌆☃φ\"";
         assert_eq!(unescaper(js).unwrap(), expectation.to_string());
     }
-
 }
