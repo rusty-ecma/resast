@@ -387,6 +387,7 @@ pub enum ModExportSpecifier<'a> {
     /// ```
     All {
         star: Slice<'a>,
+        alias: Option<Alias<'a>>,
         keyword: Slice<'a>,
         name: Lit<'a>,
     },
@@ -415,9 +416,13 @@ impl<'a> From<ModExportSpecifier<'a>> for crate::decl::ModExport<'a> {
             ModExportSpecifier::Named(inner) => Self::Named(inner.into()),
             ModExportSpecifier::All {
                 star: _,
+                alias,
                 keyword: _,
                 name,
-            } => Self::All(name.into()),
+            } => Self::All {
+                alias: alias.map(|a| a.ident.into()),
+                name: name.into()
+            },
         }
     }
 }
