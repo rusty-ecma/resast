@@ -142,7 +142,10 @@ pub enum ModExport<'a> {
     /// ```js
     /// export * from 'mod';
     /// ```
-    All(Lit<'a>),
+    All {
+        alias: Option<Ident<'a>>,
+        name: Lit<'a>,
+    },
 }
 
 // pub struct NamedExportDecl<'a> {
