@@ -90,6 +90,7 @@ pub enum Expr<'a> {
     Wrapped(Box<WrappedExpr<'a>>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<'a>),
+    Optional(OptionalExpr<'a>),
 }
 
 impl<'a> From<Expr<'a>> for crate::Expr<'a> {
@@ -132,6 +133,7 @@ impl<'a> From<Expr<'a>> for crate::Expr<'a> {
             Expr::Update(inner) => Self::Update(inner.into()),
             Expr::Yield(inner) => Self::Yield(inner.into()),
             Expr::Wrapped(inner) => inner.expr.into(),
+            Expr::Optional(inner) => Self::Optional(Box::new((*inner.member).into())),
         }
     }
 }
@@ -165,6 +167,7 @@ impl<'a> Node for Expr<'a> {
             Expr::Update(inner) => inner.loc(),
             Expr::Yield(inner) => inner.loc(),
             Expr::Wrapped(inner) => inner.loc(),
+            Expr::Optional(inner) => inner.loc(),
         }
     }
 }
@@ -1420,5 +1423,19 @@ impl<'a> Node for SequenceExprEntry<'a> {
 impl<'a> From<SequenceExprEntry<'a>> for crate::expr::Expr<'a> {
     fn from(other: SequenceExprEntry<'a>) -> Self {
         other.expr.into()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct OptionalExpr<'a> {
+    member: Box<Expr<'a>>,
+    operator: Slice<'a>,
+}
+
+impl<'a> Node for OptionalExpr<'a> {
+    fn loc(&self) -> SourceLocation {
+        let start = self.member.loc().start;
+        let end = self.operator.loc.end;
+        SourceLocation { start, end }
     }
 }

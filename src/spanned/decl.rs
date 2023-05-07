@@ -421,7 +421,7 @@ impl<'a> From<ModExportSpecifier<'a>> for crate::decl::ModExport<'a> {
                 name,
             } => Self::All {
                 alias: alias.map(|a| a.ident.into()),
-                name: name.into()
+                name: name.into(),
             },
         }
     }

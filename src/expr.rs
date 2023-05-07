@@ -90,7 +90,22 @@ pub enum Expr<'a> {
     /// ```
     Update(UpdateExpr<'a>),
     /// yield a value from inside of a generator function
+    /// ```js
+    /// function *gen() {
+    ///   while (true) {
+    /// //  vvvvvvvvvvvvvvvvvvv
+    ///     yield "some value";
+    ///   }
+    /// }
+    /// ```
     Yield(YieldExpr<'a>),
+    /// An optional segment of an optional chain.
+    ///
+    /// ```js
+    /// //      vvv
+    /// let x = y.?z
+    /// ```
+    Optional(Box<Expr<'a>>),
 }
 
 impl<'a> Expr<'a> {
