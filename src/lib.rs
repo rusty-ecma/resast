@@ -26,17 +26,20 @@ impl Deref for SourceText<&str> {
         self.0
     }
 }
+
 impl Deref for SourceText<String> {
     type Target = str;
     fn deref(&self) -> &Self::Target {
         self.0.as_str()
     }
 }
+
 impl AsRef<str> for SourceText<&str> {
     fn as_ref(&self) -> &str {
         self.0
     }
 }
+
 impl AsRef<str> for SourceText<String> {
     fn as_ref(&self) -> &str {
         self.0.as_str()
