@@ -214,7 +214,7 @@ impl<T> Node for NormalImportSpecs<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.open_brace,
-            end: self.close_brace,
+            end: self.close_brace + 1,
         }
     }
 }
@@ -445,7 +445,7 @@ impl<T> Node for ExportList<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.open_brace,
-            end: self.close_brace,
+            end: self.close_brace + 1,
         }
     }
 }

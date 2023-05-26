@@ -143,7 +143,7 @@ impl<T> Node for ArrayExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.open_bracket,
-            end: self.close_bracket,
+            end: self.close_bracket + 1,
         }
     }
 }

@@ -169,7 +169,7 @@ impl<T> Node for Func<T> {
         } else {
             self.keyword
         };
-        let end = self.body.close_brace;
+        let end = self.body.close_brace + 1;
         SourceLocation { start, end }
     }
 }
@@ -222,7 +222,7 @@ impl<T> Node for FuncBody<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.open_brace,
-            end: self.close_brace,
+            end: self.close_brace + 1,
         }
     }
 }
@@ -265,7 +265,7 @@ impl<T> Node for Class<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.keyword,
-            end: self.body.close_brace,
+            end: self.body.close_brace + 1,
         }
     }
 }
@@ -286,7 +286,7 @@ pub struct ClassBody<T> {
 impl<T> Node for ClassBody<T> {
     fn loc(&self) -> SourceLocation {
         let start = self.open_brace;
-        let end = self.close_brace;
+        let end = self.close_brace + 1;
         SourceLocation { start, end }
     }
 }
