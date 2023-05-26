@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 
 pub mod decl;
 pub mod expr;
@@ -10,6 +9,8 @@ use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
+use crate::{SourceText};
+
 use self::pat::RestPat;
 
 pub trait Node {
@@ -17,33 +18,33 @@ pub trait Node {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ident<'a> {
-    pub slice: Slice<'a>,
+pub struct Ident<T> {
+    pub slice: Slice<T>,
 }
 
-impl<'a> Node for Ident<'a> {
+impl<T> Node for Ident<T> {
     fn loc(&self) -> SourceLocation {
         self.slice.loc
     }
 }
 
-impl<'a> From<Ident<'a>> for crate::Ident<'a> {
-    fn from(other: Ident<'a>) -> Self {
-        Self {
-            name: other.slice.source,
-        }
-    }
-}
+// impl<T> From<Ident<T>> for crate::Ident<T> {
+//     fn from(other: Ident<T>) -> Self {
+//         Self {
+//             name: other.slice.source,
+//         }
+//     }
+// }
 
-impl<'a> From<Slice<'a>> for Ident<'a> {
-    fn from(slice: Slice<'a>) -> Self {
+impl<T> From<Slice<T>> for Ident<T> {
+    fn from(slice: Slice<T>) -> Self {
         Self { slice }
     }
 }
 
-impl<'a> Ident<'a> {
-    pub fn name(&self) -> Cow<'a, str> {
-        self.slice.source.clone()
+impl<T> Ident<T> {
+    pub fn name(&self) -> &T {
+        &self.slice.source.0
     }
 }
 
@@ -53,23 +54,23 @@ impl<'a> Ident<'a> {
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
 #[derive(Debug, Clone, PartialEq)]
-pub enum Program<'a> {
+pub enum Program<T> {
     /// An ES6 Mod
-    Mod(Vec<ProgramPart<'a>>),
+    Mod(Vec<ProgramPart<T>>),
     /// Not an ES6 Mod
-    Script(Vec<ProgramPart<'a>>),
+    Script(Vec<ProgramPart<T>>),
 }
 
-impl<'a> From<Program<'a>> for crate::Program<'a> {
-    fn from(other: Program<'a>) -> Self {
-        match other {
-            Program::Mod(inner) => Self::Mod(inner.into_iter().map(From::from).collect()),
-            Program::Script(inner) => Self::Script(inner.into_iter().map(From::from).collect()),
-        }
-    }
-}
+// impl<T> From<Program<T>> for crate::Program<T> {
+//     fn from(other: Program<T>) -> Self {
+//         match other {
+//             Program::Mod(inner) => Self::Mod(inner.into_iter().map(From::from).collect()),
+//             Program::Script(inner) => Self::Script(inner.into_iter().map(From::from).collect()),
+//         }
+//     }
+// }
 
-impl<'a> Node for Program<'a> {
+impl<T> Node for Program<T> {
     fn loc(&self) -> SourceLocation {
         match self {
             Self::Mod(inner) => inner.loc(),
@@ -78,16 +79,16 @@ impl<'a> Node for Program<'a> {
     }
 }
 
-impl<'a> Program<'a> {
-    pub fn module(parts: Vec<ProgramPart<'a>>) -> Self {
+impl<T> Program<T> {
+    pub fn module(parts: Vec<ProgramPart<T>>) -> Self {
         Program::Mod(parts)
     }
-    pub fn script(parts: Vec<ProgramPart<'a>>) -> Self {
+    pub fn script(parts: Vec<ProgramPart<T>>) -> Self {
         Program::Script(parts)
     }
 }
 
-impl<'a> Node for Vec<ProgramPart<'a>> {
+impl<T> Node for Vec<ProgramPart<T>> {
     fn loc(&self) -> SourceLocation {
         let start = self
             .first()
@@ -104,26 +105,26 @@ impl<'a> Node for Vec<ProgramPart<'a>> {
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProgramPart<'a> {
+pub enum ProgramPart<T> {
     /// A Directive like `'use strict';`
-    Dir(Dir<'a>),
+    Dir(Dir<T>),
     /// A variable, function or module declaration
-    Decl(Decl<'a>),
+    Decl(Decl<T>),
     /// Any other kind of statement
-    Stmt(Stmt<'a>),
+    Stmt(Stmt<T>),
 }
 
-impl<'a> From<ProgramPart<'a>> for crate::ProgramPart<'a> {
-    fn from(other: ProgramPart<'a>) -> Self {
-        match other {
-            ProgramPart::Dir(inner) => Self::Dir(inner.into()),
-            ProgramPart::Decl(inner) => Self::Decl(inner.into()),
-            ProgramPart::Stmt(inner) => Self::Stmt(inner.into()),
-        }
-    }
-}
+// impl<T> From<ProgramPart<T>> for crate::ProgramPart<T> {
+//     fn from(other: ProgramPart<T>) -> Self {
+//         match other {
+//             ProgramPart::Dir(inner) => Self::Dir(inner.into()),
+//             ProgramPart::Decl(inner) => Self::Decl(inner.into()),
+//             ProgramPart::Stmt(inner) => Self::Stmt(inner.into()),
+//         }
+//     }
+// }
 
-impl<'a> Node for ProgramPart<'a> {
+impl<T> Node for ProgramPart<T> {
     fn loc(&self) -> SourceLocation {
         match self {
             Self::Dir(inner) => inner.loc(),
@@ -133,11 +134,11 @@ impl<'a> Node for ProgramPart<'a> {
     }
 }
 
-impl<'a> ProgramPart<'a> {
-    pub fn decl(inner: Decl<'a>) -> Self {
+impl<T> ProgramPart<T> {
+    pub fn decl(inner: Decl<T>) -> Self {
         ProgramPart::Decl(inner)
     }
-    pub fn stmt(inner: Stmt<'a>) -> Self {
+    pub fn stmt(inner: Stmt<T>) -> Self {
         ProgramPart::Stmt(inner)
     }
 }
@@ -145,22 +146,22 @@ impl<'a> ProgramPart<'a> {
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
 #[derive(Debug, Clone, PartialEq)]
-pub struct Dir<'a> {
-    pub expr: Lit<'a>,
-    pub dir: Cow<'a, str>,
-    pub semi_colon: Option<Slice<'a>>,
+pub struct Dir<T> {
+    pub expr: Lit<T>,
+    pub dir: SourceText<T>,
+    pub semi_colon: Option<Position>,
 }
 
-impl<'a> From<Dir<'a>> for crate::Dir<'a> {
-    fn from(other: Dir<'a>) -> Self {
-        Self {
-            expr: other.expr.into(),
-            dir: other.dir,
-        }
-    }
-}
+// impl<T> From<Dir<T>> for crate::Dir<T> {
+//     fn from(other: Dir<T>) -> Self {
+//         Self {
+//             expr: other.expr.into(),
+//             dir: other.dir,
+//         }
+//     }
+// }
 
-impl<'a> Node for Dir<'a> {
+impl<T> Node for Dir<T> {
     fn loc(&self) -> SourceLocation {
         self.expr.loc()
     }
@@ -177,18 +178,18 @@ impl<'a> Node for Dir<'a> {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct Func<'a> {
-    pub keyword: Slice<'a>,
-    pub id: Option<Ident<'a>>,
-    pub open_paren: Slice<'a>,
-    pub params: Vec<ListEntry<'a, FuncArg<'a>>>,
-    pub close_paren: Slice<'a>,
-    pub body: FuncBody<'a>,
-    pub star: Option<Slice<'a>>,
-    pub keyword_async: Option<Slice<'a>>,
+pub struct Func<T> {
+    pub keyword: Position,
+    pub id: Option<Ident<T>>,
+    pub open_paren: Position,
+    pub params: Vec<ListEntry<FuncArg<T>>>,
+    pub close_paren: Position,
+    pub body: FuncBody<T>,
+    pub star: Option<Position>,
+    pub keyword_async: Option<Position>,
 }
 
-impl<'a> Func<'a> {
+impl<T> Func<T> {
     pub fn is_async(&self) -> bool {
         self.keyword_async.is_some()
     }
@@ -197,52 +198,52 @@ impl<'a> Func<'a> {
     }
 }
 
-impl<'a> From<Func<'a>> for crate::Func<'a> {
-    fn from(other: Func<'a>) -> Self {
-        Self {
-            generator: other.generator(),
-            is_async: other.is_async(),
-            id: other.id.map(From::from),
-            params: other
-                .params
-                .into_iter()
-                .map(|e| From::from(e.item))
-                .collect(),
-            body: other.body.into(),
-        }
-    }
-}
+// impl<T> From<Func<T>> for crate::Func<T> {
+//     fn from(other: Func<T>) -> Self {
+//         Self {
+//             generator: other.generator(),
+//             is_async: other.is_async(),
+//             id: other.id.map(From::from),
+//             params: other
+//                 .params
+//                 .into_iter()
+//                 .map(|e| From::from(e.item))
+//                 .collect(),
+//             body: other.body.into(),
+//         }
+//     }
+// }
 
-impl<'a> Node for Func<'a> {
+impl<T> Node for Func<T> {
     fn loc(&self) -> SourceLocation {
-        let start = if let Some(keyword) = &self.keyword_async {
-            keyword.loc.start
+        let start = if let Some(keyword) = self.keyword_async {
+            keyword
         } else {
-            self.keyword.loc.start
+            self.keyword
         };
-        let end = self.body.close_brace.loc.end.clone();
+        let end = self.body.close_brace;
         SourceLocation { start, end }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FuncArgEntry<'a> {
-    pub value: FuncArg<'a>,
-    pub comma: Option<Slice<'a>>,
+pub struct FuncArgEntry<T> {
+    pub value: FuncArg<T>,
+    pub comma: Option<Position>,
 }
 
-impl<'a> From<FuncArgEntry<'a>> for crate::FuncArg<'a> {
-    fn from(other: FuncArgEntry<'a>) -> Self {
-        other.value.into()
-    }
-}
+// impl<T> From<FuncArgEntry<T>> for crate::FuncArg<T> {
+//     fn from(other: FuncArgEntry<T>) -> Self {
+//         other.value.into()
+//     }
+// }
 
-impl<'a> Node for FuncArgEntry<'a> {
+impl<T> Node for FuncArgEntry<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.value.loc().start,
-                end: comma.loc.end,
+                end: *comma+1,
             };
         }
         self.value.loc()
@@ -251,25 +252,25 @@ impl<'a> Node for FuncArgEntry<'a> {
 
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
-pub enum FuncArg<'a> {
-    Expr(Expr<'a>),
-    Pat(Pat<'a>),
-    Rest(Box<RestPat<'a>>),
+pub enum FuncArg<T> {
+    Expr(Expr<T>),
+    Pat(Pat<T>),
+    Rest(Box<RestPat<T>>),
 }
 
-impl<'a> From<FuncArg<'a>> for crate::FuncArg<'a> {
-    fn from(other: FuncArg<'a>) -> Self {
-        match other {
-            FuncArg::Expr(inner) => Self::Expr(inner.into()),
-            FuncArg::Pat(inner) => Self::Pat(inner.into()),
-            FuncArg::Rest(inner) => {
-                Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
-            }
-        }
-    }
-}
+// impl<T> From<FuncArg<T>> for crate::FuncArg<T> {
+//     fn from(other: FuncArg<T>) -> Self {
+//         match other {
+//             FuncArg::Expr(inner) => Self::Expr(inner.into()),
+//             FuncArg::Pat(inner) => Self::Pat(inner.into()),
+//             FuncArg::Rest(inner) => {
+//                 Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
+//             }
+//         }
+//     }
+// }
 
-impl<'a> Node for FuncArg<'a> {
+impl<T> Node for FuncArg<T> {
     fn loc(&self) -> SourceLocation {
         match self {
             FuncArg::Expr(inner) => inner.loc(),
@@ -281,23 +282,23 @@ impl<'a> Node for FuncArg<'a> {
 
 /// The block statement that makes up the function's body
 #[derive(Debug, Clone, PartialEq)]
-pub struct FuncBody<'a> {
-    pub open_brace: Slice<'a>,
-    pub stmts: Vec<ProgramPart<'a>>,
-    pub close_brace: Slice<'a>,
+pub struct FuncBody<T> {
+    pub open_brace: Position,
+    pub stmts: Vec<ProgramPart<T>>,
+    pub close_brace: Position,
 }
 
-impl<'a> From<FuncBody<'a>> for crate::FuncBody<'a> {
-    fn from(other: FuncBody<'a>) -> Self {
-        Self(other.stmts.into_iter().map(From::from).collect())
-    }
-}
+// impl<T> From<FuncBody<T>> for crate::FuncBody<T> {
+//     fn from(other: FuncBody<T>) -> Self {
+//         Self(other.stmts.into_iter().map(From::from).collect())
+//     }
+// }
 
-impl<'a> Node for FuncBody<'a> {
+impl<T> Node for FuncBody<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace.loc.start,
-            end: self.close_brace.loc.end,
+            start: self.open_brace,
+            end: self.close_brace,
         }
     }
 }
@@ -329,331 +330,414 @@ impl<'a> Node for FuncBody<'a> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-pub struct Class<'a> {
-    pub keyword: Slice<'a>,
-    pub id: Option<Ident<'a>>,
-    pub super_class: Option<SuperClass<'a>>,
-    pub body: ClassBody<'a>,
+pub struct Class<T> {
+    pub keyword: Position,
+    pub id: Option<Ident<T>>,
+    pub super_class: Option<SuperClass<T>>,
+    pub body: ClassBody<T>,
 }
 
-impl<'a> From<Class<'a>> for crate::Class<'a> {
-    fn from(other: Class<'a>) -> Self {
-        Self {
-            id: other.id.map(From::from),
-            super_class: other.super_class.map(|e| Box::new(From::from(e.expr))),
-            body: other.body.into(),
-        }
-    }
-}
+// impl<T> From<Class<T>> for crate::Class<T> {
+//     fn from(other: Class<T>) -> Self {
+//         Self {
+//             id: other.id.map(From::from),
+//             super_class: other.super_class.map(|e| Box::new(From::from(e.expr))),
+//             body: other.body.into(),
+//         }
+//     }
+// }
 
-impl<'a> Node for Class<'a> {
+impl<T> Node for Class<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword.loc.start,
-            end: self.body.close_brace.loc.end,
+            start: self.keyword,
+            end: self.body.close_brace,
         }
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct SuperClass<'a> {
-    pub keyword_extends: Slice<'a>,
-    pub expr: Expr<'a>,
+pub struct SuperClass<T> {
+    pub keyword_extends: Position,
+    pub expr: Expr<T>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ClassBody<'a> {
-    pub open_brace: Slice<'a>,
-    pub props: Vec<Prop<'a>>,
-    pub close_brace: Slice<'a>,
+pub struct ClassBody<T> {
+    pub open_brace: Position,
+    pub props: Vec<Prop<T>>,
+    pub close_brace: Position,
 }
 
-impl<'a> From<ClassBody<'a>> for crate::ClassBody<'a> {
-    fn from(other: ClassBody<'a>) -> Self {
-        Self(other.props.into_iter().map(From::from).collect())
-    }
-}
+// impl<T> From<ClassBody<T>> for crate::ClassBody<T> {
+//     fn from(other: ClassBody<T>) -> Self {
+//         Self(other.props.into_iter().map(From::from).collect())
+//     }
+// }
 
-impl<'a> Node for ClassBody<'a> {
+impl<T> Node for ClassBody<T> {
     fn loc(&self) -> SourceLocation {
-        let start = self.open_brace.loc.start;
-        let end = self.close_brace.loc.end;
+        let start = self.open_brace;
+        let end = self.close_brace;
         SourceLocation { start, end }
     }
 }
 
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq)]
-pub enum VarKind<'a> {
-    Var(Option<Slice<'a>>),
-    Let(Slice<'a>),
-    Const(Slice<'a>),
+pub enum VarKind {
+    Var(Option<Position>),
+    Let(Position),
+    Const(Position),
 }
 
-impl<'a> From<VarKind<'a>> for crate::VarKind {
-    fn from(other: VarKind<'a>) -> Self {
-        match other {
-            VarKind::Var(_) => Self::Var,
-            VarKind::Let(_) => Self::Let,
-            VarKind::Const(_) => Self::Const,
-        }
-    }
-}
+// impl<T> From<VarKind<T>> for crate::VarKind {
+//     fn from(other: VarKind<T>) -> Self {
+//         match other {
+//             VarKind::Var(_) => Self::Var,
+//             VarKind::Let(_) => Self::Let,
+//             VarKind::Const(_) => Self::Const,
+//         }
+//     }
+// }
 
-impl<'a> Node for VarKind<'a> {
+impl Node for VarKind {
     fn loc(&self) -> SourceLocation {
-        match self {
-            VarKind::Var(Some(slice)) => slice.loc,
-            VarKind::Let(slice) => slice.loc,
-            VarKind::Const(slice) => slice.loc,
-            _ => SourceLocation::zero(),
-        }
+        let start = match self {
+            VarKind::Var(Some(slice)) => *slice,
+            VarKind::Let(slice) => *slice,
+            VarKind::Const(slice) => *slice,
+            _ => return SourceLocation::zero(),
+        };
+        let end = Position { line: start.line, column: start.column + self.len() };
+        SourceLocation { start, end }
     }
 }
 
-impl<'a> VarKind<'a> {
+impl VarKind {
     pub fn is_var(&self) -> bool {
         matches!(self, VarKind::Var(_))
+    }
+    pub const fn len(&self) -> u32 {
+        match self {
+            VarKind::Var(Some(_)) => 3,
+            VarKind::Var(None) => 0,
+            VarKind::Let(_) => 3,
+            VarKind::Const(_) => 4,
+        }
     }
 }
 
 /// The available operators for assignment Exprs
 #[derive(Debug, Clone, PartialEq)]
-pub enum AssignOp<'a> {
-    Equal(Slice<'a>),
-    PlusEqual(Slice<'a>),
-    MinusEqual(Slice<'a>),
-    TimesEqual(Slice<'a>),
-    DivEqual(Slice<'a>),
-    ModEqual(Slice<'a>),
-    LeftShiftEqual(Slice<'a>),
-    RightShiftEqual(Slice<'a>),
-    UnsignedRightShiftEqual(Slice<'a>),
-    OrEqual(Slice<'a>),
-    XOrEqual(Slice<'a>),
-    AndEqual(Slice<'a>),
-    PowerOfEqual(Slice<'a>),
+pub enum AssignOp {
+    Equal(Position),
+    PlusEqual(Position),
+    MinusEqual(Position),
+    TimesEqual(Position),
+    DivEqual(Position),
+    ModEqual(Position),
+    LeftShiftEqual(Position),
+    RightShiftEqual(Position),
+    UnsignedRightShiftEqual(Position),
+    OrEqual(Position),
+    XOrEqual(Position),
+    AndEqual(Position),
+    PowerOfEqual(Position),
 }
 
-impl<'a> From<AssignOp<'a>> for crate::AssignOp {
-    fn from(other: AssignOp<'a>) -> Self {
-        match other {
-            AssignOp::Equal(_) => Self::Equal,
-            AssignOp::PlusEqual(_) => Self::PlusEqual,
-            AssignOp::MinusEqual(_) => Self::MinusEqual,
-            AssignOp::TimesEqual(_) => Self::TimesEqual,
-            AssignOp::DivEqual(_) => Self::DivEqual,
-            AssignOp::ModEqual(_) => Self::ModEqual,
-            AssignOp::LeftShiftEqual(_) => Self::LeftShiftEqual,
-            AssignOp::RightShiftEqual(_) => Self::RightShiftEqual,
-            AssignOp::UnsignedRightShiftEqual(_) => Self::UnsignedRightShiftEqual,
-            AssignOp::OrEqual(_) => Self::OrEqual,
-            AssignOp::XOrEqual(_) => Self::XOrEqual,
-            AssignOp::AndEqual(_) => Self::AndEqual,
-            AssignOp::PowerOfEqual(_) => Self::PowerOfEqual,
-        }
+// impl<T> From<AssignOp<T>> for crate::AssignOp {
+//     fn from(other: AssignOp<T>) -> Self {
+//         match other {
+//             AssignOp::Equal(_) => Self::Equal,
+//             AssignOp::PlusEqual(_) => Self::PlusEqual,
+//             AssignOp::MinusEqual(_) => Self::MinusEqual,
+//             AssignOp::TimesEqual(_) => Self::TimesEqual,
+//             AssignOp::DivEqual(_) => Self::DivEqual,
+//             AssignOp::ModEqual(_) => Self::ModEqual,
+//             AssignOp::LeftShiftEqual(_) => Self::LeftShiftEqual,
+//             AssignOp::RightShiftEqual(_) => Self::RightShiftEqual,
+//             AssignOp::UnsignedRightShiftEqual(_) => Self::UnsignedRightShiftEqual,
+//             AssignOp::OrEqual(_) => Self::OrEqual,
+//             AssignOp::XOrEqual(_) => Self::XOrEqual,
+//             AssignOp::AndEqual(_) => Self::AndEqual,
+//             AssignOp::PowerOfEqual(_) => Self::PowerOfEqual,
+//         }
+//     }
+// }
+
+impl Node for AssignOp {
+    fn loc(&self) -> SourceLocation {
+        let start = match self {
+            AssignOp::Equal(start) => *start,
+            AssignOp::PlusEqual(start) => *start,
+            AssignOp::MinusEqual(start) => *start,
+            AssignOp::TimesEqual(start) => *start,
+            AssignOp::DivEqual(start) => *start,
+            AssignOp::ModEqual(start) => *start,
+            AssignOp::LeftShiftEqual(start) => *start,
+            AssignOp::RightShiftEqual(start) => *start,
+            AssignOp::UnsignedRightShiftEqual(start) => *start,
+            AssignOp::OrEqual(start) => *start,
+            AssignOp::XOrEqual(start) => *start,
+            AssignOp::AndEqual(start) => *start,
+            AssignOp::PowerOfEqual(start) => *start,
+        };
+        let end = Position { line: start.line, column: start.column + self.len() };
+        SourceLocation { start, end }
     }
 }
 
-impl<'a> Node for AssignOp<'a> {
-    fn loc(&self) -> SourceLocation {
+impl AssignOp {
+    pub const fn len(&self) -> u32 {
         match self {
-            AssignOp::Equal(slice) => slice.loc,
-            AssignOp::PlusEqual(slice) => slice.loc,
-            AssignOp::MinusEqual(slice) => slice.loc,
-            AssignOp::TimesEqual(slice) => slice.loc,
-            AssignOp::DivEqual(slice) => slice.loc,
-            AssignOp::ModEqual(slice) => slice.loc,
-            AssignOp::LeftShiftEqual(slice) => slice.loc,
-            AssignOp::RightShiftEqual(slice) => slice.loc,
-            AssignOp::UnsignedRightShiftEqual(slice) => slice.loc,
-            AssignOp::OrEqual(slice) => slice.loc,
-            AssignOp::XOrEqual(slice) => slice.loc,
-            AssignOp::AndEqual(slice) => slice.loc,
-            AssignOp::PowerOfEqual(slice) => slice.loc,
+            AssignOp::Equal(_) => 1,
+            AssignOp::PlusEqual(_) => 2,
+            AssignOp::MinusEqual(_) => 2,
+            AssignOp::TimesEqual(_) => 2,
+            AssignOp::DivEqual(_) => 2,
+            AssignOp::ModEqual(_) => 2,
+            AssignOp::LeftShiftEqual(_) => 3,
+            AssignOp::RightShiftEqual(_) => 3,
+            AssignOp::UnsignedRightShiftEqual(_) => 4,
+            AssignOp::OrEqual(_) => 2,
+            AssignOp::XOrEqual(_) => 2,
+            AssignOp::AndEqual(_) => 2,
+            AssignOp::PowerOfEqual(_) => 3,
         }
     }
 }
 
 /// The available logical operators
 #[derive(Debug, Clone, PartialEq)]
-pub enum LogicalOp<'a> {
-    Or(Slice<'a>),
-    And(Slice<'a>),
+pub enum LogicalOp {
+    Or(Position),
+    And(Position),
 }
 
-impl<'a> From<LogicalOp<'a>> for crate::LogicalOp {
-    fn from(other: LogicalOp<'a>) -> Self {
-        match other {
-            LogicalOp::Or(_) => Self::Or,
-            LogicalOp::And(_) => Self::And,
-        }
-    }
-}
+// impl<T> From<LogicalOp<T>> for crate::LogicalOp {
+//     fn from(other: LogicalOp<T>) -> Self {
+//         match other {
+//             LogicalOp::Or(_) => Self::Or,
+//             LogicalOp::And(_) => Self::And,
+//         }
+//     }
+// }
 
-impl<'a> Node for LogicalOp<'a> {
+impl Node for LogicalOp {
     fn loc(&self) -> SourceLocation {
-        match self {
-            LogicalOp::Or(slice) => slice.loc,
-            LogicalOp::And(slice) => slice.loc,
-        }
+        let start = match self {
+            LogicalOp::Or(start) => *start,
+            LogicalOp::And(start) => *start,
+        };
+        let end = Position { line: start.line, column: start.column + 2};
+        SourceLocation { start, end }
     }
 }
 
 /// The available operations for `Binary` Exprs
 #[derive(Debug, Clone, PartialEq)]
-pub enum BinaryOp<'a> {
-    Equal(Slice<'a>),
-    NotEqual(Slice<'a>),
-    StrictEqual(Slice<'a>),
-    StrictNotEqual(Slice<'a>),
-    LessThan(Slice<'a>),
-    GreaterThan(Slice<'a>),
-    LessThanEqual(Slice<'a>),
-    GreaterThanEqual(Slice<'a>),
-    LeftShift(Slice<'a>),
-    RightShift(Slice<'a>),
-    UnsignedRightShift(Slice<'a>),
-    Plus(Slice<'a>),
-    Minus(Slice<'a>),
-    Times(Slice<'a>),
-    Over(Slice<'a>),
-    Mod(Slice<'a>),
-    Or(Slice<'a>),
-    XOr(Slice<'a>),
-    And(Slice<'a>),
-    In(Slice<'a>),
-    InstanceOf(Slice<'a>),
-    PowerOf(Slice<'a>),
+pub enum BinaryOp {
+    Equal(Position),
+    NotEqual(Position),
+    StrictEqual(Position),
+    StrictNotEqual(Position),
+    LessThan(Position),
+    GreaterThan(Position),
+    LessThanEqual(Position),
+    GreaterThanEqual(Position),
+    LeftShift(Position),
+    RightShift(Position),
+    UnsignedRightShift(Position),
+    Plus(Position),
+    Minus(Position),
+    Times(Position),
+    Over(Position),
+    Mod(Position),
+    Or(Position),
+    XOr(Position),
+    And(Position),
+    In(Position),
+    InstanceOf(Position),
+    PowerOf(Position),
 }
 
-impl<'a> From<BinaryOp<'a>> for crate::BinaryOp {
-    fn from(other: BinaryOp<'a>) -> Self {
-        match other {
-            BinaryOp::Equal(_) => Self::Equal,
-            BinaryOp::NotEqual(_) => Self::NotEqual,
-            BinaryOp::StrictEqual(_) => Self::StrictEqual,
-            BinaryOp::StrictNotEqual(_) => Self::StrictNotEqual,
-            BinaryOp::LessThan(_) => Self::LessThan,
-            BinaryOp::GreaterThan(_) => Self::GreaterThan,
-            BinaryOp::LessThanEqual(_) => Self::LessThanEqual,
-            BinaryOp::GreaterThanEqual(_) => Self::GreaterThanEqual,
-            BinaryOp::LeftShift(_) => Self::LeftShift,
-            BinaryOp::RightShift(_) => Self::RightShift,
-            BinaryOp::UnsignedRightShift(_) => Self::UnsignedRightShift,
-            BinaryOp::Plus(_) => Self::Plus,
-            BinaryOp::Minus(_) => Self::Minus,
-            BinaryOp::Times(_) => Self::Times,
-            BinaryOp::Over(_) => Self::Over,
-            BinaryOp::Mod(_) => Self::Mod,
-            BinaryOp::Or(_) => Self::Or,
-            BinaryOp::XOr(_) => Self::XOr,
-            BinaryOp::And(_) => Self::And,
-            BinaryOp::In(_) => Self::In,
-            BinaryOp::InstanceOf(_) => Self::InstanceOf,
-            BinaryOp::PowerOf(_) => Self::PowerOf,
-        }
+// impl<T> From<BinaryOp<T>> for crate::BinaryOp {
+//     fn from(other: BinaryOp<T>) -> Self {
+//         match other {
+//             BinaryOp::Equal(_) => Self::Equal,
+//             BinaryOp::NotEqual(_) => Self::NotEqual,
+//             BinaryOp::StrictEqual(_) => Self::StrictEqual,
+//             BinaryOp::StrictNotEqual(_) => Self::StrictNotEqual,
+//             BinaryOp::LessThan(_) => Self::LessThan,
+//             BinaryOp::GreaterThan(_) => Self::GreaterThan,
+//             BinaryOp::LessThanEqual(_) => Self::LessThanEqual,
+//             BinaryOp::GreaterThanEqual(_) => Self::GreaterThanEqual,
+//             BinaryOp::LeftShift(_) => Self::LeftShift,
+//             BinaryOp::RightShift(_) => Self::RightShift,
+//             BinaryOp::UnsignedRightShift(_) => Self::UnsignedRightShift,
+//             BinaryOp::Plus(_) => Self::Plus,
+//             BinaryOp::Minus(_) => Self::Minus,
+//             BinaryOp::Times(_) => Self::Times,
+//             BinaryOp::Over(_) => Self::Over,
+//             BinaryOp::Mod(_) => Self::Mod,
+//             BinaryOp::Or(_) => Self::Or,
+//             BinaryOp::XOr(_) => Self::XOr,
+//             BinaryOp::And(_) => Self::And,
+//             BinaryOp::In(_) => Self::In,
+//             BinaryOp::InstanceOf(_) => Self::InstanceOf,
+//             BinaryOp::PowerOf(_) => Self::PowerOf,
+//         }
+//     }
+// }
+
+impl Node for BinaryOp {
+    fn loc(&self) -> SourceLocation {
+        let start = match self {
+            BinaryOp::Equal(start) => *start,
+            BinaryOp::NotEqual(start) => *start,
+            BinaryOp::StrictEqual(start) => *start,
+            BinaryOp::StrictNotEqual(start) => *start,
+            BinaryOp::LessThan(start) => *start,
+            BinaryOp::GreaterThan(start) => *start,
+            BinaryOp::LessThanEqual(start) => *start,
+            BinaryOp::GreaterThanEqual(start) => *start,
+            BinaryOp::LeftShift(start) => *start,
+            BinaryOp::RightShift(start) => *start,
+            BinaryOp::UnsignedRightShift(start) => *start,
+            BinaryOp::Plus(start) => *start,
+            BinaryOp::Minus(start) => *start,
+            BinaryOp::Times(start) => *start,
+            BinaryOp::Over(start) => *start,
+            BinaryOp::Mod(start) => *start,
+            BinaryOp::Or(start) => *start,
+            BinaryOp::XOr(start) => *start,
+            BinaryOp::And(start) => *start,
+            BinaryOp::In(start) => *start,
+            BinaryOp::InstanceOf(start) => *start,
+            BinaryOp::PowerOf(start) => *start
+        };
+        let end = Position { line: start.line, column: start.column + self.len() };
+        SourceLocation { start, end }
     }
 }
 
-impl<'a> Node for BinaryOp<'a> {
-    fn loc(&self) -> SourceLocation {
+impl BinaryOp {
+    pub const fn len(&self) -> u32 {
         match self {
-            BinaryOp::Equal(slice) => slice.loc,
-            BinaryOp::NotEqual(slice) => slice.loc,
-            BinaryOp::StrictEqual(slice) => slice.loc,
-            BinaryOp::StrictNotEqual(slice) => slice.loc,
-            BinaryOp::LessThan(slice) => slice.loc,
-            BinaryOp::GreaterThan(slice) => slice.loc,
-            BinaryOp::LessThanEqual(slice) => slice.loc,
-            BinaryOp::GreaterThanEqual(slice) => slice.loc,
-            BinaryOp::LeftShift(slice) => slice.loc,
-            BinaryOp::RightShift(slice) => slice.loc,
-            BinaryOp::UnsignedRightShift(slice) => slice.loc,
-            BinaryOp::Plus(slice) => slice.loc,
-            BinaryOp::Minus(slice) => slice.loc,
-            BinaryOp::Times(slice) => slice.loc,
-            BinaryOp::Over(slice) => slice.loc,
-            BinaryOp::Mod(slice) => slice.loc,
-            BinaryOp::Or(slice) => slice.loc,
-            BinaryOp::XOr(slice) => slice.loc,
-            BinaryOp::And(slice) => slice.loc,
-            BinaryOp::In(slice) => slice.loc,
-            BinaryOp::InstanceOf(slice) => slice.loc,
-            BinaryOp::PowerOf(slice) => slice.loc,
+            BinaryOp::Equal(_) => 1,
+            BinaryOp::NotEqual(_) => 2,
+            BinaryOp::StrictEqual(_) => 3,
+            BinaryOp::StrictNotEqual(_) => 4,
+            BinaryOp::LessThan(_) => 1,
+            BinaryOp::GreaterThan(_) => 1,
+            BinaryOp::LessThanEqual(_) => 2,
+            BinaryOp::GreaterThanEqual(_) => 2,
+            BinaryOp::LeftShift(_) => 2,
+            BinaryOp::RightShift(_) => 2,
+            BinaryOp::UnsignedRightShift(_) => 3,
+            BinaryOp::Plus(_) => 1,
+            BinaryOp::Minus(_) => 1,
+            BinaryOp::Times(_) => 1,
+            BinaryOp::Over(_) => 1,
+            BinaryOp::Mod(_) => 1,
+            BinaryOp::Or(_) => 1,
+            BinaryOp::XOr(_) => 1,
+            BinaryOp::And(_) => 1,
+            BinaryOp::In(_) => 2,
+            BinaryOp::InstanceOf(_) => 10,
+            BinaryOp::PowerOf(_) => 2,
         }
     }
 }
 
 /// `++` or `--`
 #[derive(Debug, Clone, PartialEq)]
-pub enum UpdateOp<'a> {
-    Increment(Slice<'a>),
-    Decrement(Slice<'a>),
+pub enum UpdateOp {
+    Increment(Position),
+    Decrement(Position),
 }
 
-impl<'a> From<UpdateOp<'a>> for crate::UpdateOp {
-    fn from(other: UpdateOp<'a>) -> Self {
-        match other {
-            UpdateOp::Increment(_) => Self::Increment,
-            UpdateOp::Decrement(_) => Self::Decrement,
-        }
-    }
-}
+// impl<T> From<UpdateOp<T>> for crate::UpdateOp {
+//     fn from(other: UpdateOp<T>) -> Self {
+//         match other {
+//             UpdateOp::Increment(_) => Self::Increment,
+//             UpdateOp::Decrement(_) => Self::Decrement,
+//         }
+//     }
+// }
 
-impl<'a> Node for UpdateOp<'a> {
+impl Node for UpdateOp {
     fn loc(&self) -> SourceLocation {
-        match self {
-            UpdateOp::Increment(slice) => slice.loc,
-            UpdateOp::Decrement(slice) => slice.loc,
-        }
+        let start = match self {
+            UpdateOp::Increment(start) => *start,
+            UpdateOp::Decrement(start) => *start,
+        };
+        SourceLocation { start, end: Position { line: start.line, column: start.column + 2 } }
     }
 }
 
 /// The allowed operators for an Expr
 /// to be `Unary`
 #[derive(Debug, Clone, PartialEq)]
-pub enum UnaryOp<'a> {
-    Minus(Slice<'a>),
-    Plus(Slice<'a>),
-    Not(Slice<'a>),
-    Tilde(Slice<'a>),
-    TypeOf(Slice<'a>),
-    Void(Slice<'a>),
-    Delete(Slice<'a>),
+pub enum UnaryOp {
+    Minus(Position),
+    Plus(Position),
+    Not(Position),
+    Tilde(Position),
+    TypeOf(Position),
+    Void(Position),
+    Delete(Position),
 }
 
-impl<'a> From<UnaryOp<'a>> for crate::UnaryOp {
-    fn from(other: UnaryOp<'a>) -> Self {
-        match other {
-            UnaryOp::Minus(_) => Self::Minus,
-            UnaryOp::Plus(_) => Self::Plus,
-            UnaryOp::Not(_) => Self::Not,
-            UnaryOp::Tilde(_) => Self::Tilde,
-            UnaryOp::TypeOf(_) => Self::TypeOf,
-            UnaryOp::Void(_) => Self::Void,
-            UnaryOp::Delete(_) => Self::Delete,
-        }
+// impl<T> From<UnaryOp<T>> for crate::UnaryOp {
+//     fn from(other: UnaryOp<T>) -> Self {
+//         match other {
+//             UnaryOp::Minus(_) => Self::Minus,
+//             UnaryOp::Plus(_) => Self::Plus,
+//             UnaryOp::Not(_) => Self::Not,
+//             UnaryOp::Tilde(_) => Self::Tilde,
+//             UnaryOp::TypeOf(_) => Self::TypeOf,
+//             UnaryOp::Void(_) => Self::Void,
+//             UnaryOp::Delete(_) => Self::Delete,
+//         }
+//     }
+// }
+
+impl Node for UnaryOp {
+    fn loc(&self) -> SourceLocation {
+        
+        let start = match self {
+            UnaryOp::Minus(start) => *start,
+            UnaryOp::Plus(start) => *start,
+            UnaryOp::Not(start) => *start,
+            UnaryOp::Tilde(start) => *start,
+            UnaryOp::TypeOf(start) => *start,
+            UnaryOp::Void(start) => *start,
+            UnaryOp::Delete(start) => *start,
+        };
+        let end = Position { line: start.line, column: start.column + self.len() };
+        SourceLocation { start, end }
     }
 }
 
-impl<'a> Node for UnaryOp<'a> {
-    fn loc(&self) -> SourceLocation {
+impl UnaryOp {
+    pub const fn len(&self) -> u32 {
         match self {
-            UnaryOp::Minus(slice) => slice.loc,
-            UnaryOp::Plus(slice) => slice.loc,
-            UnaryOp::Not(slice) => slice.loc,
-            UnaryOp::Tilde(slice) => slice.loc,
-            UnaryOp::TypeOf(slice) => slice.loc,
-            UnaryOp::Void(slice) => slice.loc,
-            UnaryOp::Delete(slice) => slice.loc,
+            UnaryOp::Minus(_) => 2,
+            UnaryOp::Plus(_) => 2,
+            UnaryOp::Not(_) => 1,
+            UnaryOp::Tilde(_) => 1,
+            UnaryOp::TypeOf(_) => 6,
+            UnaryOp::Void(_) => 4,
+            UnaryOp::Delete(_) => 6,
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Slice<'a> {
-    pub source: Cow<'a, str>,
+pub struct Slice<T> {
+    pub source: SourceText<T>,
     pub loc: SourceLocation,
 }
 
@@ -729,27 +813,49 @@ impl std::ops::Sub for Position {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ListEntry<'a, T> {
-    pub item: T,
-    pub comma: Option<Slice<'a>>,
+impl std::ops::Add<u32> for Position {
+    type Output = Self;
+
+    fn add(self, rhs: u32) -> Self::Output {
+        Self {
+            line: self.line,
+            column: self.column + rhs,
+        }
+    }
 }
 
-impl<'a, T> ListEntry<'a, T> {
-    pub fn no_comma(item: T) -> Self {
+impl std::ops::Sub<u32> for Position {
+    type Output = Self;
+
+    fn sub(self, rhs: u32) -> Self::Output {
+        Self {
+            line: self.line,
+            column: self.column - rhs,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListEntry<Item> {
+    pub item: Item,
+    pub comma: Option<Position>,
+}
+
+impl<Item> ListEntry<Item> {
+    pub fn no_comma(item: Item) -> Self {
         Self { item, comma: None }
     }
 }
 
-impl<'a, T> Node for ListEntry<'a, T>
+impl<Item> Node for ListEntry<Item>
 where
-    T: Node,
+    Item: Node,
 {
     fn loc(&self) -> SourceLocation {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.item.loc().start,
-                end: comma.loc.end,
+                end: *comma+1,
             };
         }
         self.item.loc()

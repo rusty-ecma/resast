@@ -2,8 +2,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::borrow::Cow;
-
 pub mod decl;
 pub mod expr;
 pub mod pat;
@@ -12,10 +10,38 @@ pub mod serde;
 pub mod spanned;
 pub mod stmt;
 
+use std::ops::Deref;
+
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct SourceText<T>(T);
+
+impl Deref for SourceText<&str> {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        self.0
+    }
+}
+impl Deref for SourceText<String> {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        self.0.as_str()
+    }
+}
+impl AsRef<str> for SourceText<&str> {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+impl AsRef<str> for SourceText<String> {
+    fn as_ref(&self) -> &str {
+        self.0.as_str()
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -23,19 +49,22 @@ use stmt::Stmt;
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct Ident<'a> {
-    pub name: Cow<'a, str>,
+pub struct Ident<T> {
+    pub name: SourceText<T>,
 }
 
-impl<'a> Ident<'a> {
-    pub fn new(s: String) -> Self {
-        Ident {
-            name: Cow::Owned(s),
-        }
-    }
+impl<'a> Ident<&'a str> {
     pub fn from(s: &'a str) -> Self {
         Ident {
-            name: Cow::Borrowed(s),
+            name: SourceText(s),
+        }
+    }
+}
+
+impl Ident<String> {
+    pub fn from(s: String) -> Self {
+        Ident {
+            name: SourceText(s),
         }
     }
 }
@@ -51,18 +80,18 @@ impl<'a> Ident<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum Program<'a> {
+pub enum Program<T> {
     /// An ES6 Mod
-    Mod(Vec<ProgramPart<'a>>),
+    Mod(Vec<ProgramPart<T>>),
     /// Not an ES6 Mod
-    Script(Vec<ProgramPart<'a>>),
+    Script(Vec<ProgramPart<T>>),
 }
 
-impl<'a> Program<'a> {
-    pub fn module(parts: Vec<ProgramPart<'a>>) -> Self {
+impl<T> Program<T> {
+    pub fn module(parts: Vec<ProgramPart<T>>) -> Self {
         Program::Mod(parts)
     }
-    pub fn script(parts: Vec<ProgramPart<'a>>) -> Self {
+    pub fn script(parts: Vec<ProgramPart<T>>) -> Self {
         Program::Script(parts)
     }
 }
@@ -76,20 +105,20 @@ impl<'a> Program<'a> {
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum ProgramPart<'a> {
+pub enum ProgramPart<T> {
     /// A Directive like `'use strict';`
-    Dir(Dir<'a>),
+    Dir(Dir<T>),
     /// A variable, function or module declaration
-    Decl(Decl<'a>),
+    Decl(Decl<T>),
     /// Any other kind of statement
-    Stmt(Stmt<'a>),
+    Stmt(Stmt<T>),
 }
 
-impl<'a> ProgramPart<'a> {
-    pub fn decl(inner: Decl<'a>) -> Self {
+impl<T> ProgramPart<T> {
+    pub fn decl(inner: Decl<T>) -> Self {
         ProgramPart::Decl(inner)
     }
-    pub fn stmt(inner: Stmt<'a>) -> Self {
+    pub fn stmt(inner: Stmt<T>) -> Self {
         ProgramPart::Stmt(inner)
     }
 }
@@ -102,9 +131,9 @@ impl<'a> ProgramPart<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct Dir<'a> {
-    pub expr: Lit<'a>,
-    pub dir: Cow<'a, str>,
+pub struct Dir<T> {
+    pub expr: Lit<T>,
+    pub dir: SourceText<T>,
 }
 
 /// A function, this will be part of either a function
@@ -119,19 +148,19 @@ pub struct Dir<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct Func<'a> {
-    pub id: Option<Ident<'a>>,
-    pub params: Vec<FuncArg<'a>>,
-    pub body: FuncBody<'a>,
+pub struct Func<T> {
+    pub id: Option<Ident<T>>,
+    pub params: Vec<FuncArg<T>>,
+    pub body: FuncBody<T>,
     pub generator: bool,
     pub is_async: bool,
 }
 
-impl<'a> Func<'a> {
+impl<T> Func<T> {
     pub fn new(
-        id: Option<Ident<'a>>,
-        params: Vec<FuncArg<'a>>,
-        body: FuncBody<'a>,
+        id: Option<Ident<T>>,
+        params: Vec<FuncArg<T>>,
+        body: FuncBody<T>,
         generator: bool,
         is_async: bool,
     ) -> Self {
@@ -153,16 +182,16 @@ impl<'a> Func<'a> {
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum FuncArg<'a> {
-    Expr(Expr<'a>),
-    Pat(Pat<'a>),
+pub enum FuncArg<T> {
+    Expr(Expr<T>),
+    Pat(Pat<T>),
 }
 
-impl<'a> FuncArg<'a> {
-    pub fn expr(expr: Expr) -> FuncArg {
+impl<T> FuncArg<T> {
+    pub fn expr(expr: Expr<T>) -> FuncArg<T> {
         FuncArg::Expr(expr)
     }
-    pub fn pat(pat: Pat) -> FuncArg {
+    pub fn pat(pat: Pat<T>) -> FuncArg<T> {
         FuncArg::Pat(pat)
     }
 }
@@ -174,7 +203,7 @@ impl<'a> FuncArg<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
+pub struct FuncBody<T>(pub Vec<ProgramPart<T>>);
 /// A way to declare object templates
 /// ```js
 /// class Thing {
@@ -203,10 +232,10 @@ pub struct FuncBody<'a>(pub Vec<ProgramPart<'a>>);
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct Class<'a> {
-    pub id: Option<Ident<'a>>,
-    pub super_class: Option<Box<Expr<'a>>>,
-    pub body: ClassBody<'a>,
+pub struct Class<T> {
+    pub id: Option<Ident<T>>,
+    pub super_class: Option<Box<Expr<T>>>,
+    pub body: ClassBody<T>,
 }
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -214,14 +243,14 @@ pub struct Class<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct ClassBody<'a>(pub Vec<Prop<'a>>);
+pub struct ClassBody<T>(pub Vec<Prop<T>>);
 
-impl<'a> Class<'a> {
+impl<T> Class<T> {
     pub fn new(
-        id: Option<Ident<'a>>,
-        super_class: Option<Expr<'a>>,
-        body: Vec<Prop<'a>>,
-    ) -> Class<'a> {
+        id: Option<Ident<T>>,
+        super_class: Option<Expr<T>>,
+        body: Vec<Prop<T>>,
+    ) -> Class<T> {
         Class {
             id,
             super_class: super_class.map(Box::new),

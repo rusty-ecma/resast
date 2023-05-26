@@ -10,11 +10,11 @@ use crate::{Ident, ProgramPart};
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum Stmt<'a> {
+pub enum Stmt<T> {
     /// Any expression
-    Expr(Expr<'a>),
+    Expr(Expr<T>),
     /// A collection of program parts wrapped in curly braces
-    Block(BlockStmt<'a>),
+    Block(BlockStmt<T>),
     /// A single semi-colon
     Empty,
     /// The contextual keyword `debugger`
@@ -32,7 +32,7 @@ pub enum Stmt<'a> {
     /// }
     /// //rand !== 0
     /// ```
-    With(WithStmt<'a>),
+    With(WithStmt<T>),
     /// A return statement
     /// ```js
     /// function thing() {
@@ -41,14 +41,14 @@ pub enum Stmt<'a> {
     /// function stuff() {
     ///     return;
     /// }
-    Return(Option<Expr<'a>>),
+    Return(Option<Expr<T>>),
     /// A labeled statement
     /// ```js
     /// label: {
     ///     break label;
     /// }
     /// ```
-    Labeled(LabeledStmt<'a>),
+    Labeled(LabeledStmt<T>),
     /// A break statement
     /// ```js
     /// label: {
@@ -58,7 +58,7 @@ pub enum Stmt<'a> {
     ///     break;
     /// }
     /// ```
-    Break(Option<Ident<'a>>),
+    Break(Option<Ident<T>>),
     /// A short circuit continuation of a loop
     /// ```js
     /// label: while (true) {
@@ -69,16 +69,16 @@ pub enum Stmt<'a> {
     ///     }
     /// }
     /// ```
-    Continue(Option<Ident<'a>>),
+    Continue(Option<Ident<T>>),
     /// An if statement
     /// ```js
     /// if (1 < 2) {
-    ///     console.log('Always true');
+    ///     console.log(Tlways true');
     /// } else {
     ///     console.log('Never true');
     /// }
     /// ```
-    If(IfStmt<'a>),
+    If(IfStmt<T>),
     /// A switch statement
     /// ```js
     /// switch (Math.floor(Math.random()) * 10) {
@@ -93,7 +93,7 @@ pub enum Stmt<'a> {
     ///         return true;
     /// }
     /// ```
-    Switch(SwitchStmt<'a>),
+    Switch(SwitchStmt<T>),
     /// A statement that throws an error
     /// ```js
     /// function error() {
@@ -104,7 +104,7 @@ pub enum Stmt<'a> {
     ///     throw new Error('hohoho');
     /// }
     /// ```
-    Throw(Expr<'a>),
+    Throw(Expr<T>),
     /// A try/catch block
     /// ```js
     /// try {
@@ -115,7 +115,7 @@ pub enum Stmt<'a> {
     ///
     /// }
     /// ```
-    Try(TryStmt<'a>),
+    Try(TryStmt<T>),
     /// A while loop
     /// ```js
     /// while (false) {
@@ -130,14 +130,14 @@ pub enum Stmt<'a> {
     ///     }
     /// }
     /// ```
-    While(WhileStmt<'a>),
+    While(WhileStmt<T>),
     /// A while loop that executes its body first
     /// ```js
     /// do {
-    ///     console.log('at least once')
+    ///     console.log(Tt least once')
     /// } while (Math.floor(Math.random() * 100) < 75)
     /// ```
-    DoWhile(DoWhileStmt<'a>),
+    DoWhile(DoWhileStmt<T>),
     /// A "c-style" for loop
     /// ```js
     /// for (var i = 0; i < 100; i++) console.log(i);
@@ -145,7 +145,7 @@ pub enum Stmt<'a> {
     ///     console.log('forever!');
     /// }
     /// ```
-    For(ForStmt<'a>),
+    For(ForStmt<T>),
     /// A for in statement, this kind of for statement
     /// will extract each key from an indexable thing
     /// ```js
@@ -158,7 +158,7 @@ pub enum Stmt<'a> {
     /// }
     /// //prints a, b
     /// ```
-    ForIn(ForInStmt<'a>),
+    ForIn(ForInStmt<T>),
     /// A for of statement, this kind of for statement
     /// will extract the value from a generator or iterator
     /// ```js
@@ -167,13 +167,13 @@ pub enum Stmt<'a> {
     /// }
     /// //prints 2, 3, 4, 5, 6
     /// ```
-    ForOf(ForOfStmt<'a>),
+    ForOf(ForOfStmt<T>),
     /// A var statement
     /// ```js
     /// var x;
     /// var x, y = 'huh?';
     /// ```
-    Var(Vec<VarDecl<'a>>),
+    Var(Vec<VarDecl<T>>),
 }
 
 /// A with statement, this puts one object at the top of
@@ -191,9 +191,9 @@ pub enum Stmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct WithStmt<'a> {
-    pub object: Expr<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct WithStmt<T> {
+    pub object: Expr<T>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// A break statement
@@ -207,25 +207,25 @@ pub struct WithStmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct LabeledStmt<'a> {
-    pub label: Ident<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct LabeledStmt<T> {
+    pub label: Ident<T>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// An if statement
 /// ```js
 /// if (1 < 2) {
-///     console.log('Always true');
+///     console.log(Tlways true');
 /// } else {
 ///     console.log('Never true');
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct IfStmt<'a> {
-    pub test: Expr<'a>,
-    pub consequent: Box<Stmt<'a>>,
-    pub alternate: Option<Box<Stmt<'a>>>,
+pub struct IfStmt<T> {
+    pub test: Expr<T>,
+    pub consequent: Box<Stmt<T>>,
+    pub alternate: Option<Box<Stmt<T>>>,
 }
 
 /// A switch statement
@@ -244,9 +244,9 @@ pub struct IfStmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct SwitchStmt<'a> {
-    pub discriminant: Expr<'a>,
-    pub cases: Vec<SwitchCase<'a>>,
+pub struct SwitchStmt<T> {
+    pub discriminant: Expr<T>,
+    pub cases: Vec<SwitchCase<T>>,
 }
 
 /// A single case part of a switch statement
@@ -256,9 +256,9 @@ pub struct SwitchStmt<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct SwitchCase<'a> {
-    pub test: Option<Expr<'a>>,
-    pub consequent: Vec<ProgramPart<'a>>,
+pub struct SwitchCase<T> {
+    pub test: Option<Expr<T>>,
+    pub consequent: Vec<ProgramPart<T>>,
 }
 
 /// A collection of program parts wrapped in curly braces
@@ -268,7 +268,7 @@ pub struct SwitchCase<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct BlockStmt<'a>(pub Vec<ProgramPart<'a>>);
+pub struct BlockStmt<T>(pub Vec<ProgramPart<T>>);
 
 /// A try/catch block
 /// ```js
@@ -282,10 +282,10 @@ pub struct BlockStmt<'a>(pub Vec<ProgramPart<'a>>);
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct TryStmt<'a> {
-    pub block: BlockStmt<'a>,
-    pub handler: Option<CatchClause<'a>>,
-    pub finalizer: Option<BlockStmt<'a>>,
+pub struct TryStmt<T> {
+    pub block: BlockStmt<T>,
+    pub handler: Option<CatchClause<T>>,
+    pub finalizer: Option<BlockStmt<T>>,
 }
 
 /// The error handling part of a `TryStmt`
@@ -295,9 +295,9 @@ pub struct TryStmt<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct CatchClause<'a> {
-    pub param: Option<Pat<'a>>,
-    pub body: BlockStmt<'a>,
+pub struct CatchClause<T> {
+    pub param: Option<Pat<T>>,
+    pub body: BlockStmt<T>,
 }
 
 /// A while loop
@@ -316,22 +316,22 @@ pub struct CatchClause<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct WhileStmt<'a> {
-    pub test: Expr<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct WhileStmt<T> {
+    pub test: Expr<T>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// A while loop that executes its body first
 /// ```js
 /// do {
-///     console.log('at least once')
+///     console.log(Tt least once')
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct DoWhileStmt<'a> {
-    pub test: Expr<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct DoWhileStmt<T> {
+    pub test: Expr<T>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// A "c-style" for loop
@@ -343,11 +343,11 @@ pub struct DoWhileStmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForStmt<'a> {
-    pub init: Option<LoopInit<'a>>,
-    pub test: Option<Expr<'a>>,
-    pub update: Option<Expr<'a>>,
-    pub body: Box<Stmt<'a>>,
+pub struct ForStmt<T> {
+    pub init: Option<LoopInit<T>>,
+    pub test: Option<Expr<T>>,
+    pub update: Option<Expr<T>>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// The left most triple of a for loops parenthetical
@@ -360,9 +360,9 @@ pub struct ForStmt<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum LoopInit<'a> {
-    Variable(VarKind, Vec<VarDecl<'a>>),
-    Expr(Expr<'a>),
+pub enum LoopInit<T> {
+    Variable(VarKind, Vec<VarDecl<T>>),
+    Expr(Expr<T>),
 }
 
 /// A for in statement, this kind of for statement
@@ -379,10 +379,10 @@ pub enum LoopInit<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForInStmt<'a> {
-    pub left: LoopLeft<'a>,
-    pub right: Expr<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct ForInStmt<T> {
+    pub left: LoopLeft<T>,
+    pub right: Expr<T>,
+    pub body: Box<Stmt<T>>,
 }
 
 /// A for of statement, this kind of for statement
@@ -395,10 +395,10 @@ pub struct ForInStmt<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForOfStmt<'a> {
-    pub left: LoopLeft<'a>,
-    pub right: Expr<'a>,
-    pub body: Box<Stmt<'a>>,
+pub struct ForOfStmt<T> {
+    pub left: LoopLeft<T>,
+    pub right: Expr<T>,
+    pub body: Box<Stmt<T>>,
     pub is_await: bool,
 }
 
@@ -410,8 +410,8 @@ pub struct ForOfStmt<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum LoopLeft<'a> {
-    Expr(Expr<'a>),
-    Variable(VarKind, VarDecl<'a>),
-    Pat(Pat<'a>),
+pub enum LoopLeft<T> {
+    Expr(Expr<T>),
+    Variable(VarKind, VarDecl<T>),
+    Pat(Pat<T>),
 }

@@ -10,35 +10,35 @@ use crate::{Class, Func, Ident};
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum Decl<'a> {
+pub enum Decl<T> {
     /// A variable declaration
     /// ```js
     /// var x, b;
     /// let y, a = 0;
     /// const q = 100
     /// ```
-    Var(VarKind, Vec<VarDecl<'a>>),
+    Var(VarKind, Vec<VarDecl<T>>),
     /// A function declaration
     /// ```js
     /// function thing() {}
     /// ```
-    Func(Func<'a>),
+    Func(Func<T>),
     /// A class declaration
     /// ```js
     /// class Thing {}
     /// ```
-    Class(Class<'a>),
+    Class(Class<T>),
     /// An import declaration
     /// ```js
     /// import * as moment from 'moment';
     /// import Thing, {thing} from 'stuff';
     /// ```
-    Import(Box<ModImport<'a>>),
+    Import(Box<ModImport<T>>),
     /// An export declaration
     /// ```js
     /// export function thing() {}
     /// ```
-    Export(Box<ModExport<'a>>),
+    Export(Box<ModExport<T>>),
 }
 
 /// The identifier and optional value of a variable declaration
@@ -48,9 +48,9 @@ pub enum Decl<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct VarDecl<'a> {
-    pub id: Pat<'a>,
-    pub init: Option<Expr<'a>>,
+pub struct VarDecl<T> {
+    pub id: Pat<T>,
+    pub init: Option<Expr<T>>,
 }
 
 /// A module declaration, This would only be available
@@ -58,9 +58,9 @@ pub struct VarDecl<'a> {
 /// export at the top level
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum ModDecl<'a> {
-    Import(ModImport<'a>),
-    Export(ModExport<'a>),
+pub enum ModDecl<T> {
+    Import(ModImport<T>),
+    Export(ModExport<T>),
 }
 
 /// A declaration that imports exported
@@ -71,9 +71,9 @@ pub enum ModDecl<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ModImport<'a> {
-    pub specifiers: Vec<ImportSpecifier<'a>>,
-    pub source: Lit<'a>,
+pub struct ModImport<T> {
+    pub specifiers: Vec<ImportSpecifier<T>>,
+    pub source: Lit<T>,
 }
 
 /// The name of the thing being imported
@@ -83,7 +83,7 @@ pub struct ModImport<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum ImportSpecifier<'a> {
+pub enum ImportSpecifier<T> {
     /// A specifier in curly braces, this might
     /// have a local alias
     ///
@@ -91,27 +91,27 @@ pub enum ImportSpecifier<'a> {
     /// import {Thing} from './stuff.js';
     /// import {People as Persons} from './places.js';
     /// ```
-    Normal(Vec<NormalImportSpec<'a>>),
+    Normal(Vec<NormalImportSpec<T>>),
     /// A specifier that has been exported with the
     /// default keyword, this should not be wrapped in
     /// curly braces.
     /// ```js
     /// import DefaultThing from './stuff/js';
     /// ```
-    Default(Ident<'a>),
+    Default(Ident<T>),
     /// Import all exported members from a module
     /// in a namespace.
     ///
     /// ```js
     /// import * as Moment from 'moment.js';
     /// ```
-    Namespace(Ident<'a>),
+    Namespace(Ident<T>),
 }
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct NormalImportSpec<'a> {
-    pub local: Ident<'a>,
-    pub imported: Ident<'a>,
+pub struct NormalImportSpec<T> {
+    pub local: Ident<T>,
+    pub imported: Ident<T>,
 }
 
 /// Something exported from this module
@@ -121,13 +121,13 @@ pub struct NormalImportSpec<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum ModExport<'a> {
+pub enum ModExport<T> {
     /// ```js
     /// export default function() {};
     /// //or
     /// export default 1;
     /// ```
-    Default(DefaultExportDecl<'a>),
+    Default(DefaultExportDecl<T>),
     ///```js
     /// export {foo} from 'mod';
     /// //or
@@ -138,20 +138,20 @@ pub enum ModExport<'a> {
     /// export function bar() {
     /// }
     /// ```
-    Named(NamedExportDecl<'a>),
+    Named(NamedExportDecl<T>),
     /// ```js
     /// export * from 'mod';
     /// ```
     All {
-        alias: Option<Ident<'a>>,
-        name: Lit<'a>,
+        alias: Option<Ident<T>>,
+        name: Lit<T>,
     },
 }
 
-// pub struct NamedExportDecl<'a> {
-//     decl: Option<Box<Decl<'a>>>,
-//     specs: Vec<ExportSpecifier<'a>>,
-//     source: Option<Cow<'a, str>>
+// pub struct NamedExportDecl<T> {
+//     decl: Option<Box<Decl<T>>>,
+//     specs: Vec<ExportSpecifier<T>>,
+//     source: Option<Cow<T, str>>
 // }
 /// An export that has a name
 /// ```js
@@ -159,9 +159,9 @@ pub enum ModExport<'a> {
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum NamedExportDecl<'a> {
-    Decl(Decl<'a>),
-    Specifier(Vec<ExportSpecifier<'a>>, Option<Lit<'a>>),
+pub enum NamedExportDecl<T> {
+    Decl(Decl<T>),
+    Specifier(Vec<ExportSpecifier<T>>, Option<Lit<T>>),
 }
 
 /// A default export
@@ -174,9 +174,9 @@ pub enum NamedExportDecl<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum DefaultExportDecl<'a> {
-    Decl(Decl<'a>),
-    Expr(Expr<'a>),
+pub enum DefaultExportDecl<T> {
+    Decl(Decl<T>),
+    Expr(Expr<T>),
 }
 
 /// The name of the thing being exported
@@ -193,7 +193,7 @@ pub enum DefaultExportDecl<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct ExportSpecifier<'a> {
-    pub local: Ident<'a>,
-    pub exported: Ident<'a>,
+pub struct ExportSpecifier<T> {
+    pub local: Ident<T>,
+    pub exported: Ident<T>,
 }

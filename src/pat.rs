@@ -9,37 +9,37 @@ use crate::Ident;
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum Pat<'a> {
-    Ident(Ident<'a>),
-    Obj(ObjPat<'a>),
-    Array(Vec<Option<ArrayPatPart<'a>>>),
-    RestElement(Box<Pat<'a>>),
-    Assign(AssignPat<'a>),
+pub enum Pat<T> {
+    Ident(Ident<T>),
+    Obj(ObjPat<T>),
+    Array(Vec<Option<ArrayPatPart<T>>>),
+    RestElement(Box<Pat<T>>),
+    Assign(AssignPat<T>),
 }
 
-impl<'a> Pat<'a> {
-    pub fn ident_from(s: &'a str) -> Self {
-        Pat::Ident(Ident::from(s))
-    }
-}
+// impl<T> Pat<T> {
+//     pub fn ident_from(s: T) -> Self {
+//         Pat::Ident(Ident::from(s))
+//     }
+// }
 
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum ArrayPatPart<'a> {
-    Pat(Pat<'a>),
-    Expr(Expr<'a>),
+pub enum ArrayPatPart<T> {
+    Pat(Pat<T>),
+    Expr(Expr<T>),
 }
 
 /// similar to an `ObjectExpr`
-pub type ObjPat<'a> = Vec<ObjPatPart<'a>>;
+pub type ObjPat<T> = Vec<ObjPatPart<T>>;
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum ObjPatPart<'a> {
-    Assign(Prop<'a>),
-    Rest(Box<Pat<'a>>),
+pub enum ObjPatPart<T> {
+    Assign(Prop<T>),
+    Rest(Box<Pat<T>>),
 }
 
 /// An assignment as a pattern
@@ -49,7 +49,7 @@ pub enum ObjPatPart<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct AssignPat<'a> {
-    pub left: Box<Pat<'a>>,
-    pub right: Box<Expr<'a>>,
+pub struct AssignPat<T> {
+    pub left: Box<Pat<T>>,
+    pub right: Box<Expr<T>>,
 }
