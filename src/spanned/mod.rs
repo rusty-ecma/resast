@@ -664,7 +664,7 @@ pub struct SourceLocation {
 }
 
 impl SourceLocation {
-    pub fn new(start_line: usize, start_column: usize, end_line: usize, end_column: usize) -> Self {
+    pub fn new(start_line: u32, start_column: u32, end_line: u32, end_column: u32) -> Self {
         Self {
             start: Position {
                 line: start_line,
@@ -693,8 +693,8 @@ impl core::cmp::PartialOrd for SourceLocation {
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Position {
-    pub line: usize,
-    pub column: usize,
+    pub line: u32,
+    pub column: u32,
 }
 
 impl std::cmp::PartialOrd for Position {
