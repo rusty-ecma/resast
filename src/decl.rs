@@ -53,16 +53,6 @@ pub struct VarDecl<T> {
     pub init: Option<Expr<T>>,
 }
 
-/// A module declaration, This would only be available
-/// in an ES Mod, it would be either an import or
-/// export at the top level
-#[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum ModDecl<T> {
-    Import(ModImport<T>),
-    Export(ModExport<T>),
-}
-
 /// A declaration that imports exported
 /// members of another module
 ///
@@ -110,7 +100,7 @@ pub enum ImportSpecifier<T> {
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub struct NormalImportSpec<T> {
-    pub local: Ident<T>,
+    pub alias: Option<Ident<T>>,
     pub imported: Ident<T>,
 }
 
@@ -195,5 +185,5 @@ pub enum DefaultExportDecl<T> {
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ExportSpecifier<T> {
     pub local: Ident<T>,
-    pub exported: Ident<T>,
+    pub alias: Option<Ident<T>>,
 }

@@ -1,5 +1,5 @@
 use crate::pat::Pat;
-use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, UnaryOp, UpdateOp, SourceText};
+use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, SourceText, UnaryOp, UpdateOp};
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
@@ -91,12 +91,6 @@ pub enum Expr<T> {
     /// yield a value from inside of a generator function
     Yield(YieldExpr<T>),
 }
-
-// impl<'a> Expr<&'a str> {
-//     pub fn ident_from(s: &'a str) -> Self {
-//         Expr::Ident(Ident::from(s))
-//     }
-// }
 
 /// `[a, b, c]`
 pub type ArrayExpr<T> = Vec<Option<Expr<T>>>;

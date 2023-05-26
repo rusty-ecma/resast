@@ -1,4 +1,4 @@
-
+mod convert;
 pub mod decl;
 pub mod expr;
 pub mod pat;
@@ -9,7 +9,7 @@ use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
-use crate::{SourceText};
+use crate::SourceText;
 
 use self::pat::RestPat;
 
@@ -27,14 +27,6 @@ impl<T> Node for Ident<T> {
         self.slice.loc
     }
 }
-
-// impl<T> From<Ident<T>> for crate::Ident<T> {
-//     fn from(other: Ident<T>) -> Self {
-//         Self {
-//             name: other.slice.source,
-//         }
-//     }
-// }
 
 impl<T> From<Slice<T>> for Ident<T> {
     fn from(slice: Slice<T>) -> Self {
@@ -60,15 +52,6 @@ pub enum Program<T> {
     /// Not an ES6 Mod
     Script(Vec<ProgramPart<T>>),
 }
-
-// impl<T> From<Program<T>> for crate::Program<T> {
-//     fn from(other: Program<T>) -> Self {
-//         match other {
-//             Program::Mod(inner) => Self::Mod(inner.into_iter().map(From::from).collect()),
-//             Program::Script(inner) => Self::Script(inner.into_iter().map(From::from).collect()),
-//         }
-//     }
-// }
 
 impl<T> Node for Program<T> {
     fn loc(&self) -> SourceLocation {
@@ -114,16 +97,6 @@ pub enum ProgramPart<T> {
     Stmt(Stmt<T>),
 }
 
-// impl<T> From<ProgramPart<T>> for crate::ProgramPart<T> {
-//     fn from(other: ProgramPart<T>) -> Self {
-//         match other {
-//             ProgramPart::Dir(inner) => Self::Dir(inner.into()),
-//             ProgramPart::Decl(inner) => Self::Decl(inner.into()),
-//             ProgramPart::Stmt(inner) => Self::Stmt(inner.into()),
-//         }
-//     }
-// }
-
 impl<T> Node for ProgramPart<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -151,15 +124,6 @@ pub struct Dir<T> {
     pub dir: SourceText<T>,
     pub semi_colon: Option<Position>,
 }
-
-// impl<T> From<Dir<T>> for crate::Dir<T> {
-//     fn from(other: Dir<T>) -> Self {
-//         Self {
-//             expr: other.expr.into(),
-//             dir: other.dir,
-//         }
-//     }
-// }
 
 impl<T> Node for Dir<T> {
     fn loc(&self) -> SourceLocation {
@@ -198,22 +162,6 @@ impl<T> Func<T> {
     }
 }
 
-// impl<T> From<Func<T>> for crate::Func<T> {
-//     fn from(other: Func<T>) -> Self {
-//         Self {
-//             generator: other.generator(),
-//             is_async: other.is_async(),
-//             id: other.id.map(From::from),
-//             params: other
-//                 .params
-//                 .into_iter()
-//                 .map(|e| From::from(e.item))
-//                 .collect(),
-//             body: other.body.into(),
-//         }
-//     }
-// }
-
 impl<T> Node for Func<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = self.keyword_async {
@@ -232,18 +180,12 @@ pub struct FuncArgEntry<T> {
     pub comma: Option<Position>,
 }
 
-// impl<T> From<FuncArgEntry<T>> for crate::FuncArg<T> {
-//     fn from(other: FuncArgEntry<T>) -> Self {
-//         other.value.into()
-//     }
-// }
-
 impl<T> Node for FuncArgEntry<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.value.loc().start,
-                end: *comma+1,
+                end: *comma + 1,
             };
         }
         self.value.loc()
@@ -257,18 +199,6 @@ pub enum FuncArg<T> {
     Pat(Pat<T>),
     Rest(Box<RestPat<T>>),
 }
-
-// impl<T> From<FuncArg<T>> for crate::FuncArg<T> {
-//     fn from(other: FuncArg<T>) -> Self {
-//         match other {
-//             FuncArg::Expr(inner) => Self::Expr(inner.into()),
-//             FuncArg::Pat(inner) => Self::Pat(inner.into()),
-//             FuncArg::Rest(inner) => {
-//                 Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
-//             }
-//         }
-//     }
-// }
 
 impl<T> Node for FuncArg<T> {
     fn loc(&self) -> SourceLocation {
@@ -287,12 +217,6 @@ pub struct FuncBody<T> {
     pub stmts: Vec<ProgramPart<T>>,
     pub close_brace: Position,
 }
-
-// impl<T> From<FuncBody<T>> for crate::FuncBody<T> {
-//     fn from(other: FuncBody<T>) -> Self {
-//         Self(other.stmts.into_iter().map(From::from).collect())
-//     }
-// }
 
 impl<T> Node for FuncBody<T> {
     fn loc(&self) -> SourceLocation {
@@ -337,16 +261,6 @@ pub struct Class<T> {
     pub body: ClassBody<T>,
 }
 
-// impl<T> From<Class<T>> for crate::Class<T> {
-//     fn from(other: Class<T>) -> Self {
-//         Self {
-//             id: other.id.map(From::from),
-//             super_class: other.super_class.map(|e| Box::new(From::from(e.expr))),
-//             body: other.body.into(),
-//         }
-//     }
-// }
-
 impl<T> Node for Class<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -369,12 +283,6 @@ pub struct ClassBody<T> {
     pub close_brace: Position,
 }
 
-// impl<T> From<ClassBody<T>> for crate::ClassBody<T> {
-//     fn from(other: ClassBody<T>) -> Self {
-//         Self(other.props.into_iter().map(From::from).collect())
-//     }
-// }
-
 impl<T> Node for ClassBody<T> {
     fn loc(&self) -> SourceLocation {
         let start = self.open_brace;
@@ -391,16 +299,6 @@ pub enum VarKind {
     Const(Position),
 }
 
-// impl<T> From<VarKind<T>> for crate::VarKind {
-//     fn from(other: VarKind<T>) -> Self {
-//         match other {
-//             VarKind::Var(_) => Self::Var,
-//             VarKind::Let(_) => Self::Let,
-//             VarKind::Const(_) => Self::Const,
-//         }
-//     }
-// }
-
 impl Node for VarKind {
     fn loc(&self) -> SourceLocation {
         let start = match self {
@@ -409,7 +307,10 @@ impl Node for VarKind {
             VarKind::Const(slice) => *slice,
             _ => return SourceLocation::zero(),
         };
-        let end = Position { line: start.line, column: start.column + self.len() };
+        let end = Position {
+            line: start.line,
+            column: start.column + self.len(),
+        };
         SourceLocation { start, end }
     }
 }
@@ -446,26 +347,6 @@ pub enum AssignOp {
     PowerOfEqual(Position),
 }
 
-// impl<T> From<AssignOp<T>> for crate::AssignOp {
-//     fn from(other: AssignOp<T>) -> Self {
-//         match other {
-//             AssignOp::Equal(_) => Self::Equal,
-//             AssignOp::PlusEqual(_) => Self::PlusEqual,
-//             AssignOp::MinusEqual(_) => Self::MinusEqual,
-//             AssignOp::TimesEqual(_) => Self::TimesEqual,
-//             AssignOp::DivEqual(_) => Self::DivEqual,
-//             AssignOp::ModEqual(_) => Self::ModEqual,
-//             AssignOp::LeftShiftEqual(_) => Self::LeftShiftEqual,
-//             AssignOp::RightShiftEqual(_) => Self::RightShiftEqual,
-//             AssignOp::UnsignedRightShiftEqual(_) => Self::UnsignedRightShiftEqual,
-//             AssignOp::OrEqual(_) => Self::OrEqual,
-//             AssignOp::XOrEqual(_) => Self::XOrEqual,
-//             AssignOp::AndEqual(_) => Self::AndEqual,
-//             AssignOp::PowerOfEqual(_) => Self::PowerOfEqual,
-//         }
-//     }
-// }
-
 impl Node for AssignOp {
     fn loc(&self) -> SourceLocation {
         let start = match self {
@@ -483,7 +364,10 @@ impl Node for AssignOp {
             AssignOp::AndEqual(start) => *start,
             AssignOp::PowerOfEqual(start) => *start,
         };
-        let end = Position { line: start.line, column: start.column + self.len() };
+        let end = Position {
+            line: start.line,
+            column: start.column + self.len(),
+        };
         SourceLocation { start, end }
     }
 }
@@ -515,22 +399,16 @@ pub enum LogicalOp {
     And(Position),
 }
 
-// impl<T> From<LogicalOp<T>> for crate::LogicalOp {
-//     fn from(other: LogicalOp<T>) -> Self {
-//         match other {
-//             LogicalOp::Or(_) => Self::Or,
-//             LogicalOp::And(_) => Self::And,
-//         }
-//     }
-// }
-
 impl Node for LogicalOp {
     fn loc(&self) -> SourceLocation {
         let start = match self {
             LogicalOp::Or(start) => *start,
             LogicalOp::And(start) => *start,
         };
-        let end = Position { line: start.line, column: start.column + 2};
+        let end = Position {
+            line: start.line,
+            column: start.column + 2,
+        };
         SourceLocation { start, end }
     }
 }
@@ -562,35 +440,6 @@ pub enum BinaryOp {
     PowerOf(Position),
 }
 
-// impl<T> From<BinaryOp<T>> for crate::BinaryOp {
-//     fn from(other: BinaryOp<T>) -> Self {
-//         match other {
-//             BinaryOp::Equal(_) => Self::Equal,
-//             BinaryOp::NotEqual(_) => Self::NotEqual,
-//             BinaryOp::StrictEqual(_) => Self::StrictEqual,
-//             BinaryOp::StrictNotEqual(_) => Self::StrictNotEqual,
-//             BinaryOp::LessThan(_) => Self::LessThan,
-//             BinaryOp::GreaterThan(_) => Self::GreaterThan,
-//             BinaryOp::LessThanEqual(_) => Self::LessThanEqual,
-//             BinaryOp::GreaterThanEqual(_) => Self::GreaterThanEqual,
-//             BinaryOp::LeftShift(_) => Self::LeftShift,
-//             BinaryOp::RightShift(_) => Self::RightShift,
-//             BinaryOp::UnsignedRightShift(_) => Self::UnsignedRightShift,
-//             BinaryOp::Plus(_) => Self::Plus,
-//             BinaryOp::Minus(_) => Self::Minus,
-//             BinaryOp::Times(_) => Self::Times,
-//             BinaryOp::Over(_) => Self::Over,
-//             BinaryOp::Mod(_) => Self::Mod,
-//             BinaryOp::Or(_) => Self::Or,
-//             BinaryOp::XOr(_) => Self::XOr,
-//             BinaryOp::And(_) => Self::And,
-//             BinaryOp::In(_) => Self::In,
-//             BinaryOp::InstanceOf(_) => Self::InstanceOf,
-//             BinaryOp::PowerOf(_) => Self::PowerOf,
-//         }
-//     }
-// }
-
 impl Node for BinaryOp {
     fn loc(&self) -> SourceLocation {
         let start = match self {
@@ -615,9 +464,12 @@ impl Node for BinaryOp {
             BinaryOp::And(start) => *start,
             BinaryOp::In(start) => *start,
             BinaryOp::InstanceOf(start) => *start,
-            BinaryOp::PowerOf(start) => *start
+            BinaryOp::PowerOf(start) => *start,
         };
-        let end = Position { line: start.line, column: start.column + self.len() };
+        let end = Position {
+            line: start.line,
+            column: start.column + self.len(),
+        };
         SourceLocation { start, end }
     }
 }
@@ -658,22 +510,19 @@ pub enum UpdateOp {
     Decrement(Position),
 }
 
-// impl<T> From<UpdateOp<T>> for crate::UpdateOp {
-//     fn from(other: UpdateOp<T>) -> Self {
-//         match other {
-//             UpdateOp::Increment(_) => Self::Increment,
-//             UpdateOp::Decrement(_) => Self::Decrement,
-//         }
-//     }
-// }
-
 impl Node for UpdateOp {
     fn loc(&self) -> SourceLocation {
         let start = match self {
             UpdateOp::Increment(start) => *start,
             UpdateOp::Decrement(start) => *start,
         };
-        SourceLocation { start, end: Position { line: start.line, column: start.column + 2 } }
+        SourceLocation {
+            start,
+            end: Position {
+                line: start.line,
+                column: start.column + 2,
+            },
+        }
     }
 }
 
@@ -690,23 +539,8 @@ pub enum UnaryOp {
     Delete(Position),
 }
 
-// impl<T> From<UnaryOp<T>> for crate::UnaryOp {
-//     fn from(other: UnaryOp<T>) -> Self {
-//         match other {
-//             UnaryOp::Minus(_) => Self::Minus,
-//             UnaryOp::Plus(_) => Self::Plus,
-//             UnaryOp::Not(_) => Self::Not,
-//             UnaryOp::Tilde(_) => Self::Tilde,
-//             UnaryOp::TypeOf(_) => Self::TypeOf,
-//             UnaryOp::Void(_) => Self::Void,
-//             UnaryOp::Delete(_) => Self::Delete,
-//         }
-//     }
-// }
-
 impl Node for UnaryOp {
     fn loc(&self) -> SourceLocation {
-        
         let start = match self {
             UnaryOp::Minus(start) => *start,
             UnaryOp::Plus(start) => *start,
@@ -716,7 +550,10 @@ impl Node for UnaryOp {
             UnaryOp::Void(start) => *start,
             UnaryOp::Delete(start) => *start,
         };
-        let end = Position { line: start.line, column: start.column + self.len() };
+        let end = Position {
+            line: start.line,
+            column: start.column + self.len(),
+        };
         SourceLocation { start, end }
     }
 }
@@ -855,7 +692,7 @@ where
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.item.loc().start,
-                end: *comma+1,
+                end: *comma + 1,
             };
         }
         self.item.loc()

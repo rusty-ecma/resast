@@ -17,12 +17,6 @@ pub enum Pat<T> {
     Assign(AssignPat<T>),
 }
 
-// impl<T> Pat<T> {
-//     pub fn ident_from(s: T) -> Self {
-//         Pat::Ident(Ident::from(s))
-//     }
-// }
-
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]

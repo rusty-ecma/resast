@@ -246,11 +246,7 @@ pub struct Class<T> {
 pub struct ClassBody<T>(pub Vec<Prop<T>>);
 
 impl<T> Class<T> {
-    pub fn new(
-        id: Option<Ident<T>>,
-        super_class: Option<Expr<T>>,
-        body: Vec<Prop<T>>,
-    ) -> Class<T> {
+    pub fn new(id: Option<Ident<T>>, super_class: Option<Expr<T>>, body: Vec<Prop<T>>) -> Class<T> {
         Class {
             id,
             super_class: super_class.map(Box::new),
@@ -395,7 +391,7 @@ pub enum PropKind {
 
 pub mod prelude {
     pub use crate::decl::{
-        Decl, DefaultExportDecl, ExportSpecifier, ImportSpecifier, ModDecl, ModExport, ModImport,
+        Decl, DefaultExportDecl, ExportSpecifier, ImportSpecifier, ModExport, ModImport,
         NamedExportDecl, NormalImportSpec, VarDecl,
     };
     pub use crate::expr::{

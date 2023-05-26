@@ -3,7 +3,7 @@ use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Class, Func, Ident};
 
-use super::{ListEntry, Node, SourceLocation, Position};
+use super::{ListEntry, Node, Position, SourceLocation};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
@@ -47,21 +47,6 @@ pub enum Decl<T> {
     },
 }
 
-// impl<T> From<Decl<T>> for crate::decl::Decl<T> {
-//     fn from(other: Decl<T>) -> Self {
-//         match other {
-//             Decl::Var { decls, .. } => Self::Var(
-//                 decls.keyword.into(),
-//                 decls.decls.into_iter().map(|e| e.item.into()).collect(),
-//             ),
-//             Decl::Func(inner) => Self::Func(inner.into()),
-//             Decl::Class(inner) => Self::Class(inner.into()),
-//             Decl::Import { import, .. } => Self::Import(Box::new(From::from(*import))),
-//             Decl::Export { export, .. } => Self::Export(Box::new(From::from(*export))),
-//         }
-//     }
-// }
-
 impl<T> Node for Decl<T> {
     fn loc(&self) -> super::SourceLocation {
         match self {
@@ -69,7 +54,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: decls.loc().start,
-                        end: *semi+1,
+                        end: *semi + 1,
                     };
                 }
                 decls.loc()
@@ -80,7 +65,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: import.loc().start,
-                        end: *semi+1,
+                        end: *semi + 1,
                     };
                 }
                 import.loc()
@@ -89,7 +74,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: export.loc().start,
-                        end: *semi+1,
+                        end: *semi + 1,
                     };
                 }
                 export.loc()
@@ -138,15 +123,6 @@ impl<T> Node for VarDecl<T> {
     }
 }
 
-// impl<T> From<VarDecl<T>> for crate::decl::VarDecl<T> {
-//     fn from(other: VarDecl<T>) -> Self {
-//         Self {
-//             id: other.id.into(),
-//             init: other.init.map(From::from),
-//         }
-//     }
-// }
-
 /// A module declaration, This would only be available
 /// in an ES Mod, it would be either an import or
 /// export at the top level
@@ -188,19 +164,6 @@ impl<T> Node for ModImport<T> {
     }
 }
 
-// impl<T> From<ModImport<T>> for crate::decl::ModImport<T> {
-//     fn from(other: ModImport<T>) -> Self {
-//         Self {
-//             source: other.source.into(),
-//             specifiers: other
-//                 .specifiers
-//                 .into_iter()
-//                 .map(|e| e.item.into())
-//                 .collect(),
-//         }
-//     }
-// }
-
 /// The name of the thing being imported
 #[derive(Debug, Clone, PartialEq)]
 pub enum ImportSpecifier<T> {
@@ -240,18 +203,6 @@ impl<T> Node for ImportSpecifier<T> {
     }
 }
 
-// impl<T> From<ImportSpecifier<T>> for crate::decl::ImportSpecifier<T> {
-//     fn from(other: ImportSpecifier<T>) -> Self {
-//         match other {
-//             ImportSpecifier::Normal(inner) => {
-//                 Self::Normal(inner.specs.into_iter().map(|e| e.item.into()).collect())
-//             }
-//             ImportSpecifier::Default(inner) => Self::Default(inner.into()),
-//             ImportSpecifier::Namespace(inner) => Self::Namespace(inner.into()),
-//         }
-//     }
-// }
-
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpecs<T> {
     pub open_brace: Position,
@@ -267,18 +218,6 @@ impl<T> Node for NormalImportSpecs<T> {
         }
     }
 }
-
-// impl<T> From<NormalImportSpec<T>> for crate::decl::NormalImportSpec<T> {
-//     fn from(other: NormalImportSpec<T>) -> Self {
-//         let imported: crate::Ident = other.imported.into();
-//         let local: crate::Ident = if let Some(alias) = other.alias {
-//             alias.into()
-//         } else {
-//             imported.clone()
-//         };
-//         Self { local, imported }
-//     }
-// }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpec<T> {
@@ -304,12 +243,6 @@ pub struct DefaultImportSpec<T> {
     pub id: Ident<T>,
 }
 
-// impl<T> From<DefaultImportSpec<T>> for crate::Ident<T> {
-//     fn from(other: DefaultImportSpec<T>) -> Self {
-//         other.id.into()
-//     }
-// }
-
 impl<T> Node for DefaultImportSpec<T> {
     fn loc(&self) -> SourceLocation {
         self.id.loc()
@@ -332,12 +265,6 @@ impl<T> Node for NamespaceImportSpec<T> {
     }
 }
 
-// impl<T> From<NamespaceImportSpec<T>> for crate::Ident<T> {
-//     fn from(other: NamespaceImportSpec<T>) -> Self {
-//         other.ident.into()
-//     }
-// }
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModExport<T> {
     pub keyword: Position,
@@ -352,12 +279,6 @@ impl<T> Node for ModExport<T> {
         }
     }
 }
-
-// impl<T> From<ModExport<T>> for crate::decl::ModExport<T> {
-//     fn from(other: ModExport<T>) -> Self {
-//         other.spec.into()
-//     }
-// }
 
 /// Something exported from this module
 #[derive(Debug, Clone, PartialEq)]
@@ -409,24 +330,6 @@ impl<T> Node for ModExportSpecifier<T> {
     }
 }
 
-// impl<T> From<ModExportSpecifier<T>> for crate::decl::ModExport<T> {
-//     fn from(other: ModExportSpecifier<T>) -> Self {
-//         match other {
-//             ModExportSpecifier::Default { keyword: _, value } => Self::Default(value.into()),
-//             ModExportSpecifier::Named(inner) => Self::Named(inner.into()),
-//             ModExportSpecifier::All {
-//                 star: _,
-//                 alias,
-//                 keyword: _,
-//                 name,
-//             } => Self::All {
-//                 alias: alias.map(|a| a.ident.into()),
-//                 name: name.into()
-//             },
-//         }
-//     }
-// }
-
 /// An export that has a name
 /// ```js
 /// export function thing() {}
@@ -445,23 +348,6 @@ impl<T> Node for NamedExportDecl<T> {
         }
     }
 }
-
-// impl<T> From<NamedExportDecl<T>> for crate::decl::NamedExportDecl<T> {
-//     fn from(other: NamedExportDecl<T>) -> Self {
-//         match other {
-//             NamedExportDecl::Decl(inner) => Self::Decl(inner.into()),
-//             NamedExportDecl::Specifier(inner) => Self::Specifier(
-//                 inner
-//                     .list
-//                     .elements
-//                     .into_iter()
-//                     .map(|e| e.item.into())
-//                     .collect(),
-//                 inner.source.map(|s| s.module.into()),
-//             ),
-//         }
-//     }
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DefaultExportDecl<T> {
@@ -513,15 +399,6 @@ impl<T> Node for DefaultExportDeclValue<T> {
         }
     }
 }
-
-// impl<T> From<DefaultExportDeclValue<T>> for crate::decl::DefaultExportDecl<T> {
-//     fn from(other: DefaultExportDeclValue<T>) -> Self {
-//         match other {
-//             DefaultExportDeclValue::Decl(inner) => Self::Decl(inner.into()),
-//             DefaultExportDeclValue::Expr(inner) => Self::Expr(inner.into()),
-//         }
-//     }
-// }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct NamedExportSpec<T> {
@@ -600,16 +477,6 @@ impl<T> Node for ExportSpecifier<T> {
     }
 }
 
-// impl<T> From<ExportSpecifier<T>> for crate::decl::ExportSpecifier<T> {
-//     fn from(other: ExportSpecifier<T>) -> Self {
-//         let local: crate::Ident = other.local.into();
-//         Self {
-//             local: local.clone(),
-//             exported: other.alias.map(|a| a.ident.into()).unwrap_or(local),
-//         }
-//     }
-// }
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Alias<T> {
     pub keyword: Position,
@@ -624,9 +491,3 @@ impl<T> Node for Alias<T> {
         }
     }
 }
-
-// impl<T> From<Alias<T>> for crate::Ident<T> {
-//     fn from(other: Alias<T>) -> Self {
-//         other.ident.into()
-//     }
-// }

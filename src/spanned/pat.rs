@@ -1,7 +1,7 @@
 use crate::spanned::expr::{Expr, Prop};
 use crate::spanned::Ident;
 
-use super::{AssignOp, ListEntry, Node, SourceLocation, Position};
+use super::{AssignOp, ListEntry, Node, Position, SourceLocation};
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(Debug, Clone, PartialEq)]
@@ -11,17 +11,6 @@ pub enum Pat<T> {
     Array(ArrayPat<T>),
     Assign(AssignPat<T>),
 }
-
-// impl<T> From<Pat<T>> for crate::pat::Pat<T> {
-//     fn from(other: Pat<T>) -> Self {
-//         match other {
-//             Pat::Ident(inner) => Self::Ident(inner.into()),
-//             Pat::Obj(inner) => Self::Obj(inner.into()),
-//             Pat::Array(inner) => Self::Array(inner.into()),
-//             Pat::Assign(inner) => Self::Assign(inner.into()),
-//         }
-//     }
-// }
 
 impl<T> Node for Pat<T> {
     fn loc(&self) -> super::SourceLocation {
@@ -45,20 +34,10 @@ impl<T> Node for ArrayPat<T> {
     fn loc(&self) -> super::SourceLocation {
         SourceLocation {
             start: self.open_bracket,
-            end: self.close_bracket+1,
+            end: self.close_bracket + 1,
         }
     }
 }
-
-// impl<T> From<ArrayPat<T>> for Vec<Option<crate::pat::ArrayPatPart<T>>> {
-//     fn from(other: ArrayPat<T>) -> Self {
-//         other
-//             .elements
-//             .into_iter()
-//             .map(|e| e.item.map(Into::into))
-//             .collect()
-//     }
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayElement<T> {
@@ -66,30 +45,12 @@ pub struct ArrayElement<T> {
     pub comma: Option<Position>,
 }
 
-// impl<T> From<ArrayElement<T>> for Option<crate::pat::ArrayPatPart<T>> {
-//     fn from(other: ArrayElement<T>) -> Self {
-//         other.part.map(From::from)
-//     }
-// }
-
 #[derive(PartialEq, Debug, Clone)]
 pub enum ArrayPatPart<T> {
     Pat(Pat<T>),
     Expr(Expr<T>),
     Rest(RestPat<T>),
 }
-
-// impl<T> From<ArrayPatPart<T>> for crate::pat::ArrayPatPart<T> {
-//     fn from(other: ArrayPatPart<T>) -> Self {
-//         match other {
-//             ArrayPatPart::Pat(inner) => Self::Pat(inner.into()),
-//             ArrayPatPart::Expr(inner) => Self::Expr(inner.into()),
-//             ArrayPatPart::Rest(inner) => {
-//                 Self::Pat(crate::pat::Pat::RestElement(Box::new(inner.pat.into())))
-//             }
-//         }
-//     }
-// }
 
 impl<T> Node for ArrayPatPart<T> {
     fn loc(&self) -> SourceLocation {
@@ -115,16 +76,10 @@ impl<T> Node for ObjPat<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.open_brace,
-            end: self.close_brace+1,
+            end: self.close_brace + 1,
         }
     }
 }
-
-// impl<T> From<ObjPat<T>> for crate::pat::ObjPat<T> {
-//     fn from(other: ObjPat<T>) -> Self {
-//         other.props.into_iter().map(|e| e.item.into()).collect()
-//     }
-// }
 
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone)]
@@ -141,15 +96,6 @@ impl<T> Node for ObjPatPart<T> {
         }
     }
 }
-
-// impl<T> From<ObjPatPart<T>> for crate::pat::ObjPatPart<T> {
-//     fn from(other: ObjPatPart<T>) -> Self {
-//         match other {
-//             ObjPatPart::Assign(prop) => Self::Assign(prop.into()),
-//             ObjPatPart::Rest(inner) => Self::Rest(Box::new(From::from(inner.pat))),
-//         }
-//     }
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RestPat<T> {
@@ -182,12 +128,3 @@ impl<T> Node for AssignPat<T> {
         }
     }
 }
-
-// impl<T> From<AssignPat<T>> for crate::pat::AssignPat<T> {
-//     fn from(other: AssignPat<T>) -> Self {
-//         Self {
-//             left: Box::new(From::from(*other.left)),
-//             right: Box::new(From::from(*other.right)),
-//         }
-//     }
-// }
