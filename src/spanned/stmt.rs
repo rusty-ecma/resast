@@ -18,7 +18,7 @@ pub enum Stmt<T> {
     /// A collection of program parts wrapped in curly braces
     Block(BlockStmt<T>),
     /// A single semi-colon
-    Empty(SourceLocation),
+    Empty(Position),
     /// The contextual keyword `debugger`
     Debugger {
         keyword: Position,
@@ -213,7 +213,10 @@ impl<T> Node for Stmt<T> {
                 expr.loc()
             }
             Stmt::Block(inner) => inner.loc(),
-            Stmt::Empty(inner) => *inner,
+            Stmt::Empty(inner) => SourceLocation {
+                start: *inner,
+                end: *inner + 1,
+            },
             Stmt::Debugger {
                 keyword,
                 semi_colon,
