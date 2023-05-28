@@ -22,6 +22,16 @@ pub struct Ident<T> {
     pub slice: Slice<T>,
 }
 
+impl<T> Ident<T>
+where
+    T: AsRef<str>,
+{
+    pub fn new_from_source(source: T, line: u32, start_col: u32) -> Self {
+        let len = source.as_ref().len() as u32;
+        Slice::new(source, line, start_col, line, start_col + len).into()
+    }
+}
+
 impl<T> Node for Ident<T> {
     fn loc(&self) -> SourceLocation {
         self.slice.loc
@@ -578,6 +588,15 @@ pub struct Slice<T> {
     pub loc: SourceLocation,
 }
 
+impl<T> Slice<T> {
+    pub fn new(source: T, start_line: u32, start_col: u32, end_line: u32, end_column: u32) -> Self {
+        Self {
+            source: SourceText(source),
+            loc: SourceLocation::new(start_line, start_col, end_line, end_column),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct SourceLocation {
     pub start: Position,
@@ -616,6 +635,12 @@ impl core::cmp::PartialOrd for SourceLocation {
 pub struct Position {
     pub line: u32,
     pub column: u32,
+}
+
+impl Position {
+    pub fn new(line: u32, column: u32) -> Self {
+        Self { line, column }
+    }
 }
 
 impl std::cmp::PartialOrd for Position {

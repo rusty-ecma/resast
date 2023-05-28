@@ -952,6 +952,15 @@ pub enum Lit<T> {
     Template(TemplateLit<T>),
 }
 
+impl<T> Lit<T> {
+    pub fn new_true(line: u32, column: u32) -> Self {
+        Self::Boolean(Boolean::new_true(line, column))
+    }
+
+    pub fn new_false(line: u32, column: u32) -> Self {
+        Self::Boolean(Boolean::new_false(line, column))
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Boolean {
@@ -959,6 +968,15 @@ pub enum Boolean {
     False(Position),
 }
 
+impl Boolean {
+    pub fn new_true(line: u32, column: u32) -> Self {
+        Self::True(Position::new(line, column))
+    }
+
+    pub fn new_false(line: u32, column: u32) -> Self {
+        Self::False(Position::new(line, column))
+    }
+}
 
 impl Node for Boolean {
     fn loc(&self) -> SourceLocation {
