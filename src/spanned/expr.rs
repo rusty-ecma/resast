@@ -943,13 +943,36 @@ pub enum Lit<T> {
     Number(Slice<T>),
     /// `true`
     /// `false`
-    Boolean(Slice<T>),
+    Boolean(Boolean),
     /// `/.+/g`
     RegEx(RegEx<T>),
     /// ```js
     /// `I have ${0} apples`
     /// ```
     Template(TemplateLit<T>),
+}
+
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Boolean {
+    True(Position),
+    False(Position),
+}
+
+
+impl Node for Boolean {
+    fn loc(&self) -> SourceLocation {
+        match self {
+            Boolean::True(start) => SourceLocation {
+                start: *start,
+                end: *start + 4,
+            },
+            Boolean::False(start) => SourceLocation {
+                start: *start,
+                end: *start + 5,
+            },
+        }
+    }
 }
 
 impl<T> Node for Lit<T> {
@@ -961,7 +984,7 @@ impl<T> Node for Lit<T> {
             },
             Lit::String(inner) => inner.loc(),
             Lit::Number(inner) => inner.loc,
-            Lit::Boolean(inner) => inner.loc,
+            Lit::Boolean(inner) => inner.loc(),
             Lit::RegEx(inner) => inner.loc(),
             Lit::Template(inner) => inner.loc(),
         }

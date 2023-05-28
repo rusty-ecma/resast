@@ -206,6 +206,8 @@ mod decl {
 }
 
 mod expr {
+    use crate::spanned::expr::Boolean;
+
     use super::*;
 
     impl<T> From<Expr<T>> for crate::Expr<T>
@@ -630,9 +632,18 @@ mod expr {
                 Lit::Null(_inner) => Self::Null,
                 Lit::String(inner) => Self::String(inner.into()),
                 Lit::Number(inner) => Self::Number(inner.source),
-                Lit::Boolean(inner) => Self::Boolean(inner.source.0.as_ref().eq("true")),
+                Lit::Boolean(inner) => Self::Boolean(inner.into()),
                 Lit::RegEx(inner) => Self::RegEx(inner.into()),
                 Lit::Template(inner) => Self::Template(inner.into()),
+            }
+        }
+    }
+
+    impl From<Boolean> for bool {
+        fn from(other: Boolean) -> Self {
+            match other {
+                Boolean::True(_) => true,
+                Boolean::False(_) => false,
             }
         }
     }
