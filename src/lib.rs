@@ -10,7 +10,7 @@ pub mod serde;
 pub mod spanned;
 pub mod stmt;
 
-use std::ops::Deref;
+use std::{ops::Deref, borrow::Cow};
 
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
@@ -19,6 +19,12 @@ use stmt::Stmt;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct SourceText<T>(T);
+
+impl<T> From<T> for SourceText<T> {
+    fn from(value: T) -> Self {
+        Self(value)
+    }
+}
 
 impl Deref for SourceText<&str> {
     type Target = str;
@@ -34,15 +40,10 @@ impl Deref for SourceText<String> {
     }
 }
 
-impl AsRef<str> for SourceText<&str> {
+impl<T> AsRef<str> for SourceText<T> 
+where T: AsRef<str> {
     fn as_ref(&self) -> &str {
-        self.0
-    }
-}
-
-impl AsRef<str> for SourceText<String> {
-    fn as_ref(&self) -> &str {
-        self.0.as_str()
+        self.0.as_ref()
     }
 }
 
@@ -56,19 +57,21 @@ pub struct Ident<T> {
     pub name: SourceText<T>,
 }
 
-impl<'a> Ident<&'a str> {
-    pub fn from(s: &'a str) -> Self {
-        Ident {
-            name: SourceText(s),
-        }
+impl<'a> From<&'a str> for Ident<&'a str> {
+    fn from(value: &'a str) -> Self {
+        Self { name: SourceText(value) }
     }
 }
 
-impl Ident<String> {
-    pub fn from(s: String) -> Self {
-        Ident {
-            name: SourceText(s),
-        }
+impl From<String> for Ident<String> {
+    fn from(value: String) -> Self {
+        Self { name: SourceText(value) }
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for Ident<Cow<'a, str>> {
+    fn from(value: Cow<'a, str>) -> Self {
+        Self { name: SourceText(value) }
     }
 }
 
