@@ -1,6 +1,5 @@
 use crate::spanned::pat::Pat;
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
-use crate::SourceText;
 
 use super::tokens::{
     AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon, Comma,
@@ -873,7 +872,7 @@ impl<T> Node for TemplateLit<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
-    pub content: SourceText<T>,
+    pub content: Slice<T>,
     pub close_quote: QuasiQuote,
 }
 

@@ -1,7 +1,7 @@
 //! All conversions from spanned into non-spanned types
 //!
 
-use crate::spanned::{
+use crate::{spanned::{
     decl::{
         Alias, Decl, DefaultExportDeclValue, DefaultImportSpec, ExportSpecifier, ImportSpecifier,
         ModExport, ModExportSpecifier, ModImport, NamedExportDecl, NamespaceImportSpec,
@@ -21,8 +21,8 @@ use crate::spanned::{
     },
     tokens::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp},
     Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident, Program, ProgramPart,
-    VarKind,
-};
+    VarKind, Slice
+}, SourceText};
 
 mod decl {
     use super::*;
@@ -510,7 +510,7 @@ mod expr {
         fn from(other: TemplateElement<T>) -> Self {
             Self {
                 open_quote: other.open_quote.into(),
-                content: other.content,
+                content: other.content.into(),
                 close_quote: other.close_quote.into(),
             }
         }
@@ -1000,5 +1000,11 @@ mod stmt {
                 LoopLeft::Pat(inner) => Self::Pat(inner.into()),
             }
         }
+    }
+}
+
+impl<T> From<Slice<T>> for SourceText<T> {
+    fn from(other: Slice<T>) -> Self {
+        other.source
     }
 }
