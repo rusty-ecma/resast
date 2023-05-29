@@ -1,12 +1,12 @@
 use crate::spanned::pat::Pat;
-use crate::spanned::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp};
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 use crate::SourceText;
 
 use super::tokens::{
-    Asterisk, Async, Await, CloseBrace, CloseBracket, CloseParen, Colon, Comma, Ellipsis, False,
-    FatArrow, ForwardSlash, Get, New, Null, OpenBrace, OpenBracket, OpenParen, Period, QuasiQuote,
-    QuestionMark, Quote, Set, Static, Super, This, Token, True, Yield,
+    AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon, Comma,
+    Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace, OpenBracket,
+    OpenParen, Period, QuasiQuote, QuestionMark, Quote, Set, Static, Super, This, Token, True,
+    UnaryOp, UpdateOp, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 

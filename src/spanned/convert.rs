@@ -19,8 +19,9 @@ use crate::spanned::{
         LabeledStmt, LoopInit, LoopLeft, Stmt, SwitchCase, SwitchStmt, TryStmt, WhileStmt,
         WithStmt,
     },
-    AssignOp, BinaryOp, Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident,
-    LogicalOp, Program, ProgramPart, UnaryOp, UpdateOp, VarKind,
+    tokens::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp},
+    Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident, Program, ProgramPart,
+    VarKind,
 };
 
 mod decl {
