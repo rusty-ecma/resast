@@ -978,11 +978,25 @@ impl Boolean {
     }
 }
 
-impl Node for Boolean {
-    fn loc(&self) -> SourceLocation {
+impl Token for Boolean {
+    fn as_str(&self) -> &str {
         match self {
-            Boolean::True(inner) => inner.loc(),
-            Boolean::False(inner) => inner.loc(),
+            Boolean::True(inner) => inner.as_str(),
+            Boolean::False(inner) => inner.as_str(),
+        }
+    }
+
+    fn start(&self) -> super::Position {
+        match self {
+            Boolean::True(inner) => inner.start(),
+            Boolean::False(inner) => inner.start(),
+        }
+    }
+
+    fn end(&self) -> super::Position {
+        match self {
+            Boolean::True(inner) => inner.end(),
+            Boolean::False(inner) => inner.end(),
         }
     }
 }
