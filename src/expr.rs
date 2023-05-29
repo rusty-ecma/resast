@@ -416,18 +416,25 @@ impl<T> StringLit<T> {
     pub fn single_from(s: T) -> StringLit<T> {
         StringLit::Single(SourceText(s))
     }
-    // pub fn clone_inner(&self) -> Cow<T> {
-    //     match self {
-    //         StringLit::Single(ref s) => s.clone(),
-    //         StringLit::Double(ref s) => s.clone(),
-    //     }
-    // }
-    // pub fn inner_matches(&self, o: &str) -> bool {
-    //     match self {
-    //         StringLit::Single(ref s) => o.eq(s.as_ref()),
-    //         StringLit::Double(ref d) => o.eq(d.as_ref()),
-    //     }
-    // }
+}
+impl<T> StringLit<T> 
+where T: Clone {
+    pub fn clone_inner(&self) -> T {
+        match self {
+            StringLit::Single(ref s) => s.0.clone(),
+            StringLit::Double(ref s) => s.0.clone(),
+        }
+    }
+}
+
+impl<T> StringLit<T>
+where T: AsRef<str> {
+    pub fn inner_matches(&self, o: &str) -> bool {
+        match self {
+            StringLit::Single(ref s) => o.eq(s.0.as_ref()),
+            StringLit::Double(ref d) => o.eq(d.0.as_ref()),
+        }
+    }
 }
 /// A regular expression literal
 #[derive(PartialEq, Debug, Clone)]
