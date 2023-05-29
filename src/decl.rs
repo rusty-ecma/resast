@@ -138,11 +138,6 @@ pub enum ModExport<T> {
     },
 }
 
-// pub struct NamedExportDecl<T> {
-//     decl: Option<Box<Decl<T>>>,
-//     specs: Vec<ExportSpecifier<T>>,
-//     source: Option<Cow<T, str>>
-// }
 /// An export that has a name
 /// ```js
 /// export function thing() {}
