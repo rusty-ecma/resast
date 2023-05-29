@@ -26,10 +26,7 @@ use crate::spanned::{
 mod decl {
     use super::*;
 
-    impl<T> From<Decl<T>> for crate::decl::Decl<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Decl<T>> for crate::decl::Decl<T> {
         fn from(other: Decl<T>) -> Self {
             match other {
                 Decl::Var { decls, .. } => crate::decl::Decl::Var(
@@ -48,10 +45,7 @@ mod decl {
         }
     }
 
-    impl<T> From<VarDecl<T>> for crate::decl::VarDecl<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<VarDecl<T>> for crate::decl::VarDecl<T> {
         fn from(other: VarDecl<T>) -> Self {
             Self {
                 id: other.id.into(),
@@ -60,10 +54,7 @@ mod decl {
         }
     }
 
-    impl<T> From<ModImport<T>> for crate::decl::ModImport<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ModImport<T>> for crate::decl::ModImport<T> {
         fn from(other: ModImport<T>) -> Self {
             Self {
                 source: other.source.into(),
@@ -76,10 +67,7 @@ mod decl {
         }
     }
 
-    impl<T> From<ImportSpecifier<T>> for crate::decl::ImportSpecifier<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ImportSpecifier<T>> for crate::decl::ImportSpecifier<T> {
         fn from(other: ImportSpecifier<T>) -> Self {
             match other {
                 ImportSpecifier::Normal(inner) => {
@@ -91,10 +79,7 @@ mod decl {
         }
     }
 
-    impl<T> From<NormalImportSpec<T>> for crate::decl::NormalImportSpec<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<NormalImportSpec<T>> for crate::decl::NormalImportSpec<T> {
         fn from(other: NormalImportSpec<T>) -> Self {
             let imported: crate::Ident<T> = other.imported.into();
             let alias = other.alias.map(|a| a.ident.into());
@@ -103,37 +88,25 @@ mod decl {
         }
     }
 
-    impl<T> From<DefaultImportSpec<T>> for crate::Ident<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<DefaultImportSpec<T>> for crate::Ident<T> {
         fn from(other: DefaultImportSpec<T>) -> Self {
             other.id.into()
         }
     }
 
-    impl<T> From<NamespaceImportSpec<T>> for crate::Ident<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<NamespaceImportSpec<T>> for crate::Ident<T> {
         fn from(other: NamespaceImportSpec<T>) -> Self {
             other.ident.into()
         }
     }
 
-    impl<T> From<ModExport<T>> for crate::decl::ModExport<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ModExport<T>> for crate::decl::ModExport<T> {
         fn from(other: ModExport<T>) -> Self {
             other.spec.into()
         }
     }
 
-    impl<T> From<ModExportSpecifier<T>> for crate::decl::ModExport<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ModExportSpecifier<T>> for crate::decl::ModExport<T> {
         fn from(other: ModExportSpecifier<T>) -> Self {
             match other {
                 ModExportSpecifier::Default { keyword: _, value } => Self::Default(value.into()),
@@ -150,10 +123,7 @@ mod decl {
             }
         }
     }
-    impl<T> From<NamedExportDecl<T>> for crate::decl::NamedExportDecl<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<NamedExportDecl<T>> for crate::decl::NamedExportDecl<T> {
         fn from(other: NamedExportDecl<T>) -> Self {
             match other {
                 NamedExportDecl::Decl(inner) => Self::Decl(inner.into()),
@@ -170,10 +140,7 @@ mod decl {
         }
     }
 
-    impl<T> From<DefaultExportDeclValue<T>> for crate::decl::DefaultExportDecl<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<DefaultExportDeclValue<T>> for crate::decl::DefaultExportDecl<T> {
         fn from(other: DefaultExportDeclValue<T>) -> Self {
             match other {
                 DefaultExportDeclValue::Decl(inner) => Self::Decl(inner.into()),
@@ -182,10 +149,7 @@ mod decl {
         }
     }
 
-    impl<T> From<ExportSpecifier<T>> for crate::decl::ExportSpecifier<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ExportSpecifier<T>> for crate::decl::ExportSpecifier<T> {
         fn from(other: ExportSpecifier<T>) -> Self {
             let local: crate::Ident<T> = other.local.into();
             Self {
@@ -195,10 +159,7 @@ mod decl {
         }
     }
 
-    impl<T> From<Alias<T>> for crate::Ident<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Alias<T>> for crate::Ident<T> {
         fn from(other: Alias<T>) -> Self {
             other.ident.into()
         }
@@ -206,14 +167,14 @@ mod decl {
 }
 
 mod expr {
-    use crate::spanned::{expr::Boolean, tokens::{Quote, QuasiQuote}};
+    use crate::spanned::{
+        expr::Boolean,
+        tokens::{QuasiQuote, Quote},
+    };
 
     use super::*;
 
-    impl<T> From<Expr<T>> for crate::Expr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Expr<T>> for crate::Expr<T> {
         fn from(other: Expr<T>) -> Self {
             match other {
                 Expr::Array(inner) => Self::Array(
@@ -259,10 +220,7 @@ mod expr {
         }
     }
 
-    impl<T> From<ObjProp<T>> for crate::expr::ObjProp<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ObjProp<T>> for crate::expr::ObjProp<T> {
         fn from(other: ObjProp<T>) -> Self {
             match other {
                 ObjProp::Prop(inner) => Self::Prop(inner.into()),
@@ -271,10 +229,7 @@ mod expr {
         }
     }
 
-    impl<T> From<Prop<T>> for crate::expr::Prop<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Prop<T>> for crate::expr::Prop<T> {
         fn from(other: Prop<T>) -> Self {
             match other {
                 Prop::Init(inner) => Self {
@@ -353,19 +308,13 @@ mod expr {
         }
     }
 
-    impl<T> From<PropInitKey<T>> for crate::expr::PropKey<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<PropInitKey<T>> for crate::expr::PropKey<T> {
         fn from(other: PropInitKey<T>) -> Self {
             other.value.into()
         }
     }
 
-    impl<T> From<PropMethod<T>> for crate::Func<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<PropMethod<T>> for crate::Func<T> {
         fn from(other: PropMethod<T>) -> Self {
             crate::Func {
                 id: None,
@@ -377,10 +326,7 @@ mod expr {
         }
     }
 
-    impl<T> From<PropKey<T>> for crate::expr::PropKey<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<PropKey<T>> for crate::expr::PropKey<T> {
         fn from(other: PropKey<T>) -> Self {
             match other {
                 PropKey::Lit(inner) => Self::Lit(inner.into()),
@@ -390,10 +336,7 @@ mod expr {
         }
     }
 
-    impl<T> From<PropValue<T>> for crate::expr::PropValue<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<PropValue<T>> for crate::expr::PropValue<T> {
         fn from(other: PropValue<T>) -> Self {
             match other {
                 PropValue::Expr(inner) => Self::Expr(inner.into()),
@@ -403,10 +346,7 @@ mod expr {
         }
     }
 
-    impl<T> From<UnaryExpr<T>> for crate::expr::UnaryExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<UnaryExpr<T>> for crate::expr::UnaryExpr<T> {
         fn from(other: UnaryExpr<T>) -> Self {
             Self {
                 prefix: other.prefix(),
@@ -416,10 +356,7 @@ mod expr {
         }
     }
 
-    impl<T> From<UpdateExpr<T>> for crate::expr::UpdateExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<UpdateExpr<T>> for crate::expr::UpdateExpr<T> {
         fn from(other: UpdateExpr<T>) -> Self {
             let ret = Self {
                 prefix: other.prefix(),
@@ -430,10 +367,7 @@ mod expr {
         }
     }
 
-    impl<T> From<BinaryExpr<T>> for crate::expr::BinaryExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<BinaryExpr<T>> for crate::expr::BinaryExpr<T> {
         fn from(other: BinaryExpr<T>) -> Self {
             Self {
                 operator: other.operator.into(),
@@ -443,10 +377,7 @@ mod expr {
         }
     }
 
-    impl<T> From<AssignExpr<T>> for crate::expr::AssignExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<AssignExpr<T>> for crate::expr::AssignExpr<T> {
         fn from(other: AssignExpr<T>) -> Self {
             Self {
                 operator: other.operator.into(),
@@ -456,10 +387,7 @@ mod expr {
         }
     }
 
-    impl<T> From<AssignLeft<T>> for crate::expr::AssignLeft<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<AssignLeft<T>> for crate::expr::AssignLeft<T> {
         fn from(other: AssignLeft<T>) -> Self {
             match other {
                 AssignLeft::Pat(inner) => Self::Pat(inner.into()),
@@ -468,10 +396,7 @@ mod expr {
         }
     }
 
-    impl<T> From<LogicalExpr<T>> for crate::expr::LogicalExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<LogicalExpr<T>> for crate::expr::LogicalExpr<T> {
         fn from(other: LogicalExpr<T>) -> Self {
             Self {
                 operator: other.operator.into(),
@@ -481,10 +406,7 @@ mod expr {
         }
     }
 
-    impl<T> From<MemberExpr<T>> for crate::expr::MemberExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<MemberExpr<T>> for crate::expr::MemberExpr<T> {
         fn from(other: MemberExpr<T>) -> Self {
             let computed = other.computed();
             Self {
@@ -495,10 +417,7 @@ mod expr {
         }
     }
 
-    impl<T> From<ConditionalExpr<T>> for crate::expr::ConditionalExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ConditionalExpr<T>> for crate::expr::ConditionalExpr<T> {
         fn from(other: ConditionalExpr<T>) -> Self {
             Self {
                 test: Box::new(From::from(*other.test)),
@@ -508,10 +427,7 @@ mod expr {
         }
     }
 
-    impl<T> From<CallExpr<T>> for crate::expr::CallExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<CallExpr<T>> for crate::expr::CallExpr<T> {
         fn from(other: CallExpr<T>) -> Self {
             Self {
                 callee: Box::new(From::from(*other.callee)),
@@ -520,10 +436,7 @@ mod expr {
         }
     }
 
-    impl<T> From<NewExpr<T>> for crate::expr::NewExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<NewExpr<T>> for crate::expr::NewExpr<T> {
         fn from(other: NewExpr<T>) -> Self {
             Self {
                 callee: Box::new(From::from(*other.callee)),
@@ -532,10 +445,7 @@ mod expr {
         }
     }
 
-    impl<T> From<ArrowFuncExpr<T>> for crate::expr::ArrowFuncExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ArrowFuncExpr<T>> for crate::expr::ArrowFuncExpr<T> {
         fn from(other: ArrowFuncExpr<T>) -> Self {
             let expression = matches!(&other.body, ArrowFuncBody::Expr(_));
             Self {
@@ -549,10 +459,7 @@ mod expr {
         }
     }
 
-    impl<T> From<ArrowFuncBody<T>> for crate::expr::ArrowFuncBody<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ArrowFuncBody<T>> for crate::expr::ArrowFuncBody<T> {
         fn from(other: ArrowFuncBody<T>) -> Self {
             match other {
                 ArrowFuncBody::FuncBody(inner) => Self::FuncBody(inner.into()),
@@ -561,10 +468,7 @@ mod expr {
         }
     }
 
-    impl<T> From<YieldExpr<T>> for crate::expr::YieldExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<YieldExpr<T>> for crate::expr::YieldExpr<T> {
         fn from(other: YieldExpr<T>) -> Self {
             Self {
                 argument: other.argument.map(|e| Box::new(From::from(*e))),
@@ -573,10 +477,7 @@ mod expr {
         }
     }
 
-    impl<T> From<TaggedTemplateExpr<T>> for crate::expr::TaggedTemplateExpr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<TaggedTemplateExpr<T>> for crate::expr::TaggedTemplateExpr<T> {
         fn from(other: TaggedTemplateExpr<T>) -> Self {
             Self {
                 tag: Box::new(From::from(*other.tag)),
@@ -585,10 +486,7 @@ mod expr {
         }
     }
 
-    impl<T> From<TemplateLit<T>> for crate::expr::TemplateLit<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<TemplateLit<T>> for crate::expr::TemplateLit<T> {
         fn from(other: TemplateLit<T>) -> Self {
             Self {
                 quasis: other.quasis.into_iter().map(From::from).collect(),
@@ -607,23 +505,17 @@ mod expr {
         }
     }
 
-    impl<T> From<TemplateElement<T>> for crate::expr::TemplateElement<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<TemplateElement<T>> for crate::expr::TemplateElement<T> {
         fn from(other: TemplateElement<T>) -> Self {
             Self {
                 open_quote: other.open_quote.into(),
                 content: other.content,
-                close_quote: other.close_quote.into()
+                close_quote: other.close_quote.into(),
             }
         }
     }
 
-    impl<T> From<MetaProp<T>> for crate::expr::MetaProp<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<MetaProp<T>> for crate::expr::MetaProp<T> {
         fn from(other: MetaProp<T>) -> Self {
             Self {
                 meta: other.meta.into(),
@@ -632,10 +524,7 @@ mod expr {
         }
     }
 
-    impl<T> From<Lit<T>> for crate::expr::Lit<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Lit<T>> for crate::expr::Lit<T> {
         fn from(other: Lit<T>) -> Self {
             match other {
                 Lit::Null(_inner) => Self::Null,
@@ -657,10 +546,7 @@ mod expr {
         }
     }
 
-    impl<T> From<StringLit<T>> for crate::expr::StringLit<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<StringLit<T>> for crate::expr::StringLit<T> {
         fn from(other: StringLit<T>) -> Self {
             if matches!(other.open_quote, Quote::Double(_)) {
                 Self::Double(other.content.source)
@@ -670,10 +556,7 @@ mod expr {
         }
     }
 
-    impl<T> From<RegEx<T>> for crate::expr::RegEx<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<RegEx<T>> for crate::expr::RegEx<T> {
         fn from(other: RegEx<T>) -> Self {
             Self {
                 pattern: other.pattern.source,
@@ -682,20 +565,14 @@ mod expr {
         }
     }
 
-    impl<T> From<SequenceExprEntry<T>> for crate::expr::Expr<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<SequenceExprEntry<T>> for crate::expr::Expr<T> {
         fn from(other: SequenceExprEntry<T>) -> Self {
             other.expr.into()
         }
     }
 }
 
-impl<T> From<Ident<T>> for crate::Ident<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<Ident<T>> for crate::Ident<T> {
     fn from(other: Ident<T>) -> Self {
         Self {
             name: other.slice.source,
@@ -703,10 +580,7 @@ where
     }
 }
 
-impl<T> From<Dir<T>> for crate::Dir<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<Dir<T>> for crate::Dir<T> {
     fn from(other: Dir<T>) -> Self {
         Self {
             expr: other.expr.into(),
@@ -715,10 +589,7 @@ where
     }
 }
 
-impl<T> From<Func<T>> for crate::Func<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<Func<T>> for crate::Func<T> {
     fn from(other: Func<T>) -> Self {
         Self {
             generator: other.generator(),
@@ -734,19 +605,13 @@ where
     }
 }
 
-impl<T> From<FuncArgEntry<T>> for crate::FuncArg<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<FuncArgEntry<T>> for crate::FuncArg<T> {
     fn from(other: FuncArgEntry<T>) -> Self {
         other.value.into()
     }
 }
 
-impl<T> From<FuncArg<T>> for crate::FuncArg<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<FuncArg<T>> for crate::FuncArg<T> {
     fn from(other: FuncArg<T>) -> Self {
         match other {
             FuncArg::Expr(inner) => Self::Expr(inner.into()),
@@ -758,10 +623,7 @@ where
     }
 }
 
-impl<T> From<Program<T>> for crate::Program<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<Program<T>> for crate::Program<T> {
     fn from(other: Program<T>) -> Self {
         match other {
             Program::Mod(inner) => Self::Mod(inner.into_iter().map(From::from).collect()),
@@ -770,10 +632,7 @@ where
     }
 }
 
-impl<T> From<ProgramPart<T>> for crate::ProgramPart<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<ProgramPart<T>> for crate::ProgramPart<T> {
     fn from(other: ProgramPart<T>) -> Self {
         match other {
             ProgramPart::Dir(inner) => Self::Dir(inner.into()),
@@ -783,19 +642,13 @@ where
     }
 }
 
-impl<T> From<FuncBody<T>> for crate::FuncBody<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<FuncBody<T>> for crate::FuncBody<T> {
     fn from(other: FuncBody<T>) -> Self {
         Self(other.stmts.into_iter().map(From::from).collect())
     }
 }
 
-impl<T> From<Class<T>> for crate::Class<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<Class<T>> for crate::Class<T> {
     fn from(other: Class<T>) -> Self {
         Self {
             id: other.id.map(From::from),
@@ -805,10 +658,7 @@ where
     }
 }
 
-impl<T> From<ClassBody<T>> for crate::ClassBody<T>
-where
-    T: AsRef<str>,
-{
+impl<T> From<ClassBody<T>> for crate::ClassBody<T> {
     fn from(other: ClassBody<T>) -> Self {
         Self(other.props.into_iter().map(From::from).collect())
     }
@@ -908,10 +758,7 @@ impl From<UnaryOp> for crate::UnaryOp {
 mod pat {
     use super::*;
 
-    impl<T> From<Pat<T>> for crate::pat::Pat<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Pat<T>> for crate::pat::Pat<T> {
         fn from(other: Pat<T>) -> Self {
             match other {
                 Pat::Ident(inner) => Self::Ident(inner.into()),
@@ -922,10 +769,7 @@ mod pat {
         }
     }
 
-    impl<T> From<ArrayPat<T>> for Vec<Option<crate::pat::ArrayPatPart<T>>>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ArrayPat<T>> for Vec<Option<crate::pat::ArrayPatPart<T>>> {
         fn from(other: ArrayPat<T>) -> Self {
             other
                 .elements
@@ -935,19 +779,13 @@ mod pat {
         }
     }
 
-    impl<T> From<ArrayElement<T>> for Option<crate::pat::ArrayPatPart<T>>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ArrayElement<T>> for Option<crate::pat::ArrayPatPart<T>> {
         fn from(other: ArrayElement<T>) -> Self {
             other.part.map(From::from)
         }
     }
 
-    impl<T> From<ArrayPatPart<T>> for crate::pat::ArrayPatPart<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ArrayPatPart<T>> for crate::pat::ArrayPatPart<T> {
         fn from(other: ArrayPatPart<T>) -> Self {
             match other {
                 ArrayPatPart::Pat(inner) => Self::Pat(inner.into()),
@@ -959,19 +797,13 @@ mod pat {
         }
     }
 
-    impl<T> From<ObjPat<T>> for crate::pat::ObjPat<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ObjPat<T>> for crate::pat::ObjPat<T> {
         fn from(other: ObjPat<T>) -> Self {
             other.props.into_iter().map(|e| e.item.into()).collect()
         }
     }
 
-    impl<T> From<ObjPatPart<T>> for crate::pat::ObjPatPart<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ObjPatPart<T>> for crate::pat::ObjPatPart<T> {
         fn from(other: ObjPatPart<T>) -> Self {
             match other {
                 ObjPatPart::Assign(prop) => Self::Assign(prop.into()),
@@ -980,10 +812,7 @@ mod pat {
         }
     }
 
-    impl<T> From<AssignPat<T>> for crate::pat::AssignPat<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<AssignPat<T>> for crate::pat::AssignPat<T> {
         fn from(other: AssignPat<T>) -> Self {
             Self {
                 left: Box::new(From::from(*other.left)),
@@ -995,10 +824,7 @@ mod pat {
 mod stmt {
     use super::*;
 
-    impl<T> From<Stmt<T>> for crate::stmt::Stmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<Stmt<T>> for crate::stmt::Stmt<T> {
         fn from(other: Stmt<T>) -> Self {
             match other {
                 Stmt::Expr { expr, .. } => Self::Expr(expr.into()),
@@ -1026,10 +852,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<WithStmt<T>> for crate::stmt::WithStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<WithStmt<T>> for crate::stmt::WithStmt<T> {
         fn from(other: WithStmt<T>) -> Self {
             Self {
                 object: other.object.into(),
@@ -1038,10 +861,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<LabeledStmt<T>> for crate::stmt::LabeledStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<LabeledStmt<T>> for crate::stmt::LabeledStmt<T> {
         fn from(other: LabeledStmt<T>) -> Self {
             Self {
                 label: other.label.into(),
@@ -1050,10 +870,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<IfStmt<T>> for crate::stmt::IfStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<IfStmt<T>> for crate::stmt::IfStmt<T> {
         fn from(other: IfStmt<T>) -> Self {
             Self {
                 test: other.test.into(),
@@ -1063,10 +880,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<SwitchStmt<T>> for crate::stmt::SwitchStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<SwitchStmt<T>> for crate::stmt::SwitchStmt<T> {
         fn from(other: SwitchStmt<T>) -> Self {
             Self {
                 discriminant: other.discriminant.into(),
@@ -1075,10 +889,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<SwitchCase<T>> for crate::stmt::SwitchCase<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<SwitchCase<T>> for crate::stmt::SwitchCase<T> {
         fn from(other: SwitchCase<T>) -> Self {
             Self {
                 test: other.test.map(From::from),
@@ -1087,19 +898,13 @@ mod stmt {
         }
     }
 
-    impl<T> From<BlockStmt<T>> for crate::stmt::BlockStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<BlockStmt<T>> for crate::stmt::BlockStmt<T> {
         fn from(other: BlockStmt<T>) -> Self {
             Self(other.stmts.into_iter().map(From::from).collect())
         }
     }
 
-    impl<T> From<TryStmt<T>> for crate::stmt::TryStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<TryStmt<T>> for crate::stmt::TryStmt<T> {
         fn from(other: TryStmt<T>) -> Self {
             Self {
                 block: other.block.into(),
@@ -1109,10 +914,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<CatchClause<T>> for crate::stmt::CatchClause<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<CatchClause<T>> for crate::stmt::CatchClause<T> {
         fn from(other: CatchClause<T>) -> Self {
             Self {
                 param: other.param.map(|a| a.param.into()),
@@ -1121,19 +923,13 @@ mod stmt {
         }
     }
 
-    impl<T> From<FinallyClause<T>> for crate::stmt::BlockStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<FinallyClause<T>> for crate::stmt::BlockStmt<T> {
         fn from(other: FinallyClause<T>) -> Self {
             other.body.into()
         }
     }
 
-    impl<T> From<WhileStmt<T>> for crate::stmt::WhileStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<WhileStmt<T>> for crate::stmt::WhileStmt<T> {
         fn from(other: WhileStmt<T>) -> Self {
             Self {
                 test: other.test.into(),
@@ -1142,10 +938,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<DoWhileStmt<T>> for crate::stmt::DoWhileStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<DoWhileStmt<T>> for crate::stmt::DoWhileStmt<T> {
         fn from(other: DoWhileStmt<T>) -> Self {
             Self {
                 test: other.test.into(),
@@ -1154,10 +947,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<ForStmt<T>> for crate::stmt::ForStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ForStmt<T>> for crate::stmt::ForStmt<T> {
         fn from(other: ForStmt<T>) -> Self {
             Self {
                 init: other.init.map(From::from),
@@ -1168,10 +958,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<LoopInit<T>> for crate::stmt::LoopInit<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<LoopInit<T>> for crate::stmt::LoopInit<T> {
         fn from(other: LoopInit<T>) -> Self {
             match other {
                 LoopInit::Expr(inner) => Self::Expr(inner.into()),
@@ -1183,10 +970,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<ForInStmt<T>> for crate::stmt::ForInStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ForInStmt<T>> for crate::stmt::ForInStmt<T> {
         fn from(other: ForInStmt<T>) -> Self {
             Self {
                 left: other.left.into(),
@@ -1196,10 +980,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<ForOfStmt<T>> for crate::stmt::ForOfStmt<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<ForOfStmt<T>> for crate::stmt::ForOfStmt<T> {
         fn from(other: ForOfStmt<T>) -> Self {
             Self {
                 left: other.left.into(),
@@ -1210,10 +991,7 @@ mod stmt {
         }
     }
 
-    impl<T> From<LoopLeft<T>> for crate::stmt::LoopLeft<T>
-    where
-        T: AsRef<str>,
-    {
+    impl<T> From<LoopLeft<T>> for crate::stmt::LoopLeft<T> {
         fn from(other: LoopLeft<T>) -> Self {
             match other {
                 LoopLeft::Expr(inner) => Self::Expr(inner.into()),
