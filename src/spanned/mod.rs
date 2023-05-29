@@ -3,6 +3,7 @@ pub mod decl;
 pub mod expr;
 pub mod pat;
 pub mod stmt;
+pub mod tokens;
 
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
@@ -11,7 +12,13 @@ use stmt::Stmt;
 
 use crate::SourceText;
 
-use self::pat::RestPat;
+use self::{
+    pat::RestPat,
+    tokens::{
+        Asterisk, Async, CloseBrace, CloseParen, Comma, Const, Extends, Function, Let, OpenBrace,
+        OpenParen, Semicolon, Token, Var,
+    },
+};
 
 pub trait Node {
     fn loc(&self) -> SourceLocation;
@@ -132,12 +139,19 @@ impl<T> ProgramPart<T> {
 pub struct Dir<T> {
     pub expr: Lit<T>,
     pub dir: SourceText<T>,
-    pub semi_colon: Option<Position>,
+    pub semi_colon: Option<Semicolon>,
 }
 
 impl<T> Node for Dir<T> {
     fn loc(&self) -> SourceLocation {
-        self.expr.loc()
+        let expr_loc = self.expr.loc();
+        if let Some(semi) = &self.semi_colon {
+            return SourceLocation {
+                start: expr_loc.start,
+                end: semi.end(),
+            };
+        }
+        expr_loc
     }
 }
 
@@ -153,14 +167,14 @@ impl<T> Node for Dir<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct Func<T> {
-    pub keyword: Position,
+    pub keyword: Function,
     pub id: Option<Ident<T>>,
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub params: Vec<ListEntry<FuncArg<T>>>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: FuncBody<T>,
-    pub star: Option<Position>,
-    pub keyword_async: Option<Position>,
+    pub star: Option<Asterisk>,
+    pub keyword_async: Option<Async>,
 }
 
 impl<T> Func<T> {
@@ -175,11 +189,11 @@ impl<T> Func<T> {
 impl<T> Node for Func<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = self.keyword_async {
-            keyword
+            keyword.start()
         } else {
-            self.keyword
+            self.keyword.start()
         };
-        let end = self.body.close_brace + 1;
+        let end = self.body.close_brace.end();
         SourceLocation { start, end }
     }
 }
@@ -187,7 +201,7 @@ impl<T> Node for Func<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FuncArgEntry<T> {
     pub value: FuncArg<T>,
-    pub comma: Option<Position>,
+    pub comma: Option<Comma>,
 }
 
 impl<T> Node for FuncArgEntry<T> {
@@ -195,7 +209,7 @@ impl<T> Node for FuncArgEntry<T> {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.value.loc().start,
-                end: *comma + 1,
+                end: comma.end(),
             };
         }
         self.value.loc()
@@ -223,16 +237,16 @@ impl<T> Node for FuncArg<T> {
 /// The block statement that makes up the function's body
 #[derive(Debug, Clone, PartialEq)]
 pub struct FuncBody<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for FuncBody<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -265,7 +279,7 @@ impl<T> Node for FuncBody<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct Class<T> {
-    pub keyword: Position,
+    pub keyword: tokens::Class,
     pub id: Option<Ident<T>>,
     pub super_class: Option<SuperClass<T>>,
     pub body: ClassBody<T>,
@@ -274,29 +288,29 @@ pub struct Class<T> {
 impl<T> Node for Class<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
-            end: self.body.close_brace + 1,
+            start: self.keyword.start(),
+            end: self.body.close_brace.end(),
         }
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct SuperClass<T> {
-    pub keyword_extends: Position,
+    pub keyword_extends: Extends,
     pub expr: Expr<T>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClassBody<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub props: Vec<Prop<T>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for ClassBody<T> {
     fn loc(&self) -> SourceLocation {
-        let start = self.open_brace;
-        let end = self.close_brace + 1;
+        let start = self.open_brace.start();
+        let end = self.close_brace.end();
         SourceLocation { start, end }
     }
 }
@@ -304,24 +318,19 @@ impl<T> Node for ClassBody<T> {
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq)]
 pub enum VarKind {
-    Var(Option<Position>),
-    Let(Position),
-    Const(Position),
+    Var(Option<Var>),
+    Let(Let),
+    Const(Const),
 }
 
 impl Node for VarKind {
     fn loc(&self) -> SourceLocation {
-        let start = match self {
-            VarKind::Var(Some(slice)) => *slice,
-            VarKind::Let(slice) => *slice,
-            VarKind::Const(slice) => *slice,
-            _ => return SourceLocation::zero(),
-        };
-        let end = Position {
-            line: start.line,
-            column: start.column + self.len(),
-        };
-        SourceLocation { start, end }
+        match self {
+            VarKind::Var(Some(tok)) => tok.loc(),
+            VarKind::Let(tok) => tok.loc(),
+            VarKind::Const(tok) => tok.loc(),
+            _ => SourceLocation::zero(),
+        }
     }
 }
 
@@ -700,7 +709,7 @@ impl std::ops::Sub<u32> for Position {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ListEntry<Item> {
     pub item: Item,
-    pub comma: Option<Position>,
+    pub comma: Option<Comma>,
 }
 
 impl<Item> ListEntry<Item> {
@@ -717,7 +726,7 @@ where
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.item.loc().start,
-                end: *comma + 1,
+                end: comma.end(),
             };
         }
         self.item.loc()

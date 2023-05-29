@@ -3,7 +3,10 @@ use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Class, Func, Ident};
 
-use super::{ListEntry, Node, Position, SourceLocation};
+use super::tokens::{
+    As, Asterisk, CloseBrace, Default, Equal, Export, From, Import, OpenBrace, Semicolon, Token,
+};
+use super::{ListEntry, Node, SourceLocation};
 
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
@@ -16,7 +19,7 @@ pub enum Decl<T> {
     /// ```
     Var {
         decls: VarDecls<T>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// A function declaration
     /// ```js
@@ -35,7 +38,7 @@ pub enum Decl<T> {
     /// ```
     Import {
         import: Box<ModImport<T>>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// An export declaration
     /// ```js
@@ -43,7 +46,7 @@ pub enum Decl<T> {
     /// ```
     Export {
         export: Box<ModExport<T>>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
 }
 
@@ -54,7 +57,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: decls.loc().start,
-                        end: *semi + 1,
+                        end: semi.end(),
                     };
                 }
                 decls.loc()
@@ -65,7 +68,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: import.loc().start,
-                        end: *semi + 1,
+                        end: semi.end(),
                     };
                 }
                 import.loc()
@@ -74,7 +77,7 @@ impl<T> Node for Decl<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: export.loc().start,
-                        end: *semi + 1,
+                        end: semi.end(),
                     };
                 }
                 export.loc()
@@ -106,7 +109,7 @@ impl<T> Node for VarDecls<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VarDecl<T> {
     pub id: Pat<T>,
-    pub eq: Option<Position>,
+    pub eq: Option<Equal>,
     pub init: Option<Expr<T>>,
 }
 
@@ -149,16 +152,16 @@ impl<T> Node for ModDecl<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ModImport<T> {
-    pub keyword_import: Position,
+    pub keyword_import: Import,
     pub specifiers: Vec<ListEntry<ImportSpecifier<T>>>,
-    pub keyword_from: Option<Position>,
+    pub keyword_from: Option<From>,
     pub source: Lit<T>,
 }
 
 impl<T> Node for ModImport<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword_import,
+            start: self.keyword_import.start(),
             end: self.source.loc().end,
         }
     }
@@ -205,16 +208,16 @@ impl<T> Node for ImportSpecifier<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct NormalImportSpecs<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub specs: Vec<ListEntry<NormalImportSpec<T>>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for NormalImportSpecs<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -251,15 +254,15 @@ impl<T> Node for DefaultImportSpec<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NamespaceImportSpec<T> {
-    pub star: Position,
-    pub keyword: Position,
+    pub star: Asterisk,
+    pub keyword: From,
     pub ident: Ident<T>,
 }
 
 impl<T> Node for NamespaceImportSpec<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.star,
+            start: self.star.start(),
             end: self.ident.loc().end,
         }
     }
@@ -267,14 +270,14 @@ impl<T> Node for NamespaceImportSpec<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModExport<T> {
-    pub keyword: Position,
+    pub keyword: Export,
     pub spec: ModExportSpecifier<T>,
 }
 
 impl<T> Node for ModExport<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.spec.loc().end,
         }
     }
@@ -289,7 +292,7 @@ pub enum ModExportSpecifier<T> {
     /// export default 1;
     /// ```
     Default {
-        keyword: Position,
+        keyword: Default,
         value: DefaultExportDeclValue<T>,
     },
     ///```js
@@ -307,9 +310,9 @@ pub enum ModExportSpecifier<T> {
     /// export * from 'mod';
     /// ```
     All {
-        star: Position,
+        star: Asterisk,
         alias: Option<Alias<T>>,
-        keyword: Position,
+        keyword: From,
         name: Lit<T>,
     },
 }
@@ -318,12 +321,12 @@ impl<T> Node for ModExportSpecifier<T> {
     fn loc(&self) -> SourceLocation {
         match self {
             ModExportSpecifier::Default { keyword, value } => SourceLocation {
-                start: *keyword,
+                start: keyword.start(),
                 end: value.loc().end,
             },
             ModExportSpecifier::Named(inner) => inner.loc(),
             ModExportSpecifier::All { star, name, .. } => SourceLocation {
-                start: *star,
+                start: star.start(),
                 end: name.loc().end,
             },
         }
@@ -351,14 +354,14 @@ impl<T> Node for NamedExportDecl<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DefaultExportDecl<T> {
-    pub keyword: Position,
+    pub keyword: Default,
     pub value: DefaultExportDeclValue<T>,
 }
 
 impl<T> Node for DefaultExportDecl<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.value.loc().end,
         }
     }
@@ -421,14 +424,14 @@ impl<T> Node for NamedExportSpec<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct NamedExportSource<T> {
-    pub keyword_from: Position,
+    pub keyword_from: From,
     pub module: Lit<T>,
 }
 
 impl<T> Node for NamedExportSource<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword_from,
+            start: self.keyword_from.start(),
             end: self.module.loc().end,
         }
     }
@@ -436,16 +439,16 @@ impl<T> Node for NamedExportSource<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExportList<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub elements: Vec<ListEntry<ExportSpecifier<T>>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for ExportList<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -479,14 +482,14 @@ impl<T> Node for ExportSpecifier<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Alias<T> {
-    pub keyword: Position,
+    pub keyword: As,
     pub ident: Ident<T>,
 }
 
 impl<T> Node for Alias<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.ident.loc().end,
         }
     }

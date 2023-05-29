@@ -2,7 +2,12 @@ use crate::spanned::pat::Pat;
 use crate::spanned::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp};
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 
-use super::{FuncArgEntry, ListEntry, Node, Position, Slice, SourceLocation};
+use super::tokens::{
+    Asterisk, Async, Await, CloseBrace, CloseBracket, CloseParen, Colon, Comma, Ellipsis, False,
+    FatArrow, ForwardSlash, Get, New, Null, OpenBrace, OpenBracket, OpenParen, Period,
+    QuestionMark, Quote, Set, Static, Super, This, Token, True, Yield,
+};
+use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
@@ -68,11 +73,11 @@ pub enum Expr<T> {
     /// `...` followed by an `Expr`
     Spread(Box<SpreadExpr<T>>),
     /// `super`
-    Super(Position),
+    Super(Super),
     /// A template literal preceded by a tag function identifier
     TaggedTemplate(TaggedTemplateExpr<T>),
     /// `this`
-    This(Position),
+    This(This),
     /// An operation that has one argument
     /// ```js
     /// typeof T';
@@ -112,15 +117,9 @@ impl<T> Node for Expr<T> {
             Expr::Obj(inner) => inner.loc(),
             Expr::Sequence(inner) => inner.loc(),
             Expr::Spread(inner) => inner.loc(),
-            Expr::Super(inner) => SourceLocation {
-                start: *inner,
-                end: *inner + 5,
-            },
+            Expr::Super(inner) => inner.loc(),
             Expr::TaggedTemplate(inner) => inner.loc(),
-            Expr::This(inner) => SourceLocation {
-                start: *inner,
-                end: *inner + 4,
-            },
+            Expr::This(inner) => inner.loc(),
             Expr::Unary(inner) => inner.loc(),
             Expr::Update(inner) => inner.loc(),
             Expr::Yield(inner) => inner.loc(),
@@ -134,16 +133,16 @@ type ArrayExprEntry<T> = ListEntry<Option<Expr<T>>>;
 /// `[a, b, c]`
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayExpr<T> {
-    pub open_bracket: Position,
+    pub open_bracket: OpenBracket,
     pub elements: Vec<ArrayExprEntry<T>>,
-    pub close_bracket: Position,
+    pub close_bracket: CloseBracket,
 }
 
 impl<T> Node for ArrayExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_bracket,
-            end: self.close_bracket + 1,
+            start: self.open_bracket.start(),
+            end: self.close_bracket.end(),
         }
     }
 }
@@ -151,16 +150,16 @@ impl<T> Node for ArrayExpr<T> {
 /// `{a: 'b', c, ...d}`
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObjExpr<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub props: Vec<ListEntry<ObjProp<T>>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for ObjExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -183,14 +182,14 @@ impl<T> Node for ObjProp<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct SpreadExpr<T> {
-    pub dots: Position,
+    pub dots: Ellipsis,
     pub expr: Expr<T>,
 }
 
 impl<T> Node for SpreadExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.dots,
+            start: self.dots.start(),
             end: self.expr.loc().end,
         }
     }
@@ -244,7 +243,7 @@ impl<T> Prop<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropInit<T> {
     pub key: PropInitKey<T>,
-    pub colon: Option<Position>,
+    pub colon: Option<Colon>,
     pub value: Option<PropValue<T>>,
 }
 
@@ -273,15 +272,15 @@ impl<T> PropInit<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropInitKey<T> {
     pub value: PropKey<T>,
-    pub brackets: Option<(Position, Position)>,
+    pub brackets: Option<(OpenBracket, CloseBracket)>,
 }
 
 impl<T> Node for PropInitKey<T> {
     fn loc(&self) -> SourceLocation {
         if let Some((open, close)) = &self.brackets {
             SourceLocation {
-                start: *open,
-                end: *close + 1,
+                start: open.start(),
+                end: close.end(),
             }
         } else {
             self.value.loc()
@@ -291,22 +290,22 @@ impl<T> Node for PropInitKey<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropMethod<T> {
-    pub keyword_static: Option<Position>,
-    pub keyword_async: Option<Position>,
+    pub keyword_static: Option<Static>,
+    pub keyword_async: Option<Async>,
     pub id: PropInitKey<T>,
-    pub star: Option<Position>,
-    pub open_paren: Position,
+    pub star: Option<Asterisk>,
+    pub open_paren: OpenParen,
     pub params: Vec<ListEntry<FuncArg<T>>>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: FuncBody<T>,
 }
 
 impl<T> Node for PropMethod<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = &self.keyword_async {
-            *keyword
+            keyword.start()
         } else if let Some(star) = &self.star {
-            *star
+            star.start()
         } else {
             self.id.loc().start
         };
@@ -320,9 +319,9 @@ impl<T> Node for PropMethod<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropCtor<T> {
     pub keyword: PropInitKey<T>,
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub params: Vec<ListEntry<FuncArg<T>>>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: FuncBody<T>,
 }
 
@@ -337,11 +336,11 @@ impl<T> Node for PropCtor<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropGet<T> {
-    pub keyword_static: Option<Position>,
-    pub keyword_get: Position,
+    pub keyword_static: Option<Static>,
+    pub keyword_get: Get,
     pub id: PropInitKey<T>,
-    pub open_paren: Position,
-    pub close_paren: Position,
+    pub open_paren: OpenParen,
+    pub close_paren: CloseParen,
     pub body: FuncBody<T>,
 }
 
@@ -349,12 +348,12 @@ impl<T> Node for PropGet<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(keyword_static) = &self.keyword_static {
             return SourceLocation {
-                start: *keyword_static,
+                start: keyword_static.start(),
                 end: self.body.loc().end,
             };
         }
         SourceLocation {
-            start: self.keyword_get,
+            start: self.keyword_get.start(),
             end: self.body.loc().end,
         }
     }
@@ -362,12 +361,12 @@ impl<T> Node for PropGet<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PropSet<T> {
-    pub keyword_static: Option<Position>,
-    pub keyword_set: Position,
+    pub keyword_static: Option<Static>,
+    pub keyword_set: Set,
     pub id: PropInitKey<T>,
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub arg: ListEntry<FuncArg<T>>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: FuncBody<T>,
 }
 
@@ -375,12 +374,12 @@ impl<T> Node for PropSet<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(keyword_static) = &self.keyword_static {
             return SourceLocation {
-                start: *keyword_static,
+                start: keyword_static.start(),
                 end: self.body.loc().end,
             };
         }
         SourceLocation {
-            start: self.keyword_set,
+            start: self.keyword_set.start(),
             end: self.body.loc().end,
         }
     }
@@ -513,14 +512,14 @@ impl<T> Node for AssignExpr<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct AwaitExpr<T> {
-    pub keyword: Position,
+    pub keyword: Await,
     pub expr: Expr<T>,
 }
 
 impl<T> Node for AwaitExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.expr.loc().end,
         }
     }
@@ -596,26 +595,23 @@ impl<T> Node for MemberExpr<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MemberIndexer {
-    Period(Position),
+    Period(Period),
     Computed {
-        open_bracket: Position,
-        close_bracket: Position,
+        open_bracket: OpenBracket,
+        close_bracket: CloseBracket,
     },
 }
 
 impl Node for MemberIndexer {
     fn loc(&self) -> SourceLocation {
         match self {
-            MemberIndexer::Period(inner) => SourceLocation {
-                start: *inner,
-                end: *inner + 1,
-            },
+            MemberIndexer::Period(inner) => inner.loc(),
             MemberIndexer::Computed {
                 open_bracket,
                 close_bracket,
             } => SourceLocation {
-                start: *open_bracket,
-                end: *close_bracket + 1,
+                start: open_bracket.start(),
+                end: close_bracket.end(),
             },
         }
     }
@@ -628,9 +624,9 @@ impl Node for MemberIndexer {
 #[derive(PartialEq, Debug, Clone)]
 pub struct ConditionalExpr<T> {
     pub test: Box<Expr<T>>,
-    pub question_mark: Position,
+    pub question_mark: QuestionMark,
     pub alternate: Box<Expr<T>>,
-    pub colon: Position,
+    pub colon: Colon,
     pub consequent: Box<Expr<T>>,
 }
 
@@ -649,16 +645,16 @@ impl<T> Node for ConditionalExpr<T> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct CallExpr<T> {
     pub callee: Box<Expr<T>>,
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub arguments: Vec<ListEntry<Expr<T>>>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
 }
 
 impl<T> Node for CallExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
             start: self.callee.loc().start,
-            end: self.close_paren + 1,
+            end: self.close_paren.end(),
         }
     }
 }
@@ -669,24 +665,24 @@ impl<T> Node for CallExpr<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct NewExpr<T> {
-    pub keyword: Position,
+    pub keyword: New,
     pub callee: Box<Expr<T>>,
-    pub open_paren: Option<Position>,
+    pub open_paren: Option<OpenParen>,
     pub arguments: Vec<ListEntry<Expr<T>>>,
-    pub close_paren: Option<Position>,
+    pub close_paren: Option<CloseParen>,
 }
 
 impl<T> Node for NewExpr<T> {
     fn loc(&self) -> SourceLocation {
         let end = if let Some(close) = &self.close_paren {
-            *close
+            close.end()
         } else if let Some(last) = self.arguments.last() {
             last.loc().end
         } else {
             self.callee.loc().end
         };
         SourceLocation {
-            start: self.callee.loc().start,
+            start: self.keyword.start(),
             end: end,
         }
     }
@@ -717,29 +713,29 @@ impl<T> Node for SequenceExpr<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrowParamPlaceHolder<T> {
     // async keyword
-    pub keyword: Option<Position>,
-    pub open_paren: Option<Position>,
+    pub keyword: Option<Async>,
+    pub open_paren: Option<OpenParen>,
     pub args: Vec<ListEntry<FuncArg<T>>>,
-    pub close_paren: Option<Position>,
+    pub close_paren: Option<CloseParen>,
 }
 
 impl<T> Node for ArrowParamPlaceHolder<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = &self.keyword {
-            *keyword
+            keyword.start()
         } else if let Some(open) = &self.open_paren {
-            *open
+            open.start()
         } else if let Some(arg) = self.args.first() {
             arg.loc().start
         } else {
-            Position { line: 0, column: 0 }
+            crate::spanned::Position { line: 0, column: 0 }
         };
         let end = if let Some(close) = &self.close_paren {
-            *close + 1
+            close.end()
         } else if let Some(arg) = self.args.last() {
             arg.loc().end
         } else {
-            Position { line: 0, column: 0 }
+            crate::spanned::Position { line: 0, column: 0 }
         };
         SourceLocation { start, end }
     }
@@ -754,19 +750,21 @@ impl<T> Node for ArrowParamPlaceHolder<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ArrowFuncExpr<T> {
-    pub keyword: Option<Position>,
-    pub star: Option<Position>,
-    pub open_paren: Option<Position>,
+    pub keyword: Option<Async>,
+    pub star: Option<Asterisk>,
+    pub open_paren: Option<OpenParen>,
     pub params: Vec<ListEntry<FuncArg<T>>>,
-    pub close_paren: Option<Position>,
-    pub arrow: Position,
+    pub close_paren: Option<CloseParen>,
+    pub arrow: FatArrow,
     pub body: ArrowFuncBody<T>,
 }
 
 impl<T> Node for ArrowFuncExpr<T> {
     fn loc(&self) -> SourceLocation {
-        let start = if let Some(slice) = &self.open_paren {
-            *slice
+        let start = if let Some(keyword) = &self.keyword {
+            keyword.start()
+        } else if let Some(slice) = &self.open_paren {
+            slice.start()
         } else if let Some(first) = self.params.first() {
             first.loc().start
         } else {
@@ -805,9 +803,9 @@ impl<T> Node for ArrowFuncBody<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct YieldExpr<T> {
-    pub keyword: Position,
+    pub keyword: Yield,
     pub argument: Option<Box<Expr<T>>>,
-    pub star: Option<Position>,
+    pub star: Option<Asterisk>,
 }
 
 impl<T> Node for YieldExpr<T> {
@@ -815,10 +813,10 @@ impl<T> Node for YieldExpr<T> {
         let end = if let Some(arg) = &self.argument {
             arg.loc().end
         } else {
-            self.keyword + 5
+            self.keyword.end()
         };
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end,
         }
     }
@@ -911,7 +909,7 @@ impl<T> Node for TemplateElement<T> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct MetaProp<T> {
     pub meta: Ident<T>,
-    pub dot: Position,
+    pub dot: Period,
     pub property: Ident<T>,
 }
 
@@ -928,7 +926,7 @@ impl<T> Node for MetaProp<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit<T> {
     /// `null`
-    Null(Position),
+    Null(Null),
     /// `"string"`
     /// `'string'`
     String(StringLit<T>),
@@ -964,31 +962,25 @@ impl<T> Lit<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Boolean {
-    True(Position),
-    False(Position),
+    True(True),
+    False(False),
 }
 
 impl Boolean {
     pub fn new_true(line: u32, column: u32) -> Self {
-        Self::True(Position::new(line, column))
+        Self::True(crate::spanned::Position::new(line, column).into())
     }
 
     pub fn new_false(line: u32, column: u32) -> Self {
-        Self::False(Position::new(line, column))
+        Self::False(crate::spanned::Position::new(line, column).into())
     }
 }
 
 impl Node for Boolean {
     fn loc(&self) -> SourceLocation {
         match self {
-            Boolean::True(start) => SourceLocation {
-                start: *start,
-                end: *start + 4,
-            },
-            Boolean::False(start) => SourceLocation {
-                start: *start,
-                end: *start + 5,
-            },
+            Boolean::True(inner) => inner.loc(),
+            Boolean::False(inner) => inner.loc(),
         }
     }
 }
@@ -996,10 +988,7 @@ impl Node for Boolean {
 impl<T> Node for Lit<T> {
     fn loc(&self) -> SourceLocation {
         match self {
-            Lit::Null(inner) => SourceLocation {
-                start: *inner,
-                end: *inner + 4,
-            },
+            Lit::Null(inner) => inner.loc(),
             Lit::String(inner) => inner.loc(),
             Lit::Number(inner) => inner.loc,
             Lit::Boolean(inner) => inner.loc(),
@@ -1010,20 +999,6 @@ impl<T> Node for Lit<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Quote {
-    Double(Position),
-    Single(Position),
-}
-
-impl Quote {
-    pub fn position(&self) -> Position {
-        match self {
-            Quote::Double(inner) => *inner,
-            Quote::Single(inner) => *inner,
-        }
-    }
-}
-#[derive(PartialEq, Debug, Clone)]
 pub struct StringLit<T> {
     pub open_quote: Quote,
     pub content: Slice<T>,
@@ -1033,8 +1008,8 @@ pub struct StringLit<T> {
 impl<T> Node for StringLit<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_quote.position(),
-            end: self.close_quote.position() + 1,
+            start: self.open_quote.start(),
+            end: self.close_quote.end(),
         }
     }
 }
@@ -1042,9 +1017,9 @@ impl<T> Node for StringLit<T> {
 /// A regular expression literal
 #[derive(PartialEq, Debug, Clone)]
 pub struct RegEx<T> {
-    pub open_slash: Position,
+    pub open_slash: ForwardSlash,
     pub pattern: Slice<T>,
-    pub close_slash: Position,
+    pub close_slash: ForwardSlash,
     pub flags: Option<Slice<T>>,
 }
 
@@ -1053,10 +1028,10 @@ impl<T> Node for RegEx<T> {
         let end = if let Some(flags) = &self.flags {
             flags.loc.end
         } else {
-            self.close_slash + 1
+            self.close_slash.end()
         };
         SourceLocation {
-            start: self.open_slash,
+            start: self.open_slash.start(),
             end,
         }
     }
@@ -1064,16 +1039,16 @@ impl<T> Node for RegEx<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct WrappedExpr<T> {
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub expr: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
 }
 
 impl<T> Node for WrappedExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_paren,
-            end: self.close_paren + 1,
+            start: self.open_paren.start(),
+            end: self.close_paren.end(),
         }
     }
 }
@@ -1081,7 +1056,7 @@ impl<T> Node for WrappedExpr<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct SequenceExprEntry<T> {
     pub expr: Expr<T>,
-    pub comma: Option<Position>,
+    pub comma: Option<Comma>,
 }
 
 impl<T> SequenceExprEntry<T> {
@@ -1104,7 +1079,7 @@ impl<T> Node for SequenceExprEntry<T> {
         if let Some(comma) = &self.comma {
             return SourceLocation {
                 start: self.expr.loc().start,
-                end: *comma + 1,
+                end: comma.end(),
             };
         }
         self.expr.loc()

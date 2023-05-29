@@ -1,7 +1,8 @@
 use crate::spanned::expr::{Expr, Prop};
 use crate::spanned::Ident;
 
-use super::{AssignOp, ListEntry, Node, Position, SourceLocation};
+use super::tokens::{CloseBrace, CloseBracket, Comma, Ellipsis, OpenBrace, OpenBracket, Token};
+use super::{AssignOp, ListEntry, Node, SourceLocation};
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(Debug, Clone, PartialEq)]
@@ -25,16 +26,16 @@ impl<T> Node for Pat<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayPat<T> {
-    pub open_bracket: Position,
+    pub open_bracket: OpenBracket,
     pub elements: Vec<ListEntry<Option<ArrayPatPart<T>>>>,
-    pub close_bracket: Position,
+    pub close_bracket: CloseBracket,
 }
 
 impl<T> Node for ArrayPat<T> {
     fn loc(&self) -> super::SourceLocation {
         SourceLocation {
-            start: self.open_bracket,
-            end: self.close_bracket + 1,
+            start: self.open_bracket.start(),
+            end: self.close_bracket.end(),
         }
     }
 }
@@ -42,7 +43,7 @@ impl<T> Node for ArrayPat<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayElement<T> {
     pub part: Option<ArrayPatPart<T>>,
-    pub comma: Option<Position>,
+    pub comma: Option<Comma>,
 }
 
 #[derive(PartialEq, Debug, Clone)]
@@ -67,16 +68,16 @@ type ObjEntry<T> = ListEntry<ObjPatPart<T>>;
 /// similar to an `ObjectExpr`
 #[derive(PartialEq, Debug, Clone)]
 pub struct ObjPat<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub props: Vec<ObjEntry<T>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for ObjPat<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -99,14 +100,14 @@ impl<T> Node for ObjPatPart<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RestPat<T> {
-    pub dots: Position,
+    pub dots: Ellipsis,
     pub pat: Pat<T>,
 }
 
 impl<T> Node for RestPat<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.dots,
+            start: self.dots.start(),
             end: self.pat.loc().end,
         }
     }

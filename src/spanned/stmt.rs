@@ -5,7 +5,11 @@ use crate::spanned::VarKind;
 use crate::spanned::{Ident, ProgramPart};
 
 use super::decl::VarDecls;
-use super::{ListEntry, Node, Position, SourceLocation};
+use super::tokens::{
+    Break, Case, Catch, CloseBrace, CloseParen, Colon, Continue, Debugger, Do, Else, Finally, For,
+    If, In, Of, OpenBrace, OpenParen, Return, Semicolon, Switch, Throw, Token, Try, While, With,
+};
+use super::{ListEntry, Node, SourceLocation};
 
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
@@ -13,16 +17,16 @@ pub enum Stmt<T> {
     /// Any expression
     Expr {
         expr: Expr<T>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// A collection of program parts wrapped in curly braces
     Block(BlockStmt<T>),
     /// A single semi-colon
-    Empty(Position),
+    Empty(Semicolon),
     /// The contextual keyword `debugger`
     Debugger {
-        keyword: Position,
-        semi_colon: Option<Position>,
+        keyword: Debugger,
+        semi_colon: Option<Semicolon>,
     },
     /// A with statement, this puts one object at the top of
     /// the identifier search tree.
@@ -47,9 +51,9 @@ pub enum Stmt<T> {
     ///     return;
     /// }
     Return {
-        keyword: Position,
+        keyword: Return,
         value: Option<Expr<T>>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// A labeled statement
     /// ```js
@@ -68,9 +72,9 @@ pub enum Stmt<T> {
     /// }
     /// ```
     Break {
-        keyword: Position,
+        keyword: Break,
         label: Option<Ident<T>>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// A short circuit continuation of a loop
     /// ```js
@@ -83,9 +87,9 @@ pub enum Stmt<T> {
     /// }
     /// ```
     Continue {
-        keyword: Position,
+        keyword: Continue,
         label: Option<Ident<T>>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// An if statement
     /// ```js
@@ -122,9 +126,9 @@ pub enum Stmt<T> {
     /// }
     /// ```
     Throw {
-        keyword: Position,
+        keyword: Throw,
         expr: Expr<T>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
     /// A try/catch block
     /// ```js
@@ -196,7 +200,7 @@ pub enum Stmt<T> {
     /// ```
     Var {
         decls: VarDecls<T>,
-        semi_colon: Option<Position>,
+        semi_colon: Option<Semicolon>,
     },
 }
 
@@ -207,30 +211,24 @@ impl<T> Node for Stmt<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: expr.loc().start,
-                        end: *semi + 1,
+                        end: semi.end(),
                     };
                 }
                 expr.loc()
             }
             Stmt::Block(inner) => inner.loc(),
-            Stmt::Empty(inner) => SourceLocation {
-                start: *inner,
-                end: *inner + 1,
-            },
+            Stmt::Empty(inner) => inner.loc(),
             Stmt::Debugger {
                 keyword,
                 semi_colon,
             } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
-                        start: *keyword,
-                        end: *semi + 1,
+                        start: keyword.start(),
+                        end: semi.end(),
                     };
                 }
-                SourceLocation {
-                    start: *keyword,
-                    end: *keyword + 1,
-                }
+                keyword.loc()
             }
             Stmt::With(inner) => inner.loc(),
             Stmt::Return {
@@ -240,20 +238,17 @@ impl<T> Node for Stmt<T> {
             } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
-                        start: *keyword,
-                        end: *semi + 1,
+                        start: keyword.start(),
+                        end: semi.end(),
                     };
                 }
                 if let Some(value) = value {
                     return SourceLocation {
-                        start: *keyword,
+                        start: keyword.start(),
                         end: value.loc().end,
                     };
                 }
-                SourceLocation {
-                    start: *keyword,
-                    end: *keyword + 1,
-                }
+                keyword.loc()
             }
             Stmt::Labeled(inner) => inner.loc(),
             Stmt::Break {
@@ -263,20 +258,17 @@ impl<T> Node for Stmt<T> {
             } => {
                 if let Some(semi_colon) = semi_colon {
                     return SourceLocation {
-                        start: *keyword,
-                        end: *semi_colon + 1,
+                        start: keyword.start(),
+                        end: semi_colon.end(),
                     };
                 }
                 if let Some(label) = label {
                     return SourceLocation {
-                        start: *keyword,
+                        start: keyword.start(),
                         end: label.loc().end,
                     };
                 }
-                SourceLocation {
-                    start: *keyword,
-                    end: *keyword + 1,
-                }
+                keyword.loc()
             }
             Stmt::Continue {
                 keyword,
@@ -285,20 +277,17 @@ impl<T> Node for Stmt<T> {
             } => {
                 if let Some(semi_colon) = semi_colon {
                     return SourceLocation {
-                        start: *keyword,
-                        end: *semi_colon + 1,
+                        start: keyword.end(),
+                        end: semi_colon.end(),
                     };
                 }
                 if let Some(label) = label {
                     return SourceLocation {
-                        start: *keyword,
+                        start: keyword.start(),
                         end: label.loc().end,
                     };
                 }
-                SourceLocation {
-                    start: *keyword,
-                    end: *keyword + 1,
-                }
+                keyword.loc()
             }
             Stmt::If(inner) => inner.loc(),
             Stmt::Switch(inner) => inner.loc(),
@@ -309,12 +298,12 @@ impl<T> Node for Stmt<T> {
             } => {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
-                        start: *keyword,
-                        end: *semi + 1,
+                        start: keyword.start(),
+                        end: semi.end(),
                     };
                 }
                 SourceLocation {
-                    start: *keyword,
+                    start: keyword.start(),
                     end: expr.loc().end,
                 }
             }
@@ -328,7 +317,7 @@ impl<T> Node for Stmt<T> {
                 if let Some(semi) = semi_colon {
                     return SourceLocation {
                         start: decls.loc().start,
-                        end: *semi + 1,
+                        end: semi.end(),
                     };
                 }
                 decls.loc()
@@ -352,17 +341,17 @@ impl<T> Node for Stmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct WithStmt<T> {
-    pub keyword: Position,
-    pub open_paren: Position,
+    pub keyword: With,
+    pub open_paren: OpenParen,
     pub object: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: Box<Stmt<T>>,
 }
 
 impl<T> Node for WithStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -379,7 +368,7 @@ impl<T> Node for WithStmt<T> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct LabeledStmt<T> {
     pub label: Ident<T>,
-    pub colon: Position,
+    pub colon: Colon,
     pub body: Box<Stmt<T>>,
 }
 
@@ -402,17 +391,17 @@ impl<T> Node for LabeledStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct IfStmt<T> {
-    pub keyword: Position,
-    pub open_paren: Position,
+    pub keyword: If,
+    pub open_paren: OpenParen,
     pub test: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub consequent: Box<Stmt<T>>,
     pub alternate: Option<Box<ElseStmt<T>>>,
 }
 
 impl<T> Node for IfStmt<T> {
     fn loc(&self) -> SourceLocation {
-        let start = self.keyword;
+        let start = self.keyword.start();
         let end = if let Some(alt) = &self.alternate {
             alt.loc().end
         } else {
@@ -424,14 +413,14 @@ impl<T> Node for IfStmt<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct ElseStmt<T> {
-    pub keyword: Position,
+    pub keyword: Else,
     pub body: Stmt<T>,
 }
 
 impl<T> Node for ElseStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -453,20 +442,20 @@ impl<T> Node for ElseStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct SwitchStmt<T> {
-    pub keyword: Position,
-    pub open_paren: Position,
+    pub keyword: Switch,
+    pub open_paren: OpenParen,
     pub discriminant: Expr<T>,
-    pub close_paren: Position,
-    pub open_brace: Position,
+    pub close_paren: CloseParen,
+    pub open_brace: OpenBrace,
     pub cases: Vec<SwitchCase<T>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for SwitchStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
-            end: self.close_paren + 1,
+            start: self.keyword.start(),
+            end: self.close_paren.end(),
         }
     }
 }
@@ -474,9 +463,9 @@ impl<T> Node for SwitchStmt<T> {
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
 pub struct SwitchCase<T> {
-    pub keyword: Position,
+    pub keyword: Case,
     pub test: Option<Expr<T>>,
-    pub colon: Position,
+    pub colon: Colon,
     pub consequent: Vec<ProgramPart<T>>,
 }
 
@@ -485,10 +474,10 @@ impl<T> Node for SwitchCase<T> {
         let end = if let Some(last) = self.consequent.last() {
             last.loc().end
         } else {
-            self.colon + 1
+            self.colon.end()
         };
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end,
         }
     }
@@ -497,16 +486,16 @@ impl<T> Node for SwitchCase<T> {
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockStmt<T> {
-    pub open_brace: Position,
+    pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
-    pub close_brace: Position,
+    pub close_brace: CloseBrace,
 }
 
 impl<T> Node for BlockStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_brace,
-            end: self.close_brace + 1,
+            start: self.open_brace.start(),
+            end: self.close_brace.end(),
         }
     }
 }
@@ -523,7 +512,7 @@ impl<T> Node for BlockStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct TryStmt<T> {
-    pub keyword: Position,
+    pub keyword: Try,
     pub block: BlockStmt<T>,
     pub handler: Option<CatchClause<T>>,
     pub finalizer: Option<FinallyClause<T>>,
@@ -539,7 +528,7 @@ impl<T> Node for TryStmt<T> {
             self.block.loc().end
         };
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end,
         }
     }
@@ -548,7 +537,7 @@ impl<T> Node for TryStmt<T> {
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
 pub struct CatchClause<T> {
-    pub keyword: Position,
+    pub keyword: Catch,
     pub param: Option<CatchArg<T>>,
     pub body: BlockStmt<T>,
 }
@@ -556,7 +545,7 @@ pub struct CatchClause<T> {
 impl<T> Node for CatchClause<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -564,30 +553,30 @@ impl<T> Node for CatchClause<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CatchArg<T> {
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     pub param: Pat<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
 }
 
 impl<T> Node for CatchArg<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.open_paren,
-            end: self.close_paren + 1,
+            start: self.open_paren.start(),
+            end: self.close_paren.end(),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FinallyClause<T> {
-    pub keyword: Position,
+    pub keyword: Finally,
     pub body: BlockStmt<T>,
 }
 
 impl<T> Node for FinallyClause<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -609,17 +598,17 @@ impl<T> Node for FinallyClause<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct WhileStmt<T> {
-    pub keyword: Position,
-    pub open_paren: Position,
+    pub keyword: While,
+    pub open_paren: OpenParen,
     pub test: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: Box<Stmt<T>>,
 }
 
 impl<T> Node for WhileStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -633,20 +622,24 @@ impl<T> Node for WhileStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct DoWhileStmt<T> {
-    pub keyword_do: Position,
+    pub keyword_do: Do,
     pub body: Box<Stmt<T>>,
-    pub keyword_while: Position,
-    pub open_paren: Position,
+    pub keyword_while: While,
+    pub open_paren: OpenParen,
     pub test: Expr<T>,
-    pub close_paren: Position,
-    pub semi_colon: Option<Position>,
+    pub close_paren: CloseParen,
+    pub semi_colon: Option<Semicolon>,
 }
 
 impl<T> Node for DoWhileStmt<T> {
     fn loc(&self) -> SourceLocation {
-        let end = self.semi_colon.unwrap_or(self.close_paren) + 1;
+        let end = self
+            .semi_colon
+            .map(|s| s.end())
+            .unwrap_or_else(|| self.close_paren.end())
+            + 1;
         SourceLocation {
-            start: self.keyword_do,
+            start: self.keyword_do.start(),
             end,
         }
     }
@@ -662,21 +655,21 @@ impl<T> Node for DoWhileStmt<T> {
 #[derive(PartialEq, Debug, Clone)]
 pub struct ForStmt<T> {
     //32
-    pub keyword: Position,
+    pub keyword: For,
     //32
-    pub open_paren: Position,
+    pub open_paren: OpenParen,
     //312
     pub init: Option<LoopInit<T>>,
     //32
-    pub semi1: Position,
+    pub semi1: Semicolon,
     //312
     pub test: Option<Expr<T>>,
     //32
-    pub semi2: Position,
+    pub semi2: Semicolon,
     //312
     pub update: Option<Expr<T>>,
     //32
-    pub close_paren: Position,
+    pub close_paren: Semicolon,
     //8
     pub body: Box<Stmt<T>>,
 }
@@ -684,7 +677,7 @@ pub struct ForStmt<T> {
 impl<T> Node for ForStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword,
+            start: self.keyword.start(),
             end: self.body.loc().end,
         }
     }
@@ -732,19 +725,19 @@ impl<T> Node for LoopInit<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ForInStmt<T> {
-    pub keyword_for: Position,
-    pub open_paren: Position,
+    pub keyword_for: For,
+    pub open_paren: OpenParen,
     pub left: LoopLeft<T>,
-    pub keyword_in: Position,
+    pub keyword_in: In,
     pub right: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: Box<Stmt<T>>,
 }
 
 impl<T> Node for ForInStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword_for,
+            start: self.keyword_for.start(),
             end: self.body.loc().end,
         }
     }
@@ -760,12 +753,12 @@ impl<T> Node for ForInStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ForOfStmt<T> {
-    pub keyword_for: Position,
-    pub open_paren: Position,
+    pub keyword_for: For,
+    pub open_paren: OpenParen,
     pub left: LoopLeft<T>,
-    pub keyword_of: Position,
+    pub keyword_of: Of,
     pub right: Expr<T>,
-    pub close_paren: Position,
+    pub close_paren: CloseParen,
     pub body: Box<Stmt<T>>,
     pub is_await: bool,
 }
@@ -773,7 +766,7 @@ pub struct ForOfStmt<T> {
 impl<T> Node for ForOfStmt<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
-            start: self.keyword_for,
+            start: self.keyword_for.start(),
             end: self.body.loc().end,
         }
     }

@@ -10,7 +10,7 @@ use crate::spanned::{
     expr::{
         ArrowFuncBody, ArrowFuncExpr, AssignExpr, AssignLeft, BinaryExpr, CallExpr,
         ConditionalExpr, Expr, Lit, LogicalExpr, MemberExpr, MetaProp, NewExpr, ObjProp, Prop,
-        PropInitKey, PropKey, PropMethod, PropValue, Quote, RegEx, SequenceExprEntry, StringLit,
+        PropInitKey, PropKey, PropMethod, PropValue, RegEx, SequenceExprEntry, StringLit,
         TaggedTemplateExpr, TemplateElement, TemplateLit, UnaryExpr, UpdateExpr, YieldExpr,
     },
     pat::{ArrayElement, ArrayPat, ArrayPatPart, AssignPat, ObjPat, ObjPatPart, Pat},
@@ -206,7 +206,7 @@ mod decl {
 }
 
 mod expr {
-    use crate::spanned::expr::Boolean;
+    use crate::spanned::{expr::Boolean, tokens::Quote};
 
     use super::*;
 
