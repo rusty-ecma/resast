@@ -36,8 +36,9 @@ macro_rules! impl_token {
 /// Defines a token struct and implements the Token trait for the newly defined type.
 /// The output of this macro produces something like the following.
 /// ```rust
+/// # use resast::spanned::{Position, tokens::Token};
 /// #[derive(Debug, Clone, Copy, PartialEq)]
-// #[doc = "as"]
+/// #[doc = "as"]
 /// pub struct As(Position);
 ///
 /// impl Token for As {
