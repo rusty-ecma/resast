@@ -1,10 +1,11 @@
 use crate::spanned::pat::Pat;
 use crate::spanned::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp};
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
+use crate::SourceText;
 
 use super::tokens::{
     Asterisk, Async, Await, CloseBrace, CloseBracket, CloseParen, Colon, Comma, Ellipsis, False,
-    FatArrow, ForwardSlash, Get, New, Null, OpenBrace, OpenBracket, OpenParen, Period,
+    FatArrow, ForwardSlash, Get, New, Null, OpenBrace, OpenBracket, OpenParen, Period, QuasiQuote,
     QuestionMark, Quote, Set, Static, Super, This, Token, True, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
@@ -871,9 +872,9 @@ impl<T> Node for TemplateLit<T> {
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
 pub struct TemplateElement<T> {
-    /// Raw quoted element
-    pub raw: Slice<T>,
-    pub cooked: Slice<T>,
+    pub open_quote: QuasiQuote,
+    pub content: SourceText<T>,
+    pub close_quote: QuasiQuote,
 }
 
 impl<T> TemplateElement<T>
@@ -881,18 +882,19 @@ where
     T: AsRef<str>,
 {
     pub fn is_tail(&self) -> bool {
-        self.raw
-            .source
-            .0
-            .as_ref()
-            .starts_with(|c| c == '`' || c == '}')
-            && self.raw.source.0.as_ref().ends_with('`')
+        matches!(
+            self.open_quote,
+            QuasiQuote::BackTick(_) | QuasiQuote::CloseBrace(_)
+        ) && matches!(self.close_quote, QuasiQuote::BackTick(_))
     }
 }
 
 impl<T> Node for TemplateElement<T> {
     fn loc(&self) -> SourceLocation {
-        self.raw.loc
+        SourceLocation {
+            start: self.open_quote.start(),
+            end: self.close_quote.end(),
+        }
     }
 }
 

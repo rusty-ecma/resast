@@ -206,7 +206,7 @@ mod decl {
 }
 
 mod expr {
-    use crate::spanned::{expr::Boolean, tokens::Quote};
+    use crate::spanned::{expr::Boolean, tokens::{Quote, QuasiQuote}};
 
     use super::*;
 
@@ -597,16 +597,25 @@ mod expr {
         }
     }
 
+    impl From<QuasiQuote> for crate::expr::QuasiQuote {
+        fn from(other: QuasiQuote) -> Self {
+            match other {
+                QuasiQuote::BackTick(_) => Self::BackTick,
+                QuasiQuote::CloseBrace(_) => Self::CloseBrace,
+                QuasiQuote::OpenBrace(_) => Self::OpenBrace,
+            }
+        }
+    }
+
     impl<T> From<TemplateElement<T>> for crate::expr::TemplateElement<T>
     where
         T: AsRef<str>,
     {
         fn from(other: TemplateElement<T>) -> Self {
-            let tail = other.is_tail();
             Self {
-                tail,
-                cooked: other.cooked.source,
-                raw: other.raw.source,
+                open_quote: other.open_quote.into(),
+                content: other.content,
+                close_quote: other.close_quote.into()
             }
         }
     }

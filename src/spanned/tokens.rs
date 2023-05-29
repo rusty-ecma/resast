@@ -139,11 +139,13 @@ define_token!(Yield, "yield");
 
 // Punctuation
 define_token!(Asterisk, "*");
+define_token!(BackTick, "`");
 define_token!(CloseParen, ")");
 define_token!(CloseBrace, "}");
 define_token!(CloseBracket, "]");
 define_token!(Colon, ":");
 define_token!(Comma, ",");
+define_token!(DollarSignOpenBrace, "${");
 define_token!(DoubleQuote, "\"");
 define_token!(Ellipsis, "...");
 define_token!(Equal, "=");
@@ -182,6 +184,39 @@ impl Token for Quote {
         match self {
             Quote::Double(inner) => inner.end(),
             Quote::Single(inner) => inner.end(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum QuasiQuote {
+    BackTick(BackTick),
+    CloseBrace(CloseBrace),
+    OpenBrace(DollarSignOpenBrace),
+}
+
+impl Token for QuasiQuote {
+    fn as_str(&self) -> &str {
+        match self {
+            Self::BackTick(inner) => inner.as_str(),
+            Self::CloseBrace(inner) => inner.as_str(),
+            Self::OpenBrace(inner) => inner.as_str(),
+        }
+    }
+
+    fn start(&self) -> Position {
+        match self {
+            Self::BackTick(inner) => inner.start(),
+            Self::CloseBrace(inner) => inner.start(),
+            Self::OpenBrace(inner) => inner.start(),
+        }
+    }
+
+    fn end(&self) -> Position {
+        match self {
+            Self::BackTick(inner) => inner.end(),
+            Self::CloseBrace(inner) => inner.end(),
+            Self::OpenBrace(inner) => inner.end(),
         }
     }
 }

@@ -315,6 +315,21 @@ pub struct TemplateLit<T> {
     pub expressions: Vec<Expr<T>>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum QuasiQuote {
+    /// `
+    BackTick,
+    /// ${
+    OpenBrace,
+    /// }
+    CloseBrace,
+}
+
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -323,20 +338,18 @@ pub struct TemplateLit<T> {
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct TemplateElement<T> {
-    pub tail: bool,
+    pub open_quote: QuasiQuote,
     /// The non-quoted version
-    pub cooked: SourceText<T>,
-    /// The quoted version
-    pub raw: SourceText<T>,
+    pub content: SourceText<T>,
+    pub close_quote: QuasiQuote,
 }
 
 impl<T> TemplateElement<T> {
-    pub fn from(tail: bool, cooked: T, raw: T) -> TemplateElement<T> {
-        Self {
-            tail,
-            cooked: SourceText(cooked),
-            raw: SourceText(raw),
-        }
+    pub fn is_tail(&self) -> bool {
+        matches!(
+            self.open_quote,
+            QuasiQuote::BackTick | QuasiQuote::CloseBrace
+        ) && matches!(self.close_quote, QuasiQuote::BackTick)
     }
 }
 
@@ -417,8 +430,10 @@ impl<T> StringLit<T> {
         StringLit::Single(SourceText(s))
     }
 }
-impl<T> StringLit<T> 
-where T: Clone {
+impl<T> StringLit<T>
+where
+    T: Clone,
+{
     pub fn clone_inner(&self) -> T {
         match self {
             StringLit::Single(ref s) => s.0.clone(),
@@ -428,7 +443,9 @@ where T: Clone {
 }
 
 impl<T> StringLit<T>
-where T: AsRef<str> {
+where
+    T: AsRef<str>,
+{
     pub fn inner_matches(&self, o: &str) -> bool {
         match self {
             StringLit::Single(ref s) => o.eq(s.0.as_ref()),
