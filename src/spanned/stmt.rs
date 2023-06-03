@@ -464,7 +464,7 @@ impl<T> Node for SwitchStmt<T> {
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
 pub struct SwitchCase<T> {
-    pub keyword: Case,
+    pub keyword: SwitchCaseKeyword,
     pub test: Option<Expr<T>>,
     pub colon: Colon,
     pub consequent: Vec<ProgramPart<T>>,

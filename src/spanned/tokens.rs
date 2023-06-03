@@ -413,3 +413,32 @@ impl Node for UnaryOp {
         }
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum SwitchCaseKeyword {
+    Case(Case),
+    Default(Default),
+}
+
+impl Token for SwitchCaseKeyword {
+    fn as_str(&self) -> &str {
+        match self {
+            SwitchCaseKeyword::Case(inner) => inner.as_str(),
+            SwitchCaseKeyword::Default(inner) => inner.as_str(),
+        }
+    }
+
+    fn start(&self) -> Position {
+        match self {
+            SwitchCaseKeyword::Case(inner) => inner.start(),
+            SwitchCaseKeyword::Default(inner) => inner.start(),
+        }
+    }
+
+    fn end(&self) -> Position {
+        match self {
+            SwitchCaseKeyword::Case(inner) => inner.end(),
+            SwitchCaseKeyword::Default(inner) => inner.end(),
+        }
+    }
+}
