@@ -255,7 +255,7 @@ impl<T> Node for DefaultImportSpec<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NamespaceImportSpec<T> {
     pub star: Asterisk,
-    pub keyword: From,
+    pub keyword: As,
     pub ident: Ident<T>,
 }
 
