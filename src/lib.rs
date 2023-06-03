@@ -10,15 +10,15 @@ pub mod serde;
 pub mod spanned;
 pub mod stmt;
 
-use std::{ops::Deref, borrow::Cow};
+use std::{borrow::Cow, fmt::Debug, ops::Deref};
 
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct SourceText<T>(T);
+#[derive(Clone, Default)]
+pub struct SourceText<T>(pub T);
 
 impl<T> From<T> for SourceText<T> {
     fn from(value: T) -> Self {
@@ -40,10 +40,45 @@ impl Deref for SourceText<String> {
     }
 }
 
-impl<T> AsRef<str> for SourceText<T> 
-where T: AsRef<str> {
+impl<T> AsRef<str> for SourceText<T>
+where
+    T: AsRef<str>,
+{
     fn as_ref(&self) -> &str {
         self.0.as_ref()
+    }
+}
+
+impl<T> std::fmt::Display for SourceText<T>
+where
+    T: std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl<T, U> std::cmp::PartialEq<U> for SourceText<T>
+where
+    U: PartialEq<T>,
+{
+    fn eq(&self, other: &U) -> bool {
+        other.eq(&self.0)
+    }
+}
+
+impl<'a> std::cmp::PartialEq<SourceText<&'a str>> for &'a str {
+    fn eq(&self, other: &SourceText<&'a str>) -> bool {
+        (&other.0).eq(self)
+    }
+}
+
+impl<T> std::fmt::Debug for SourceText<T>
+where
+    T: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", &self.0)
     }
 }
 
