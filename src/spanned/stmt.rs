@@ -655,23 +655,14 @@ impl<T> Node for DoWhileStmt<T> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 pub struct ForStmt<T> {
-    //32
     pub keyword: For,
-    //32
     pub open_paren: OpenParen,
-    //312
     pub init: Option<LoopInit<T>>,
-    //32
     pub semi1: Semicolon,
-    //312
     pub test: Option<Expr<T>>,
-    //32
     pub semi2: Semicolon,
-    //312
     pub update: Option<Expr<T>>,
-    //32
-    pub close_paren: Semicolon,
-    //8
+    pub close_paren: CloseParen,
     pub body: Box<Stmt<T>>,
 }
 
