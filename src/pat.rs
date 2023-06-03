@@ -17,6 +17,14 @@ pub enum Pat<T> {
     Assign(AssignPat<T>),
 }
 
+impl<T> Pat<T> {
+    pub fn ident_from(inner: T) -> Self {
+        Self::Ident(Ident {
+            name: crate::SourceText(inner),
+        })
+    }
+}
+
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]

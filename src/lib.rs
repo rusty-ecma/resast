@@ -59,19 +59,25 @@ pub struct Ident<T> {
 
 impl<'a> From<&'a str> for Ident<&'a str> {
     fn from(value: &'a str) -> Self {
-        Self { name: SourceText(value) }
+        Self {
+            name: SourceText(value),
+        }
     }
 }
 
 impl From<String> for Ident<String> {
     fn from(value: String) -> Self {
-        Self { name: SourceText(value) }
+        Self {
+            name: SourceText(value),
+        }
     }
 }
 
 impl<'a> From<Cow<'a, str>> for Ident<Cow<'a, str>> {
     fn from(value: Cow<'a, str>) -> Self {
-        Self { name: SourceText(value) }
+        Self {
+            name: SourceText(value),
+        }
     }
 }
 

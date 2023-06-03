@@ -92,6 +92,14 @@ pub enum Expr<T> {
     Yield(YieldExpr<T>),
 }
 
+impl<T> Expr<T> {
+    pub fn ident_from(inner: T) -> Self {
+        Self::Ident(Ident {
+            name: SourceText(inner),
+        })
+    }
+}
+
 /// `[a, b, c]`
 pub type ArrayExpr<T> = Vec<Option<Expr<T>>>;
 /// `{a: 'b', c, ...d}`
