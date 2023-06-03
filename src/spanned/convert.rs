@@ -1,28 +1,31 @@
 //! All conversions from spanned into non-spanned types
 //!
 
-use crate::{spanned::{
-    decl::{
-        Alias, Decl, DefaultExportDeclValue, DefaultImportSpec, ExportSpecifier, ImportSpecifier,
-        ModExport, ModExportSpecifier, ModImport, NamedExportDecl, NamespaceImportSpec,
-        NormalImportSpec, VarDecl,
+use crate::{
+    spanned::{
+        decl::{
+            Alias, Decl, DefaultExportDeclValue, DefaultImportSpec, ExportSpecifier,
+            ImportSpecifier, ModExport, ModExportSpecifier, ModImport, NamedExportDecl,
+            NamespaceImportSpec, NormalImportSpec, VarDecl,
+        },
+        expr::{
+            ArrowFuncBody, ArrowFuncExpr, AssignExpr, AssignLeft, BinaryExpr, CallExpr,
+            ConditionalExpr, Expr, Lit, LogicalExpr, MemberExpr, MetaProp, NewExpr, ObjProp, Prop,
+            PropInitKey, PropKey, PropMethod, PropValue, RegEx, SequenceExprEntry, StringLit,
+            TaggedTemplateExpr, TemplateElement, TemplateLit, UnaryExpr, UpdateExpr, YieldExpr,
+        },
+        pat::{ArrayElement, ArrayPat, ArrayPatPart, AssignPat, ObjPat, ObjPatPart, Pat},
+        stmt::{
+            BlockStmt, CatchClause, DoWhileStmt, FinallyClause, ForInStmt, ForOfStmt, ForStmt,
+            IfStmt, LabeledStmt, LoopInit, LoopLeft, Stmt, SwitchCase, SwitchStmt, TryStmt,
+            WhileStmt, WithStmt,
+        },
+        tokens::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp},
+        Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident, Program, ProgramPart,
+        Slice, VarKind,
     },
-    expr::{
-        ArrowFuncBody, ArrowFuncExpr, AssignExpr, AssignLeft, BinaryExpr, CallExpr,
-        ConditionalExpr, Expr, Lit, LogicalExpr, MemberExpr, MetaProp, NewExpr, ObjProp, Prop,
-        PropInitKey, PropKey, PropMethod, PropValue, RegEx, SequenceExprEntry, StringLit,
-        TaggedTemplateExpr, TemplateElement, TemplateLit, UnaryExpr, UpdateExpr, YieldExpr,
-    },
-    pat::{ArrayElement, ArrayPat, ArrayPatPart, AssignPat, ObjPat, ObjPatPart, Pat},
-    stmt::{
-        BlockStmt, CatchClause, DoWhileStmt, FinallyClause, ForInStmt, ForOfStmt, ForStmt, IfStmt,
-        LabeledStmt, LoopInit, LoopLeft, Stmt, SwitchCase, SwitchStmt, TryStmt, WhileStmt,
-        WithStmt,
-    },
-    tokens::{AssignOp, BinaryOp, LogicalOp, UnaryOp, UpdateOp},
-    Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident, Program, ProgramPart,
-    VarKind, Slice
-}, SourceText};
+    SourceText,
+};
 
 mod decl {
     use super::*;

@@ -6,8 +6,9 @@ use crate::spanned::{Ident, ProgramPart};
 
 use super::decl::VarDecls;
 use super::tokens::{
-    Break, Case, Catch, CloseBrace, CloseParen, Colon, Continue, Debugger, Do, Else, Finally, For,
-    If, In, Of, OpenBrace, OpenParen, Return, Semicolon, Switch, Throw, Token, Try, While, With,
+    Break, Catch, CloseBrace, CloseParen, Colon, Continue, Debugger, Do, Else, Finally, For, If,
+    In, Of, OpenBrace, OpenParen, Return, Semicolon, Switch, SwitchCaseKeyword, Throw, Token, Try,
+    While, With,
 };
 use super::{ListEntry, Node, SourceLocation};
 
