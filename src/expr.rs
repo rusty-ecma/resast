@@ -1,7 +1,6 @@
 use crate::pat::Pat;
-use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, UnaryOp, UpdateOp};
+use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, SourceText, UnaryOp, UpdateOp};
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
-use std::borrow::Cow;
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -10,9 +9,9 @@ use std::borrow::Cow;
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum Expr<'a> {
+pub enum Expr<T> {
     /// `[0,,]`
-    Array(ArrayExpr<'a>),
+    Array(ArrayExpr<T>),
     /// An arrow function
     /// ```js
     /// () => console.log();
@@ -20,96 +19,98 @@ pub enum Expr<'a> {
     ///     return x;
     /// }
     /// ```
-    ArrowFunc(ArrowFuncExpr<'a>),
+    ArrowFunc(ArrowFuncExpr<T>),
     /// Used for resolving possible sequence expressions
     /// that are arrow parameters
-    ArrowParamPlaceHolder(Vec<FuncArg<'a>>, bool),
+    ArrowParamPlaceHolder(Vec<FuncArg<T>>, bool),
     /// Assignment or update assignment
     /// ```js
     /// a = 0
     /// b += 1
     /// ```
-    Assign(AssignExpr<'a>),
+    Assign(AssignExpr<T>),
     /// The `await` keyword followed by another `Expr`
-    Await(Box<Expr<'a>>),
+    Await(Box<Expr<T>>),
     /// An operation that has two arguments
-    Binary(BinaryExpr<'a>),
+    Binary(BinaryExpr<T>),
     /// A class expression see `Class`
-    Class(Class<'a>),
+    Class(Class<T>),
     /// Calling a function or method
-    Call(CallExpr<'a>),
+    Call(CallExpr<T>),
     /// A ternery expression
-    Conditional(ConditionalExpr<'a>),
+    Conditional(ConditionalExpr<T>),
     /// see `Function`
-    Func(Func<'a>),
+    Func(Func<T>),
     /// An identifier
-    Ident(Ident<'a>),
+    Ident(Ident<T>),
     /// A literal value, see `Literal`
-    Lit(Lit<'a>),
+    Lit(Lit<T>),
     /// A specialized `BinaryExpr` for logical evaluation
     /// ```js
     /// true && true
     /// false || true
     /// ```
-    Logical(LogicalExpr<'a>),
+    Logical(LogicalExpr<T>),
     /// Accessing the member of a value
     /// ```js
     /// b['thing'];
     /// c.stuff;
     /// ```
-    Member(MemberExpr<'a>),
+    Member(MemberExpr<T>),
     /// currently just `new.target`
-    MetaProp(MetaProp<'a>),
+    MetaProp(MetaProp<T>),
     /// ```js
     /// var a = true ? 'stuff' : 'things';
     /// ```
     /// `{}`
     /// Calling a constructor
-    New(NewExpr<'a>),
-    Obj(ObjExpr<'a>),
+    New(NewExpr<T>),
+    Obj(ObjExpr<T>),
     /// Any sequence of expressions separated with a comma
-    Sequence(SequenceExpr<'a>),
+    Sequence(SequenceExpr<T>),
     /// `...` followed by an `Expr`
-    Spread(Box<Expr<'a>>),
+    Spread(Box<Expr<T>>),
     /// `super`
     Super,
     /// A template literal preceded by a tag function identifier
-    TaggedTemplate(TaggedTemplateExpr<'a>),
+    TaggedTemplate(TaggedTemplateExpr<T>),
     /// `this`
     This,
     /// An operation that has one argument
     /// ```js
-    /// typeof 'a';
+    /// typeof T';
     /// +9;
     /// ```
-    Unary(UnaryExpr<'a>),
+    Unary(UnaryExpr<T>),
     /// Increment or decrement
     /// ```js
     /// 1++
     /// --2
     /// ```
-    Update(UpdateExpr<'a>),
+    Update(UpdateExpr<T>),
     /// yield a value from inside of a generator function
-    Yield(YieldExpr<'a>),
+    Yield(YieldExpr<T>),
 }
 
-impl<'a> Expr<'a> {
-    pub fn ident_from(s: &'a str) -> Self {
-        Expr::Ident(Ident::from(s))
+impl<T> Expr<T> {
+    pub fn ident_from(inner: T) -> Self {
+        Self::Ident(Ident {
+            name: SourceText(inner),
+        })
     }
 }
 
 /// `[a, b, c]`
-pub type ArrayExpr<'a> = Vec<Option<Expr<'a>>>;
+pub type ArrayExpr<T> = Vec<Option<Expr<T>>>;
 /// `{a: 'b', c, ...d}`
-pub type ObjExpr<'a> = Vec<ObjProp<'a>>;
+pub type ObjExpr<T> = Vec<ObjProp<T>>;
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum ObjProp<'a> {
-    Prop(Prop<'a>),
-    Spread(Expr<'a>),
+pub enum ObjProp<T> {
+    Prop(Prop<T>),
+    Spread(Expr<T>),
 }
 
 /// A single part of an object literal or class
@@ -119,9 +120,9 @@ pub enum ObjProp<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct Prop<'a> {
-    pub key: PropKey<'a>,
-    pub value: PropValue<'a>,
+pub struct Prop<T> {
+    pub key: PropKey<T>,
+    pub value: PropValue<T>,
     pub kind: PropKind,
     pub method: bool,
     pub computed: bool,
@@ -133,65 +134,65 @@ pub struct Prop<'a> {
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum PropKey<'a> {
-    Lit(Lit<'a>),
-    Expr(Expr<'a>),
-    Pat(Pat<'a>),
+pub enum PropKey<T> {
+    Lit(Lit<T>),
+    Expr(Expr<T>),
+    Pat(Pat<T>),
 }
 
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum PropValue<'a> {
-    Expr(Expr<'a>),
-    Pat(Pat<'a>),
+pub enum PropValue<T> {
+    Expr(Expr<T>),
+    Pat(Pat<T>),
     None,
 }
 
 /// An operation that takes one argument
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct UnaryExpr<'a> {
+pub struct UnaryExpr<T> {
     pub operator: UnaryOp,
     pub prefix: bool,
-    pub argument: Box<Expr<'a>>,
+    pub argument: Box<Expr<T>>,
 }
 
 /// Increment or decrementing a value
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct UpdateExpr<'a> {
+pub struct UpdateExpr<T> {
     pub operator: UpdateOp,
-    pub argument: Box<Expr<'a>>,
+    pub argument: Box<Expr<T>>,
     pub prefix: bool,
 }
 
 /// An operation that requires 2 arguments
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct BinaryExpr<'a> {
+pub struct BinaryExpr<T> {
     pub operator: BinaryOp,
-    pub left: Box<Expr<'a>>,
-    pub right: Box<Expr<'a>>,
+    pub left: Box<Expr<T>>,
+    pub right: Box<Expr<T>>,
 }
 
 /// An assignment or update + assignment operation
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct AssignExpr<'a> {
+pub struct AssignExpr<T> {
     pub operator: AssignOp,
-    pub left: AssignLeft<'a>,
-    pub right: Box<Expr<'a>>,
+    pub left: AssignLeft<T>,
+    pub right: Box<Expr<T>>,
 }
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
-pub enum AssignLeft<'a> {
-    Pat(Pat<'a>),
-    Expr(Box<Expr<'a>>),
+pub enum AssignLeft<T> {
+    Pat(Pat<T>),
+    Expr(Box<Expr<T>>),
 }
 
 /// A specialized `BinaryExpr` for logical evaluation
@@ -201,10 +202,10 @@ pub enum AssignLeft<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct LogicalExpr<'a> {
+pub struct LogicalExpr<T> {
     pub operator: LogicalOp,
-    pub left: Box<Expr<'a>>,
-    pub right: Box<Expr<'a>>,
+    pub left: Box<Expr<T>>,
+    pub right: Box<Expr<T>>,
 }
 
 /// Accessing the member of a value
@@ -214,9 +215,9 @@ pub struct LogicalExpr<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct MemberExpr<'a> {
-    pub object: Box<Expr<'a>>,
-    pub property: Box<Expr<'a>>,
+pub struct MemberExpr<T> {
+    pub object: Box<Expr<T>>,
+    pub property: Box<Expr<T>>,
     pub computed: bool,
 }
 
@@ -226,10 +227,10 @@ pub struct MemberExpr<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ConditionalExpr<'a> {
-    pub test: Box<Expr<'a>>,
-    pub alternate: Box<Expr<'a>>,
-    pub consequent: Box<Expr<'a>>,
+pub struct ConditionalExpr<T> {
+    pub test: Box<Expr<T>>,
+    pub alternate: Box<Expr<T>>,
+    pub consequent: Box<Expr<T>>,
 }
 
 /// Calling a function or method
@@ -238,9 +239,9 @@ pub struct ConditionalExpr<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct CallExpr<'a> {
-    pub callee: Box<Expr<'a>>,
-    pub arguments: Vec<Expr<'a>>,
+pub struct CallExpr<T> {
+    pub callee: Box<Expr<T>>,
+    pub arguments: Vec<Expr<T>>,
 }
 
 /// Calling a constructor
@@ -249,13 +250,13 @@ pub struct CallExpr<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct NewExpr<'a> {
-    pub callee: Box<Expr<'a>>,
-    pub arguments: Vec<Expr<'a>>,
+pub struct NewExpr<T> {
+    pub callee: Box<Expr<T>>,
+    pub arguments: Vec<Expr<T>>,
 }
 
 /// A collection of `Exprs` separated by commas
-pub type SequenceExpr<'a> = Vec<Expr<'a>>;
+pub type SequenceExpr<T> = Vec<Expr<T>>;
 
 /// An arrow function
 /// ```js
@@ -266,10 +267,10 @@ pub type SequenceExpr<'a> = Vec<Expr<'a>>;
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ArrowFuncExpr<'a> {
-    pub id: Option<Ident<'a>>,
-    pub params: Vec<FuncArg<'a>>,
-    pub body: ArrowFuncBody<'a>,
+pub struct ArrowFuncExpr<T> {
+    pub id: Option<Ident<T>>,
+    pub params: Vec<FuncArg<T>>,
+    pub body: ArrowFuncBody<T>,
     pub expression: bool,
     pub generator: bool,
     pub is_async: bool,
@@ -278,9 +279,9 @@ pub struct ArrowFuncExpr<'a> {
 /// The body portion of an arrow function can be either an expression or a block of statements
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum ArrowFuncBody<'a> {
-    FuncBody(FuncBody<'a>),
-    Expr(Box<Expr<'a>>),
+pub enum ArrowFuncBody<T> {
+    FuncBody(FuncBody<T>),
+    Expr(Box<Expr<T>>),
 }
 
 /// yield a value from inside of a generator function
@@ -293,8 +294,8 @@ pub enum ArrowFuncBody<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct YieldExpr<'a> {
-    pub argument: Option<Box<Expr<'a>>>,
+pub struct YieldExpr<T> {
+    pub argument: Option<Box<Expr<T>>>,
     pub delegate: bool,
 }
 
@@ -302,9 +303,9 @@ pub struct YieldExpr<'a> {
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct TaggedTemplateExpr<'a> {
-    pub tag: Box<Expr<'a>>,
-    pub quasi: TemplateLit<'a>,
+pub struct TaggedTemplateExpr<T> {
+    pub tag: Box<Expr<T>>,
+    pub quasi: TemplateLit<T>,
 }
 
 /// A template string literal
@@ -317,9 +318,24 @@ pub struct TaggedTemplateExpr<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct TemplateLit<'a> {
-    pub quasis: Vec<TemplateElement<'a>>,
-    pub expressions: Vec<Expr<'a>>,
+pub struct TemplateLit<T> {
+    pub quasis: Vec<TemplateElement<T>>,
+    pub expressions: Vec<Expr<T>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "esprima")),
+    derive(Deserialize, Serialize)
+)]
+#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+pub enum QuasiQuote {
+    /// `
+    BackTick,
+    /// ${
+    OpenBrace,
+    /// }
+    CloseBrace,
 }
 
 /// The text part of a `TemplateLiteral`
@@ -329,21 +345,19 @@ pub struct TemplateLit<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub struct TemplateElement<'a> {
-    pub tail: bool,
+pub struct TemplateElement<T> {
+    pub open_quote: QuasiQuote,
     /// The non-quoted version
-    pub cooked: Cow<'a, str>,
-    /// The quoted version
-    pub raw: Cow<'a, str>,
+    pub content: SourceText<T>,
+    pub close_quote: QuasiQuote,
 }
 
-impl<'a> TemplateElement<'a> {
-    pub fn from(tail: bool, cooked: &'a str, raw: &'a str) -> TemplateElement<'a> {
-        Self {
-            tail,
-            cooked: Cow::Borrowed(cooked),
-            raw: Cow::Borrowed(raw),
-        }
+impl<T> TemplateElement<T> {
+    pub fn is_tail(&self) -> bool {
+        matches!(
+            self.open_quote,
+            QuasiQuote::BackTick | QuasiQuote::CloseBrace
+        ) && matches!(self.close_quote, QuasiQuote::BackTick)
     }
 }
 
@@ -359,9 +373,9 @@ impl<'a> TemplateElement<'a> {
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct MetaProp<'a> {
-    pub meta: Ident<'a>,
-    pub property: Ident<'a>,
+pub struct MetaProp<T> {
+    pub meta: Ident<T>,
+    pub property: Ident<T>,
 }
 
 /// A literal value
@@ -371,12 +385,12 @@ pub struct MetaProp<'a> {
     derive(Deserialize, Serialize)
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-pub enum Lit<'a> {
+pub enum Lit<T> {
     /// `null`
     Null,
     /// `"string"`
     /// `'string'`
-    String(StringLit<'a>),
+    String(StringLit<T>),
     /// `0`
     /// `0.0`
     /// `.0`
@@ -385,54 +399,65 @@ pub enum Lit<'a> {
     /// `0xf`
     /// `0o7`
     /// `0b1`
-    Number(Cow<'a, str>),
+    Number(SourceText<T>),
     /// `true`
     /// `false`
     Boolean(bool),
     /// `/.+/g`
-    RegEx(RegEx<'a>),
+    RegEx(RegEx<T>),
     /// ```js
     /// `I have ${0} apples`
     /// ```
-    Template(TemplateLit<'a>),
+    Template(TemplateLit<T>),
 }
 
-impl<'a> Lit<'a> {
-    pub fn number_from(s: &'a str) -> Self {
-        Lit::Number(Cow::Borrowed(s))
+impl<T> Lit<T> {
+    pub fn number_from(s: T) -> Self {
+        Lit::Number(SourceText(s))
     }
-    pub fn single_string_from(s: &'a str) -> Self {
+    pub fn single_string_from(s: T) -> Self {
         Lit::String(StringLit::single_from(s))
     }
-    pub fn double_string_from(s: &'a str) -> Self {
+    pub fn double_string_from(s: T) -> Self {
         Lit::String(StringLit::double_from(s))
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum StringLit<'a> {
-    Double(Cow<'a, str>),
-    Single(Cow<'a, str>),
+pub enum StringLit<T> {
+    Double(SourceText<T>),
+    Single(SourceText<T>),
 }
 
-impl<'a> StringLit<'a> {
-    pub fn double_from(s: &'a str) -> StringLit<'a> {
-        StringLit::Double(Cow::Borrowed(s))
+impl<T> StringLit<T> {
+    pub fn double_from(s: T) -> StringLit<T> {
+        StringLit::Double(SourceText(s))
     }
-    pub fn single_from(s: &'a str) -> StringLit<'a> {
-        StringLit::Single(Cow::Borrowed(s))
+    pub fn single_from(s: T) -> StringLit<T> {
+        StringLit::Single(SourceText(s))
     }
-    pub fn clone_inner(&self) -> Cow<'a, str> {
+}
+impl<T> StringLit<T>
+where
+    T: Clone,
+{
+    pub fn clone_inner(&self) -> T {
         match self {
-            StringLit::Single(ref s) => s.clone(),
-            StringLit::Double(ref s) => s.clone(),
+            StringLit::Single(ref s) => s.0.clone(),
+            StringLit::Double(ref s) => s.0.clone(),
         }
     }
+}
+
+impl<T> StringLit<T>
+where
+    T: AsRef<str>,
+{
     pub fn inner_matches(&self, o: &str) -> bool {
         match self {
-            StringLit::Single(ref s) => s == o,
-            StringLit::Double(ref d) => d == o,
+            StringLit::Single(ref s) => o.eq(s.0.as_ref()),
+            StringLit::Double(ref d) => o.eq(d.0.as_ref()),
         }
     }
 }
@@ -440,16 +465,16 @@ impl<'a> StringLit<'a> {
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serialization"), serde(rename_all = "camelCase"))]
-pub struct RegEx<'a> {
-    pub pattern: Cow<'a, str>,
-    pub flags: Cow<'a, str>,
+pub struct RegEx<T> {
+    pub pattern: SourceText<T>,
+    pub flags: Option<SourceText<T>>,
 }
 
-impl<'a> RegEx<'a> {
-    pub fn from(p: &'a str, f: &'a str) -> Self {
+impl<T> RegEx<T> {
+    pub fn from(p: T, f: Option<T>) -> Self {
         RegEx {
-            pattern: Cow::Borrowed(p),
-            flags: Cow::Borrowed(f),
+            pattern: SourceText(p),
+            flags: f.map(SourceText),
         }
     }
 }
