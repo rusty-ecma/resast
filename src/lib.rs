@@ -10,77 +10,12 @@ pub mod serde;
 pub mod spanned;
 pub mod stmt;
 
-use std::{borrow::Cow, fmt::Debug, ops::Deref};
+use std::{borrow::Cow, fmt::Debug};
 
 use decl::Decl;
 use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
-
-#[derive(Clone, Default)]
-pub struct SourceText<T>(pub T);
-
-impl<T> From<T> for SourceText<T> {
-    fn from(value: T) -> Self {
-        Self(value)
-    }
-}
-
-impl Deref for SourceText<&str> {
-    type Target = str;
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
-impl Deref for SourceText<String> {
-    type Target = str;
-    fn deref(&self) -> &Self::Target {
-        self.0.as_str()
-    }
-}
-
-impl<T> AsRef<str> for SourceText<T>
-where
-    T: AsRef<str>,
-{
-    fn as_ref(&self) -> &str {
-        self.0.as_ref()
-    }
-}
-
-impl<T> std::fmt::Display for SourceText<T>
-where
-    T: std::fmt::Display,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl<T, U> std::cmp::PartialEq<U> for SourceText<T>
-where
-    U: PartialEq<T>,
-{
-    fn eq(&self, other: &U) -> bool {
-        other.eq(&self.0)
-    }
-}
-
-impl<'a> std::cmp::PartialEq<SourceText<&'a str>> for &'a str {
-    fn eq(&self, other: &SourceText<&'a str>) -> bool {
-        (&other.0).eq(self)
-    }
-}
-
-impl<T> std::fmt::Debug for SourceText<T>
-where
-    T: std::fmt::Debug,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", &self.0)
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -89,13 +24,13 @@ where
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Ident<T> {
-    pub name: SourceText<T>,
+    pub name: T,
 }
 
 impl<'a> From<&'a str> for Ident<&'a str> {
     fn from(value: &'a str) -> Self {
         Self {
-            name: SourceText(value),
+            name: value,
         }
     }
 }
@@ -103,7 +38,7 @@ impl<'a> From<&'a str> for Ident<&'a str> {
 impl From<String> for Ident<String> {
     fn from(value: String) -> Self {
         Self {
-            name: SourceText(value),
+            name: value,
         }
     }
 }
@@ -111,7 +46,7 @@ impl From<String> for Ident<String> {
 impl<'a> From<Cow<'a, str>> for Ident<Cow<'a, str>> {
     fn from(value: Cow<'a, str>) -> Self {
         Self {
-            name: SourceText(value),
+            name: value,
         }
     }
 }
@@ -180,7 +115,7 @@ impl<T> ProgramPart<T> {
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Dir<T> {
     pub expr: Lit<T>,
-    pub dir: SourceText<T>,
+    pub dir: T,
 }
 
 /// A function, this will be part of either a function

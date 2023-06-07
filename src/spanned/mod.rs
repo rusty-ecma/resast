@@ -10,8 +10,6 @@ use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
-use crate::SourceText;
-
 use self::{
     pat::RestPat,
     tokens::{
@@ -53,7 +51,7 @@ impl<T> From<Slice<T>> for Ident<T> {
 
 impl<T> Ident<T> {
     pub fn name(&self) -> &T {
-        &self.slice.source.0
+        &self.slice.source
     }
 }
 
@@ -138,7 +136,7 @@ impl<T> ProgramPart<T> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Dir<T> {
     pub expr: Lit<T>,
-    pub dir: SourceText<T>,
+    pub dir: T,
     pub semi_colon: Option<Semicolon>,
 }
 
@@ -350,14 +348,14 @@ impl VarKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Slice<T> {
-    pub source: SourceText<T>,
+    pub source: T,
     pub loc: SourceLocation,
 }
 
 impl<T> Slice<T> {
     pub fn new(source: T, start_line: u32, start_col: u32, end_line: u32, end_column: u32) -> Self {
         Self {
-            source: SourceText(source),
+            source: source,
             loc: SourceLocation::new(start_line, start_col, end_line, end_column),
         }
     }
