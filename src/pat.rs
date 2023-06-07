@@ -20,7 +20,7 @@ pub enum Pat<T> {
 impl<T> Pat<T> {
     pub fn ident_from(inner: T) -> Self {
         Self::Ident(Ident {
-            name: crate::SourceText(inner),
+            name: inner,
         })
     }
 }

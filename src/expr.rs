@@ -1,5 +1,5 @@
 use crate::pat::Pat;
-use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, SourceText, UnaryOp, UpdateOp};
+use crate::{AssignOp, BinaryOp, LogicalOp, PropKind, UnaryOp, UpdateOp};
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
@@ -95,7 +95,7 @@ pub enum Expr<T> {
 impl<T> Expr<T> {
     pub fn ident_from(inner: T) -> Self {
         Self::Ident(Ident {
-            name: SourceText(inner),
+            name: inner,
         })
     }
 }
@@ -348,7 +348,7 @@ pub enum QuasiQuote {
 pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
     /// The non-quoted version
-    pub content: SourceText<T>,
+    pub content: T,
     pub close_quote: QuasiQuote,
 }
 
@@ -399,7 +399,7 @@ pub enum Lit<T> {
     /// `0xf`
     /// `0o7`
     /// `0b1`
-    Number(SourceText<T>),
+    Number(T),
     /// `true`
     /// `false`
     Boolean(bool),
@@ -413,7 +413,7 @@ pub enum Lit<T> {
 
 impl<T> Lit<T> {
     pub fn number_from(s: T) -> Self {
-        Lit::Number(SourceText(s))
+        Lit::Number(s)
     }
     pub fn single_string_from(s: T) -> Self {
         Lit::String(StringLit::single_from(s))
@@ -426,16 +426,16 @@ impl<T> Lit<T> {
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 pub enum StringLit<T> {
-    Double(SourceText<T>),
-    Single(SourceText<T>),
+    Double(T),
+    Single(T),
 }
 
 impl<T> StringLit<T> {
     pub fn double_from(s: T) -> StringLit<T> {
-        StringLit::Double(SourceText(s))
+        StringLit::Double(s)
     }
     pub fn single_from(s: T) -> StringLit<T> {
-        StringLit::Single(SourceText(s))
+        StringLit::Single(s)
     }
 }
 impl<T> StringLit<T>
@@ -444,8 +444,8 @@ where
 {
     pub fn clone_inner(&self) -> T {
         match self {
-            StringLit::Single(ref s) => s.0.clone(),
-            StringLit::Double(ref s) => s.0.clone(),
+            StringLit::Single(ref s) => s.clone(),
+            StringLit::Double(ref s) => s.clone(),
         }
     }
 }
@@ -456,8 +456,8 @@ where
 {
     pub fn inner_matches(&self, o: &str) -> bool {
         match self {
-            StringLit::Single(ref s) => o.eq(s.0.as_ref()),
-            StringLit::Double(ref d) => o.eq(d.0.as_ref()),
+            StringLit::Single(ref s) => o.eq(s.as_ref()),
+            StringLit::Double(ref d) => o.eq(d.as_ref()),
         }
     }
 }
@@ -466,15 +466,15 @@ where
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
 #[cfg_attr(all(feature = "serialization"), serde(rename_all = "camelCase"))]
 pub struct RegEx<T> {
-    pub pattern: SourceText<T>,
-    pub flags: Option<SourceText<T>>,
+    pub pattern: T,
+    pub flags: Option<T>,
 }
 
 impl<T> RegEx<T> {
     pub fn from(p: T, f: Option<T>) -> Self {
         RegEx {
-            pattern: SourceText(p),
-            flags: f.map(SourceText),
+            pattern: p,
+            flags: f,
         }
     }
 }

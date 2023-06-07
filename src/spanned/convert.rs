@@ -1,6 +1,8 @@
 //! All conversions from spanned into non-spanned types
 //!
 
+use std::borrow::Cow;
+
 use crate::{
     spanned::{
         decl::{
@@ -24,7 +26,6 @@ use crate::{
         Class, ClassBody, Dir, Func, FuncArg, FuncArgEntry, FuncBody, Ident, Program, ProgramPart,
         Slice, VarKind,
     },
-    SourceText,
 };
 
 mod decl {
@@ -513,7 +514,7 @@ mod expr {
         fn from(other: TemplateElement<T>) -> Self {
             Self {
                 open_quote: other.open_quote.into(),
-                content: other.content.into(),
+                content: other.content.source,
                 close_quote: other.close_quote.into(),
             }
         }
@@ -1006,8 +1007,38 @@ mod stmt {
     }
 }
 
-impl<T> From<Slice<T>> for SourceText<T> {
-    fn from(other: Slice<T>) -> Self {
+impl From<Slice<String>> for String {
+    fn from(other: Slice<String>) -> Self {
+        other.source
+    }
+}
+
+impl<'a> From<Slice<&'a str>> for &'a str {
+    fn from(other: Slice<&'a str>) -> &'a str {
+        other.source
+    }
+}
+
+impl<'a> From<Slice<Cow<'a, str>>> for Cow<'a, str> {
+    fn from(other: Slice<Cow<'a, str>>) -> Cow<'a, str> {
+        other.source
+    }
+}
+
+impl<'a> From<Slice<&'a [u8]>> for &'a [u8] {
+    fn from(other: Slice<&'a [u8]>) -> &'a [u8] {
+        other.source
+    }
+}
+
+impl<'a> From<Slice<Cow<'a, [u8]>>> for Cow<'a, [u8]> {
+    fn from(other: Slice<Cow<'a, [u8]>>) -> Cow<'a, [u8]> {
+        other.source
+    }
+}
+
+impl From<Slice<Vec<u8>>> for Vec<u8> {
+    fn from(other: Slice<Vec<u8>>) -> Self {
         other.source
     }
 }
