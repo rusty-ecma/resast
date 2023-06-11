@@ -1,12 +1,6 @@
-#[cfg(feature = "serde")]
-#[macro_use]
-extern crate serde_derive;
-
 pub mod decl;
 pub mod expr;
 pub mod pat;
-#[cfg(feature = "esprima")]
-pub mod serde;
 pub mod spanned;
 pub mod stmt;
 
@@ -19,10 +13,9 @@ use stmt::Stmt;
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Ident<T> {
     pub name: T,
 }
@@ -62,10 +55,9 @@ impl<'a> From<Cow<'a, str>> for Ident<Cow<'a, str>> {
 /// a ES6 Mod or a Script.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Program<T> {
     /// An ES6 Mod
     Mod(Vec<ProgramPart<T>>),
@@ -97,11 +89,9 @@ impl<T> Program<T> {
 /// This will be either a Directive, Decl or a Stmt
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum ProgramPart<T> {
     /// A Directive like `'use strict';`
     Dir(Dir<T>),
@@ -136,10 +126,9 @@ impl<T> ProgramPart<T> {
 /// top of a file or function
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Dir<T> {
     pub expr: Lit<T>,
     pub dir: T,
@@ -211,11 +200,9 @@ impl<T> Func<T> {
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum FuncArg<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
@@ -244,10 +231,9 @@ impl<T> FuncArg<T> {
 /// The block statement that makes up the function's body
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct FuncBody<T>(pub Vec<ProgramPart<T>>);
 
 impl<T> IntoAllocated for FuncBody<T> where T: ToString {
@@ -306,10 +292,9 @@ impl<T> IntoAllocated for Class<T> where T: ToString {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ClassBody<T>(pub Vec<Prop<T>>);
 
 impl<T> IntoAllocated for ClassBody<T> where T: ToString {
@@ -333,10 +318,9 @@ impl<T> Class<T> {
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 #[cfg_attr(
     all(feature = "serde", feature = "esprima"),
     serde(rename_all = "camelCase", untagged)
@@ -350,10 +334,9 @@ pub enum VarKind {
 /// The available operators for assignment Exprs
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum AssignOp {
     Equal,
     PlusEqual,
@@ -373,10 +356,9 @@ pub enum AssignOp {
 /// The available logical operators
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LogicalOp {
     Or,
     And,
@@ -385,10 +367,9 @@ pub enum LogicalOp {
 /// The available operations for `Binary` Exprs
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum BinaryOp {
     Equal,
     NotEqual,
@@ -417,10 +398,9 @@ pub enum BinaryOp {
 /// `++` or `--`
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum UpdateOp {
     Increment,
     Decrement,
@@ -430,10 +410,9 @@ pub enum UpdateOp {
 /// to be `Unary`
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum UnaryOp {
     Minus,
     Plus,
@@ -447,10 +426,9 @@ pub enum UnaryOp {
 /// A flag for determining what kind of property
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum PropKind {
     /// A property with a value
     Init,

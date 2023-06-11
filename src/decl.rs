@@ -6,10 +6,9 @@ use crate::{Class, Func, Ident};
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Decl<T> {
     /// A variable declaration
     /// ```js
@@ -58,10 +57,9 @@ impl<T> IntoAllocated for Decl<T> where T: ToString {
 /// The identifier and optional value of a variable declaration
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct VarDecl<T> {
     pub id: Pat<T>,
     pub init: Option<Expr<T>>,
@@ -105,10 +103,9 @@ impl<T> IntoAllocated for ModImport<T> where T: ToString {
 /// The name of the thing being imported
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum ImportSpecifier<T> {
     /// A specifier in curly braces, this might
     /// have a local alias
@@ -167,10 +164,9 @@ impl<T> IntoAllocated for NormalImportSpec<T> where T: ToString {
 /// Something exported from this module
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum ModExport<T> {
     /// ```js
     /// export default function() {};
@@ -238,10 +234,9 @@ impl<T> IntoAllocated for NamedExportDecl<T> where T: ToString {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum DefaultExportDecl<T> {
     Decl(Decl<T>),
     Expr(Expr<T>),
@@ -268,10 +263,9 @@ impl<T> IntoAllocated for DefaultExportDecl<T> where T: ToString {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ExportSpecifier<T> {
     pub local: Ident<T>,
     pub alias: Option<Ident<T>>,

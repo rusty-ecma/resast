@@ -4,11 +4,9 @@ use crate::{Class, Func, FuncArg, FuncBody, Ident};
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum Expr<T> {
     /// `[0,,]`
     Array(ArrayExpr<T>),
@@ -139,7 +137,6 @@ pub type ObjExpr<T> = Vec<ObjProp<T>>;
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum ObjProp<T> {
     Prop(Prop<T>),
     Spread(Expr<T>),
@@ -159,10 +156,9 @@ impl<T> IntoAllocated for ObjProp<T> where T: ToString {
 /// A single part of an object literal or class
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct Prop<T> {
     pub key: PropKey<T>,
     pub value: PropValue<T>,
@@ -192,7 +188,6 @@ impl<T> IntoAllocated for Prop<T> where T: ToString {
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum PropKey<T> {
     Lit(Lit<T>),
     Expr(Expr<T>),
@@ -214,7 +209,6 @@ impl<T> IntoAllocated for PropKey<T> where T: ToString {
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum PropValue<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
@@ -320,7 +314,6 @@ impl<T> IntoAllocated for AssignExpr<T> where T: ToString {
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), serde(untagged))]
 pub enum AssignLeft<T> {
     Pat(Pat<T>),
     Expr(Box<Expr<T>>),
@@ -561,10 +554,9 @@ impl<T> IntoAllocated for TaggedTemplateExpr<T> where T: ToString {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct TemplateLit<T> {
     pub quasis: Vec<TemplateElement<T>>,
     pub expressions: Vec<Expr<T>>,
@@ -583,10 +575,9 @@ impl<T> IntoAllocated for TemplateLit<T> where T: ToString {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum QuasiQuote {
     /// `
     BackTick,
@@ -599,10 +590,9 @@ pub enum QuasiQuote {
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
     /// The non-quoted version
@@ -662,10 +652,9 @@ impl<T> IntoAllocated for MetaProp<T> where T: ToString {
 /// A literal value
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Lit<T> {
     /// `null`
     Null,
