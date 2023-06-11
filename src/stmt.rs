@@ -1,15 +1,15 @@
 use crate::decl::VarDecl;
 use crate::expr::Expr;
 use crate::pat::Pat;
-use crate::VarKind;
 use crate::{Ident, ProgramPart};
+use crate::{IntoAllocated, VarKind};
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Stmt<T> {
     /// Any expression
     Expr(Expr<T>),
@@ -73,7 +73,7 @@ pub enum Stmt<T> {
     /// An if statement
     /// ```js
     /// if (1 < 2) {
-    ///     console.log(Tlways true');
+    ///     console.log('Always true');
     /// } else {
     ///     console.log('Never true');
     /// }
@@ -176,6 +176,37 @@ pub enum Stmt<T> {
     Var(Vec<VarDecl<T>>),
 }
 
+impl<T> IntoAllocated for Stmt<T>
+where
+    T: ToString,
+{
+    type Allocated = Stmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            Stmt::Expr(inner) => Stmt::Expr(inner.into_allocated()),
+            Stmt::Block(inner) => Stmt::Block(inner.into_allocated()),
+            Stmt::Empty => Stmt::Empty,
+            Stmt::Debugger => Stmt::Debugger,
+            Stmt::With(inner) => Stmt::With(inner.into_allocated()),
+            Stmt::Return(inner) => Stmt::Return(inner.map(IntoAllocated::into_allocated)),
+            Stmt::Labeled(inner) => Stmt::Labeled(inner.into_allocated()),
+            Stmt::Break(inner) => Stmt::Break(inner.map(IntoAllocated::into_allocated)),
+            Stmt::Continue(inner) => Stmt::Continue(inner.map(IntoAllocated::into_allocated)),
+            Stmt::If(inner) => Stmt::If(inner.into_allocated()),
+            Stmt::Switch(inner) => Stmt::Switch(inner.into_allocated()),
+            Stmt::Throw(inner) => Stmt::Throw(inner.into_allocated()),
+            Stmt::Try(inner) => Stmt::Try(inner.into_allocated()),
+            Stmt::While(inner) => Stmt::While(inner.into_allocated()),
+            Stmt::DoWhile(inner) => Stmt::DoWhile(inner.into_allocated()),
+            Stmt::For(inner) => Stmt::For(inner.into_allocated()),
+            Stmt::ForIn(inner) => Stmt::ForIn(inner.into_allocated()),
+            Stmt::ForOf(inner) => Stmt::ForOf(inner.into_allocated()),
+            Stmt::Var(inner) => Stmt::Var(inner.into_iter().map(|v| v.into_allocated()).collect()),
+        }
+    }
+}
+
 /// A with statement, this puts one object at the top of
 /// the identifier search tree.
 /// > note: this cannot be used in a strict context
@@ -190,10 +221,24 @@ pub enum Stmt<T> {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WithStmt<T> {
     pub object: Expr<T>,
     pub body: Box<Stmt<T>>,
+}
+
+impl<T> IntoAllocated for WithStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = WithStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        WithStmt {
+            object: self.object.into_allocated(),
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 /// A break statement
@@ -206,26 +251,55 @@ pub struct WithStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct LabeledStmt<T> {
     pub label: Ident<T>,
     pub body: Box<Stmt<T>>,
 }
 
+impl<T> IntoAllocated for LabeledStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = LabeledStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        LabeledStmt {
+            label: self.label.into_allocated(),
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 /// An if statement
 /// ```js
 /// if (1 < 2) {
-///     console.log(Tlways true');
+///     console.log('Always true');
 /// } else {
 ///     console.log('Never true');
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct IfStmt<T> {
     pub test: Expr<T>,
     pub consequent: Box<Stmt<T>>,
     pub alternate: Option<Box<Stmt<T>>>,
+}
+
+impl<T> IntoAllocated for IfStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = IfStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        IfStmt {
+            test: self.test.into_allocated(),
+            consequent: self.consequent.into_allocated(),
+            alternate: self.alternate.map(IntoAllocated::into_allocated),
+        }
+    }
 }
 
 /// A switch statement
@@ -243,32 +317,67 @@ pub struct IfStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SwitchStmt<T> {
     pub discriminant: Expr<T>,
     pub cases: Vec<SwitchCase<T>>,
 }
 
+impl<T> IntoAllocated for SwitchStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = SwitchStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        SwitchStmt {
+            discriminant: self.discriminant.into_allocated(),
+            cases: self.cases.into_iter().map(|c| c.into_allocated()).collect(),
+        }
+    }
+}
+
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SwitchCase<T> {
     pub test: Option<Expr<T>>,
     pub consequent: Vec<ProgramPart<T>>,
 }
 
+impl<T> IntoAllocated for SwitchCase<T>
+where
+    T: ToString,
+{
+    type Allocated = SwitchCase<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        SwitchCase {
+            test: self.test.map(IntoAllocated::into_allocated),
+            consequent: self
+                .consequent
+                .into_iter()
+                .map(|c| c.into_allocated())
+                .collect(),
+        }
+    }
+}
+
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BlockStmt<T>(pub Vec<ProgramPart<T>>);
+
+impl<T> IntoAllocated for BlockStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = BlockStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        BlockStmt(self.0.into_iter().map(|s| s.into_allocated()).collect())
+    }
+}
 
 /// A try/catch block
 /// ```js
@@ -281,23 +390,48 @@ pub struct BlockStmt<T>(pub Vec<ProgramPart<T>>);
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct TryStmt<T> {
     pub block: BlockStmt<T>,
     pub handler: Option<CatchClause<T>>,
     pub finalizer: Option<BlockStmt<T>>,
 }
 
+impl<T> IntoAllocated for TryStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = TryStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        TryStmt {
+            block: self.block.into_allocated(),
+            handler: self.handler.map(|h| h.into_allocated()),
+            finalizer: self.finalizer.map(|f| f.into_allocated()),
+        }
+    }
+}
+
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CatchClause<T> {
     pub param: Option<Pat<T>>,
     pub body: BlockStmt<T>,
+}
+
+impl<T> IntoAllocated for CatchClause<T>
+where
+    T: ToString,
+{
+    type Allocated = CatchClause<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        CatchClause {
+            param: self.param.map(IntoAllocated::into_allocated),
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 /// A while loop
@@ -315,10 +449,24 @@ pub struct CatchClause<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
+}
+
+impl<T> IntoAllocated for WhileStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = WhileStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        WhileStmt {
+            test: self.test.into_allocated(),
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 /// A while loop that executes its body first
@@ -328,10 +476,24 @@ pub struct WhileStmt<T> {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct DoWhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
+}
+
+impl<T> IntoAllocated for DoWhileStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = DoWhileStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        DoWhileStmt {
+            test: self.test.into_allocated(),
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 /// A "c-style" for loop
@@ -342,7 +504,7 @@ pub struct DoWhileStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForStmt<T> {
     pub init: Option<LoopInit<T>>,
     pub test: Option<Expr<T>>,
@@ -350,19 +512,47 @@ pub struct ForStmt<T> {
     pub body: Box<Stmt<T>>,
 }
 
+impl<T> IntoAllocated for ForStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = ForStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ForStmt {
+            init: self.init.map(|i| i.into_allocated()),
+            test: self.test.map(|t| t.into_allocated()),
+            update: self.update.map(|u| u.into_allocated()),
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 /// The left most triple of a for loops parenthetical
 /// ```js
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopInit<T> {
     Variable(VarKind, Vec<VarDecl<T>>),
     Expr(Expr<T>),
+}
+
+impl<T> IntoAllocated for LoopInit<T>
+where
+    T: ToString,
+{
+    type Allocated = LoopInit<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            LoopInit::Variable(k, v) => {
+                LoopInit::Variable(k, v.into_iter().map(|v| v.into_allocated()).collect())
+            }
+            LoopInit::Expr(inner) => LoopInit::Expr(inner.into_allocated()),
+        }
+    }
 }
 
 /// A for in statement, this kind of for statement
@@ -378,11 +568,26 @@ pub enum LoopInit<T> {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForInStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
     pub body: Box<Stmt<T>>,
+}
+
+impl<T> IntoAllocated for ForInStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = ForInStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ForInStmt {
+            left: self.left.into_allocated(),
+            right: self.right.into_allocated(),
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 /// A for of statement, this kind of for statement
@@ -394,7 +599,7 @@ pub struct ForInStmt<T> {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForOfStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
@@ -402,16 +607,43 @@ pub struct ForOfStmt<T> {
     pub is_await: bool,
 }
 
+impl<T> IntoAllocated for ForOfStmt<T>
+where
+    T: ToString,
+{
+    type Allocated = ForOfStmt<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ForOfStmt {
+            left: self.left.into_allocated(),
+            right: self.right.into_allocated(),
+            body: self.body.into_allocated(),
+            is_await: self.is_await,
+        }
+    }
+}
+
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
-    derive(Deserialize, Serialize)
-)]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopLeft<T> {
     Expr(Expr<T>),
     Variable(VarKind, VarDecl<T>),
     Pat(Pat<T>),
+}
+
+impl<T> IntoAllocated for LoopLeft<T>
+where
+    T: ToString,
+{
+    type Allocated = LoopLeft<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            LoopLeft::Expr(inner) => LoopLeft::Expr(inner.into_allocated()),
+            LoopLeft::Variable(k, v) => LoopLeft::Variable(k, v.into_allocated()),
+            LoopLeft::Pat(inner) => LoopLeft::Pat(inner.into_allocated()),
+        }
+    }
 }

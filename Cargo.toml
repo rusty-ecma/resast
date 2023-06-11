@@ -1,8 +1,8 @@
 [package]
 name = "resast"
-version = "0.6.0-alpha.3"
+version = "0.6.0-alpha.5"
 authors = ["rfm <r.f.masen@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Rusty-ECMAScript Abstract Syntax Tree"
 repository = "https://github.com/rusty-ecma/resast"
 license = "MIT"
@@ -10,15 +10,8 @@ keywords = ["JavaScript", "parsing", "JS", "ES", "ECMA"]
 categories = ["parsing", "text-processing", "web-programming"]
 
 [dependencies]
-serde = { version = "1", optional = true }
-serde_derive = { version = "1", optional = true }
-
-[dev-dependencies]
-serde_json = "1"
-ressa = "0.7.0-beta-6"
-pretty_env_logger = "0.3"
+serde = { version = "1", optional = true, features = ["derive"] }
 
 [features]
 default = []
-serialization = ["serde", "serde_derive"]
-esprima = ["serialization"]
+serde = ["dep:serde"]

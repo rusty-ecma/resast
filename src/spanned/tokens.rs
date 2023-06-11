@@ -1,6 +1,8 @@
 //! This modules contains a collection of discrete tokens
 
 use crate::spanned::{Node, Position, SourceLocation};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 macro_rules! impl_token {
     ($what:ty, $s:expr) => {
@@ -20,9 +22,9 @@ macro_rules! impl_token {
                 Self(other)
             }
         }
-        impl std::convert::Into<Position> for $what {
-            fn into(self) -> Position {
-                self.0
+        impl std::convert::From<$what> for Position {
+            fn from(other: $what) -> Position {
+                other.0
             }
         }
         impl std::cmp::PartialEq<Position> for $what {
@@ -71,6 +73,7 @@ macro_rules! impl_token {
 macro_rules! define_token {
     ($name:ident, $s:expr) => {
         #[derive(Debug, Clone, Copy, PartialEq)]
+        #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
         #[doc = $s]
         pub struct $name(Position);
         impl_token!($name, $s);
@@ -199,6 +202,7 @@ define_token!(TripleGreaterThan, ">>>");
 define_token!(TripleGreaterThanEqual, ">>>=");
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Quote {
     Double(DoubleQuote),
     Single(SingleQuote),
@@ -228,6 +232,7 @@ impl Token for Quote {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum QuasiQuote {
     BackTick(BackTick),
     CloseBrace(CloseBrace),
@@ -262,6 +267,7 @@ impl Token for QuasiQuote {
 
 /// The available operators for assignment Exprs
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum AssignOp {
     Equal(Equal),
     PlusEqual(PlusEqual),
@@ -300,6 +306,7 @@ impl Node for AssignOp {
 
 /// The available logical operators
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LogicalOp {
     Or(DoublePipe),
     And(DoubleAmpersand),
@@ -316,6 +323,7 @@ impl Node for LogicalOp {
 
 /// The available operations for `Binary` Exprs
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum BinaryOp {
     Equal(DoubleEqual),
     NotEqual(BangEqual),
@@ -373,6 +381,7 @@ define_token!(DoublePlus, "++");
 define_token!(DoubleMinus, "--");
 /// `++` or `--`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum UpdateOp {
     Increment(DoublePlus),
     Decrement(DoubleMinus),
@@ -390,6 +399,7 @@ impl Node for UpdateOp {
 /// The allowed operators for an Expr
 /// to be `Unary`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum UnaryOp {
     Minus(Minus),
     Plus(Plus),
@@ -415,6 +425,7 @@ impl Node for UnaryOp {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum SwitchCaseKeyword {
     Case(Case),
     Default(Default),
