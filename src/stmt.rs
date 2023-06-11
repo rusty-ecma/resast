@@ -1,19 +1,15 @@
 use crate::decl::VarDecl;
 use crate::expr::Expr;
 use crate::pat::Pat;
-use crate::{VarKind, IntoAllocated};
 use crate::{Ident, ProgramPart};
-
+use crate::{IntoAllocated, VarKind};
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Stmt<T> {
     /// Any expression
     Expr(Expr<T>),
@@ -180,7 +176,10 @@ pub enum Stmt<T> {
     Var(Vec<VarDecl<T>>),
 }
 
-impl<T> IntoAllocated for Stmt<T> where T: ToString {
+impl<T> IntoAllocated for Stmt<T>
+where
+    T: ToString,
+{
     type Allocated = Stmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -222,16 +221,16 @@ impl<T> IntoAllocated for Stmt<T> where T: ToString {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WithStmt<T> {
     pub object: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for WithStmt<T> where T: ToString {
+impl<T> IntoAllocated for WithStmt<T>
+where
+    T: ToString,
+{
     type Allocated = WithStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -252,15 +251,16 @@ impl<T> IntoAllocated for WithStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct LabeledStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct LabeledStmt<T> {
     pub label: Ident<T>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for LabeledStmt<T> where T: ToString {
+impl<T> IntoAllocated for LabeledStmt<T>
+where
+    T: ToString,
+{
     type Allocated = LabeledStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -280,16 +280,17 @@ impl<T> IntoAllocated for LabeledStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct IfStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct IfStmt<T> {
     pub test: Expr<T>,
     pub consequent: Box<Stmt<T>>,
     pub alternate: Option<Box<Stmt<T>>>,
 }
 
-impl<T> IntoAllocated for IfStmt<T> where T: ToString {
+impl<T> IntoAllocated for IfStmt<T>
+where
+    T: ToString,
+{
     type Allocated = IfStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -316,15 +317,16 @@ impl<T> IntoAllocated for IfStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct SwitchStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct SwitchStmt<T> {
     pub discriminant: Expr<T>,
     pub cases: Vec<SwitchCase<T>>,
 }
 
-impl<T> IntoAllocated for SwitchStmt<T> where T: ToString {
+impl<T> IntoAllocated for SwitchStmt<T>
+where
+    T: ToString,
+{
     type Allocated = SwitchStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -337,35 +339,39 @@ impl<T> IntoAllocated for SwitchStmt<T> where T: ToString {
 
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SwitchCase<T> {
     pub test: Option<Expr<T>>,
     pub consequent: Vec<ProgramPart<T>>,
 }
 
-impl<T> IntoAllocated for SwitchCase<T> where T: ToString {
+impl<T> IntoAllocated for SwitchCase<T>
+where
+    T: ToString,
+{
     type Allocated = SwitchCase<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         SwitchCase {
             test: self.test.map(IntoAllocated::into_allocated),
-            consequent: self.consequent.into_iter().map(|c| c.into_allocated()).collect(),
+            consequent: self
+                .consequent
+                .into_iter()
+                .map(|c| c.into_allocated())
+                .collect(),
         }
     }
 }
 
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BlockStmt<T>(pub Vec<ProgramPart<T>>);
 
-impl<T> IntoAllocated for BlockStmt<T> where T: ToString {
+impl<T> IntoAllocated for BlockStmt<T>
+where
+    T: ToString,
+{
     type Allocated = BlockStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -384,16 +390,17 @@ impl<T> IntoAllocated for BlockStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct TryStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct TryStmt<T> {
     pub block: BlockStmt<T>,
     pub handler: Option<CatchClause<T>>,
     pub finalizer: Option<BlockStmt<T>>,
 }
 
-impl<T> IntoAllocated for TryStmt<T> where T: ToString {
+impl<T> IntoAllocated for TryStmt<T>
+where
+    T: ToString,
+{
     type Allocated = TryStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -407,16 +414,16 @@ impl<T> IntoAllocated for TryStmt<T> where T: ToString {
 
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CatchClause<T> {
     pub param: Option<Pat<T>>,
     pub body: BlockStmt<T>,
 }
 
-impl<T> IntoAllocated for CatchClause<T> where T: ToString {
+impl<T> IntoAllocated for CatchClause<T>
+where
+    T: ToString,
+{
     type Allocated = CatchClause<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -442,15 +449,16 @@ impl<T> IntoAllocated for CatchClause<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct WhileStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct WhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for WhileStmt<T> where T: ToString {
+impl<T> IntoAllocated for WhileStmt<T>
+where
+    T: ToString,
+{
     type Allocated = WhileStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -468,21 +476,22 @@ impl<T> IntoAllocated for WhileStmt<T> where T: ToString {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct DoWhileStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct DoWhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for DoWhileStmt<T> where T: ToString {
+impl<T> IntoAllocated for DoWhileStmt<T>
+where
+    T: ToString,
+{
     type Allocated = DoWhileStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         DoWhileStmt {
             test: self.test.into_allocated(),
-            body: self.body.into_allocated()
+            body: self.body.into_allocated(),
         }
     }
 }
@@ -495,17 +504,18 @@ impl<T> IntoAllocated for DoWhileStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct ForStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct ForStmt<T> {
     pub init: Option<LoopInit<T>>,
     pub test: Option<Expr<T>>,
     pub update: Option<Expr<T>>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for ForStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -523,21 +533,23 @@ impl<T> IntoAllocated for ForStmt<T> where T: ToString {
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopInit<T> {
     Variable(VarKind, Vec<VarDecl<T>>),
     Expr(Expr<T>),
 }
 
-impl<T> IntoAllocated for LoopInit<T> where T: ToString {
+impl<T> IntoAllocated for LoopInit<T>
+where
+    T: ToString,
+{
     type Allocated = LoopInit<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         match self {
-            LoopInit::Variable(k, v) => LoopInit::Variable(k, v.into_iter().map(|v| v.into_allocated()).collect()),
+            LoopInit::Variable(k, v) => {
+                LoopInit::Variable(k, v.into_iter().map(|v| v.into_allocated()).collect())
+            }
             LoopInit::Expr(inner) => LoopInit::Expr(inner.into_allocated()),
         }
     }
@@ -556,16 +568,17 @@ impl<T> IntoAllocated for LoopInit<T> where T: ToString {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct ForInStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct ForInStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for ForInStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForInStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForInStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -586,17 +599,18 @@ impl<T> IntoAllocated for ForInStmt<T> where T: ToString {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]pub struct ForOfStmt<T> {
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct ForOfStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
     pub body: Box<Stmt<T>>,
     pub is_await: bool,
 }
 
-impl<T> IntoAllocated for ForOfStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForOfStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForOfStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -612,17 +626,17 @@ impl<T> IntoAllocated for ForOfStmt<T> where T: ToString {
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopLeft<T> {
     Expr(Expr<T>),
     Variable(VarKind, VarDecl<T>),
     Pat(Pat<T>),
 }
 
-impl<T> IntoAllocated for LoopLeft<T> where T: ToString {
+impl<T> IntoAllocated for LoopLeft<T>
+where
+    T: ToString,
+{
     type Allocated = LoopLeft<String>;
 
     fn into_allocated(self) -> Self::Allocated {
