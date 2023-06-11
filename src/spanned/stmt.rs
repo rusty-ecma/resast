@@ -12,9 +12,15 @@ use super::tokens::{
     While, With,
 };
 use super::{ListEntry, Node, SourceLocation};
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
 
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Stmt<T> {
     /// Any expression
     Expr {
@@ -369,6 +375,10 @@ impl<T> Node for Stmt<T> {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct WithStmt<T> {
     pub keyword: With,
     pub open_paren: OpenParen,
@@ -407,6 +417,10 @@ impl<T> Node for WithStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct LabeledStmt<T> {
     pub label: Ident<T>,
     pub colon: Colon,
@@ -443,6 +457,10 @@ impl<T> Node for LabeledStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct IfStmt<T> {
     pub keyword: If,
     pub open_paren: OpenParen,
@@ -480,6 +498,10 @@ impl<T> Node for IfStmt<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ElseStmt<T> {
     pub keyword: Else,
     pub body: Stmt<T>,
@@ -520,6 +542,10 @@ impl<T> Node for ElseStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SwitchStmt<T> {
     pub keyword: Switch,
     pub open_paren: OpenParen,
@@ -557,6 +583,10 @@ impl<T> Node for SwitchStmt<T> {
 
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SwitchCase<T> {
     pub keyword: SwitchCaseKeyword,
     pub test: Option<Expr<T>>,
@@ -593,6 +623,10 @@ impl<T> IntoAllocated for SwitchCase<T> where T: ToString {
 
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct BlockStmt<T> {
     pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
@@ -631,6 +665,10 @@ impl<T> Node for BlockStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct TryStmt<T> {
     pub keyword: Try,
     pub block: BlockStmt<T>,
@@ -668,6 +706,10 @@ impl<T> Node for TryStmt<T> {
 
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct CatchClause<T> {
     pub keyword: Catch,
     pub param: Option<CatchArg<T>>,
@@ -696,6 +738,10 @@ impl<T> Node for CatchClause<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct CatchArg<T> {
     pub open_paren: OpenParen,
     pub param: Pat<T>,
@@ -724,6 +770,10 @@ impl<T> Node for CatchArg<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct FinallyClause<T> {
     pub keyword: Finally,
     pub body: BlockStmt<T>,
@@ -763,6 +813,10 @@ impl<T> Node for FinallyClause<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct WhileStmt<T> {
     pub keyword: While,
     pub open_paren: OpenParen,
@@ -801,6 +855,10 @@ impl<T> Node for WhileStmt<T> {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct DoWhileStmt<T> {
     pub keyword_do: Do,
     pub body: Box<Stmt<T>>,
@@ -849,6 +907,10 @@ impl<T> Node for DoWhileStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ForStmt<T> {
     pub keyword: For,
     pub open_paren: OpenParen,
@@ -893,6 +955,10 @@ impl<T> Node for ForStmt<T> {
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum LoopInit<T> {
     Variable(VarKind, Vec<ListEntry<VarDecl<T>>>),
     Expr(Expr<T>),
@@ -939,6 +1005,10 @@ impl<T> Node for LoopInit<T> {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ForInStmt<T> {
     pub keyword_for: For,
     pub open_paren: OpenParen,
@@ -983,6 +1053,10 @@ impl<T> Node for ForInStmt<T> {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ForOfStmt<T> {
     pub keyword_for: For,
     pub open_paren: OpenParen,
@@ -1023,6 +1097,10 @@ impl<T> Node for ForOfStmt<T> {
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum LoopLeft<T> {
     Expr(Expr<T>),
     Variable(VarKind, VarDecl<T>),

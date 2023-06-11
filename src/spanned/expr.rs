@@ -9,9 +9,15 @@ use super::tokens::{
     UnaryOp, UpdateOp, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
 
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Expr<T> {
     /// `[0,,]`
     Array(ArrayExpr<T>),
@@ -167,6 +173,10 @@ type ArrayExprEntry<T> = ListEntry<Option<Expr<T>>>;
 
 /// `[a, b, c]`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ArrayExpr<T> {
     pub open_bracket: OpenBracket,
     pub elements: Vec<ArrayExprEntry<T>>,
@@ -195,6 +205,10 @@ impl<T> Node for ArrayExpr<T> {
 
 /// `{a: 'b', c, ...d}`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ObjExpr<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<ListEntry<ObjProp<T>>>,
@@ -224,6 +238,10 @@ impl<T> Node for ObjExpr<T> {
 
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ObjProp<T> {
     Prop(Prop<T>),
     Spread(SpreadExpr<T>),
@@ -249,6 +267,10 @@ impl<T> Node for ObjProp<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SpreadExpr<T> {
     pub dots: Ellipsis,
     pub expr: Expr<T>,
@@ -274,6 +296,10 @@ impl<T> Node for SpreadExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Prop<T> {
     Init(PropInit<T>),
     Method(PropMethod<T>),
@@ -332,6 +358,10 @@ impl<T> Prop<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropInit<T> {
     pub key: PropInitKey<T>,
     pub colon: Option<Colon>,
@@ -372,6 +402,10 @@ impl<T> PropInit<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropInitKey<T> {
     pub value: PropKey<T>,
     pub brackets: Option<(OpenBracket, CloseBracket)>,
@@ -401,6 +435,10 @@ impl<T> Node for PropInitKey<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropMethod<T> {
     pub keyword_static: Option<Static>,
     pub keyword_async: Option<Async>,
@@ -445,6 +483,10 @@ impl<T> Node for PropMethod<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropCtor<T> {
     pub keyword: PropInitKey<T>,
     pub open_paren: OpenParen,
@@ -476,6 +518,10 @@ impl<T> Node for PropCtor<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropGet<T> {
     pub keyword_static: Option<Static>,
     pub keyword_get: Get,
@@ -515,6 +561,10 @@ impl<T> Node for PropGet<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct PropSet<T> {
     pub keyword_static: Option<Static>,
     pub keyword_set: Set,
@@ -557,6 +607,10 @@ impl<T> Node for PropSet<T> {
 
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum PropKey<T> {
     Lit(Lit<T>),
     Expr(Expr<T>),
@@ -586,6 +640,10 @@ impl<T> Node for PropKey<T> {
 
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum PropValue<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
@@ -615,6 +673,10 @@ impl<T> Node for PropValue<T> {
 
 /// An operation that takes one argument
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct UnaryExpr<T> {
     pub operator: UnaryOp,
     pub argument: Box<Expr<T>>,
@@ -649,6 +711,10 @@ impl<T> Node for UnaryExpr<T> {
 
 /// Increment or decrementing a value
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct UpdateExpr<T> {
     pub operator: UpdateOp,
     pub argument: Box<Expr<T>>,
@@ -690,6 +756,10 @@ impl<T> Node for UpdateExpr<T> {
 
 /// An operation that requires 2 arguments
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct BinaryExpr<T> {
     pub operator: BinaryOp,
     pub left: Box<Expr<T>>,
@@ -718,6 +788,10 @@ impl<T> Node for BinaryExpr<T> {
 
 /// An assignment or update + assignment operation
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct AssignExpr<T> {
     pub operator: AssignOp,
     pub left: AssignLeft<T>,
@@ -745,6 +819,10 @@ impl<T> Node for AssignExpr<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct AwaitExpr<T> {
     pub keyword: Await,
     pub expr: Expr<T>,
@@ -771,6 +849,10 @@ impl<T> Node for AwaitExpr<T> {
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum AssignLeft<T> {
     Pat(Pat<T>),
     Expr(Box<Expr<T>>),
@@ -801,6 +883,10 @@ impl<T> Node for AssignLeft<T> {
 /// false || true
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct LogicalExpr<T> {
     pub operator: LogicalOp,
     pub left: Box<Expr<T>>,
@@ -833,6 +919,10 @@ impl<T> Node for LogicalExpr<T> {
 /// c.stuff;
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct MemberExpr<T> {
     pub object: Box<Expr<T>>,
     pub property: Box<Expr<T>>,
@@ -871,6 +961,10 @@ impl<T> Node for MemberExpr<T> {
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum MemberIndexer {
     Period(Period),
     Computed {
@@ -899,6 +993,10 @@ impl Node for MemberIndexer {
 /// var a = true ? 'stuff' : 'things';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ConditionalExpr<T> {
     pub test: Box<Expr<T>>,
     pub question_mark: QuestionMark,
@@ -933,6 +1031,10 @@ impl<T> Node for ConditionalExpr<T> {
 /// Math.random()
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct CallExpr<T> {
     pub callee: Box<Expr<T>>,
     pub open_paren: OpenParen,
@@ -967,6 +1069,10 @@ impl<T> Node for CallExpr<T> {
 /// new Uint8Array(32);
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NewExpr<T> {
     pub keyword: New,
     pub callee: Box<Expr<T>>,
@@ -1028,6 +1134,10 @@ impl<T> Node for SequenceExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ArrowParamPlaceHolder<T> {
     // async keyword
     pub keyword: Option<Async>,
@@ -1078,6 +1188,10 @@ impl<T> Node for ArrowParamPlaceHolder<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ArrowFuncExpr<T> {
     pub keyword: Option<Async>,
     pub star: Option<Asterisk>,
@@ -1123,6 +1237,10 @@ impl<T> Node for ArrowFuncExpr<T> {
 
 /// The body portion of an arrow function can be either an expression or a block of statements
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ArrowFuncBody<T> {
     FuncBody(FuncBody<T>),
     Expr(Box<Expr<T>>),
@@ -1156,6 +1274,10 @@ impl<T> Node for ArrowFuncBody<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct YieldExpr<T> {
     pub keyword: Yield,
     pub argument: Option<Box<Expr<T>>>,
@@ -1190,6 +1312,10 @@ impl<T> Node for YieldExpr<T> {
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct TaggedTemplateExpr<T> {
     pub tag: Box<Expr<T>>,
     pub quasi: TemplateLit<T>,
@@ -1219,6 +1345,10 @@ impl<T> Node for TaggedTemplateExpr<T> {
 /// `I own ${0} birds`;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct TemplateLit<T> {
     pub quasis: Vec<TemplateElement<T>>,
     pub expressions: Vec<Expr<T>>,
@@ -1256,6 +1386,10 @@ impl<T> Node for TemplateLit<T> {
 
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
     pub content: Slice<T>,
@@ -1305,6 +1439,10 @@ impl<T> Node for TemplateElement<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct MetaProp<T> {
     pub meta: Ident<T>,
     pub dot: Period,
@@ -1333,6 +1471,10 @@ impl<T> Node for MetaProp<T> {
 
 /// A literal value
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Lit<T> {
     /// `null`
     Null(Null),
@@ -1384,6 +1526,10 @@ impl<T> Lit<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Boolean {
     True(True),
     False(False),
@@ -1436,6 +1582,10 @@ impl<T> Node for Lit<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct StringLit<T> {
     pub open_quote: Quote,
     pub content: Slice<T>,
@@ -1464,6 +1614,10 @@ impl<T> Node for StringLit<T> {
 
 /// A regular expression literal
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct RegEx<T> {
     pub open_slash: ForwardSlash,
     pub pattern: Slice<T>,
@@ -1498,6 +1652,10 @@ impl<T> Node for RegEx<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct WrappedExpr<T> {
     pub open_paren: OpenParen,
     pub expr: Expr<T>,
@@ -1525,6 +1683,10 @@ impl<T> Node for WrappedExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SequenceExprEntry<T> {
     pub expr: Expr<T>,
     pub comma: Option<Comma>,

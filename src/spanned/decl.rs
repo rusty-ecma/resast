@@ -9,8 +9,15 @@ use super::tokens::{
 };
 use super::{ListEntry, Node, SourceLocation};
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Decl<T> {
     /// A variable declaration
     /// ```js
@@ -108,6 +115,10 @@ impl<T> Node for Decl<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct VarDecls<T> {
     pub keyword: VarKind,
     pub decls: Vec<ListEntry<VarDecl<T>>>,
@@ -142,6 +153,10 @@ impl<T> Node for VarDecls<T> {
 
 /// The identifier and optional value of a variable declaration
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct VarDecl<T> {
     pub id: Pat<T>,
     pub eq: Option<Equal>,
@@ -180,6 +195,10 @@ impl<T> Node for VarDecl<T> {
 /// in an ES Mod, it would be either an import or
 /// export at the top level
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ModDecl<T> {
     Import(ModImport<T>),
     Export(ModExport<T>),
@@ -211,6 +230,10 @@ impl<T> Node for ModDecl<T> {
 /// import {Thing} from './stuff.js';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ModImport<T> {
     pub keyword_import: Import,
     pub specifiers: Vec<ListEntry<ImportSpecifier<T>>>,
@@ -236,6 +259,10 @@ impl<T> Node for ModImport<T> {
 
 /// The name of the thing being imported
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ImportSpecifier<T> {
     /// A specifier in curly braces, this might
     /// have a local alias
@@ -285,6 +312,10 @@ impl<T> Node for ImportSpecifier<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NormalImportSpecs<T> {
     pub open_brace: OpenBrace,
     pub specs: Vec<ListEntry<NormalImportSpec<T>>>,
@@ -312,6 +343,10 @@ impl<T> Node for NormalImportSpecs<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NormalImportSpec<T> {
     pub imported: Ident<T>,
     pub alias: Option<Alias<T>>,
@@ -338,6 +373,10 @@ impl<T> Node for NormalImportSpec<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct DefaultImportSpec<T> {
     pub id: Ident<T>,
 }
@@ -356,6 +395,10 @@ impl<T> Node for DefaultImportSpec<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NamespaceImportSpec<T> {
     pub star: Asterisk,
     pub keyword: As,
@@ -383,6 +426,10 @@ impl<T> Node for NamespaceImportSpec<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ModExport<T> {
     pub keyword: Export,
     pub spec: ModExportSpecifier<T>,
@@ -406,6 +453,10 @@ impl<T> Node for ModExport<T> {
 
 /// Something exported from this module
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ModExportSpecifier<T> {
     /// ```js
     /// export default function() {};
@@ -470,6 +521,10 @@ impl<T> Node for ModExportSpecifier<T> {
 /// export function thing() {}
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum NamedExportDecl<T> {
     Decl(Decl<T>),
     Specifier(NamedExportSpec<T>),
@@ -495,6 +550,10 @@ impl<T> Node for NamedExportDecl<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct DefaultExportDecl<T> {
     pub keyword: Default,
     pub value: DefaultExportDeclValue<T>,
@@ -524,6 +583,10 @@ impl<T> Node for DefaultExportDecl<T> {
 /// export default class Thing {}
 /// ```
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ExportDeclValue<T> {
     Decl(Decl<T>),
     Expr(Expr<T>),
@@ -552,6 +615,10 @@ impl<T> Node for ExportDeclValue<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum DefaultExportDeclValue<T> {
     Decl(Decl<T>),
     Expr(Expr<T>),
@@ -577,6 +644,10 @@ impl<T> Node for DefaultExportDeclValue<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NamedExportSpec<T> {
     pub list: ExportList<T>,
     pub source: Option<NamedExportSource<T>>,
@@ -606,6 +677,10 @@ impl<T> Node for NamedExportSpec<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NamedExportSource<T> {
     pub keyword_from: From,
     pub module: Lit<T>,
@@ -631,6 +706,10 @@ impl<T> Node for NamedExportSource<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ExportList<T> {
     pub open_brace: OpenBrace,
     pub elements: Vec<ListEntry<ExportSpecifier<T>>>,
@@ -662,6 +741,10 @@ impl<T> Node for ExportList<T> {
 /// export {Stuff as NewThing} from 'place'
 /// ```
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ExportSpecifier<T> {
     pub local: Ident<T>,
     pub alias: Option<Alias<T>>,
@@ -692,6 +775,10 @@ impl<T> Node for ExportSpecifier<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Alias<T> {
     pub keyword: As,
     pub ident: Ident<T>,

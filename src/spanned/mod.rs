@@ -12,6 +12,9 @@ use stmt::Stmt;
 
 use crate::IntoAllocated;
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 use self::{
     pat::RestPat,
     tokens::{
@@ -25,6 +28,10 @@ pub trait Node {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Ident<T> {
     pub slice: Slice<T>,
 }
@@ -76,6 +83,10 @@ impl<T> Ident<T> {
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum Program<T> {
     /// An ES6 Mod
     Mod(Vec<ProgramPart<T>>),
@@ -128,6 +139,10 @@ impl<T> Node for Vec<ProgramPart<T>> {
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum ProgramPart<T> {
     /// A Directive like `'use strict';`
     Dir(Dir<T>),
@@ -170,6 +185,10 @@ impl<T> ProgramPart<T> {
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Dir<T> {
     pub expr: Lit<T>,
     pub dir: T,
@@ -211,6 +230,10 @@ impl<T> Node for Dir<T> {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Func<T> {
     pub keyword: Function,
     pub id: Option<Ident<T>>,
@@ -264,6 +287,10 @@ impl<T> Node for Func<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct FuncArgEntry<T> {
     pub value: FuncArg<T>,
     pub comma: Option<Comma>,
@@ -290,6 +317,10 @@ impl<T> Node for FuncArgEntry<T> {
 
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum FuncArg<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
@@ -319,6 +350,10 @@ impl<T> Node for FuncArg<T> {
 
 /// The block statement that makes up the function's body
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct FuncBody<T> {
     pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
@@ -368,6 +403,10 @@ impl<T> Node for FuncBody<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Class<T> {
     pub keyword: tokens::Class,
     pub id: Option<Ident<T>>,
@@ -398,6 +437,10 @@ impl<T> Node for Class<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SuperClass<T> {
     pub keyword_extends: Extends,
     pub expr: Expr<T>,
@@ -411,6 +454,10 @@ impl<T> IntoAllocated for SuperClass<T> where T: ToString {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ClassBody<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<Prop<T>>,
@@ -434,6 +481,10 @@ impl<T> Node for ClassBody<T> {
 
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum VarKind {
     Var(Option<Var>),
     Let(Let),
@@ -466,6 +517,10 @@ impl VarKind {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Slice<T> {
     pub source: T,
     pub loc: SourceLocation,
@@ -494,6 +549,10 @@ impl<T> Slice<T> {
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct SourceLocation {
     pub start: Position,
     pub end: Position,
@@ -528,6 +587,10 @@ impl core::cmp::PartialOrd for SourceLocation {
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Position {
     pub line: u32,
     pub column: u32,
@@ -594,6 +657,10 @@ impl std::ops::Sub<u32> for Position {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ListEntry<Item> {
     pub item: Item,
     pub comma: Option<Comma>,

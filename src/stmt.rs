@@ -3,6 +3,11 @@ use crate::expr::Expr;
 use crate::pat::Pat;
 use crate::{VarKind, IntoAllocated};
 use crate::{Ident, ProgramPart};
+
+
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -217,7 +222,10 @@ impl<T> IntoAllocated for Stmt<T> where T: ToString {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct WithStmt<T> {
     pub object: Expr<T>,
     pub body: Box<Stmt<T>>,
@@ -244,8 +252,10 @@ impl<T> IntoAllocated for WithStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct LabeledStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct LabeledStmt<T> {
     pub label: Ident<T>,
     pub body: Box<Stmt<T>>,
 }
@@ -270,8 +280,10 @@ impl<T> IntoAllocated for LabeledStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct IfStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct IfStmt<T> {
     pub test: Expr<T>,
     pub consequent: Box<Stmt<T>>,
     pub alternate: Option<Box<Stmt<T>>>,
@@ -304,8 +316,10 @@ impl<T> IntoAllocated for IfStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct SwitchStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct SwitchStmt<T> {
     pub discriminant: Expr<T>,
     pub cases: Vec<SwitchCase<T>>,
 }
@@ -370,8 +384,10 @@ impl<T> IntoAllocated for BlockStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct TryStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct TryStmt<T> {
     pub block: BlockStmt<T>,
     pub handler: Option<CatchClause<T>>,
     pub finalizer: Option<BlockStmt<T>>,
@@ -426,8 +442,10 @@ impl<T> IntoAllocated for CatchClause<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct WhileStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct WhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
@@ -450,8 +468,10 @@ impl<T> IntoAllocated for WhileStmt<T> where T: ToString {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct DoWhileStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct DoWhileStmt<T> {
     pub test: Expr<T>,
     pub body: Box<Stmt<T>>,
 }
@@ -475,8 +495,10 @@ impl<T> IntoAllocated for DoWhileStmt<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct ForStmt<T> {
     pub init: Option<LoopInit<T>>,
     pub test: Option<Expr<T>>,
     pub update: Option<Expr<T>>,
@@ -534,8 +556,10 @@ impl<T> IntoAllocated for LoopInit<T> where T: ToString {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForInStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct ForInStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
     pub body: Box<Stmt<T>>,
@@ -562,8 +586,10 @@ impl<T> IntoAllocated for ForInStmt<T> where T: ToString {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub struct ForOfStmt<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub struct ForOfStmt<T> {
     pub left: LoopLeft<T>,
     pub right: Expr<T>,
     pub body: Box<Stmt<T>>,

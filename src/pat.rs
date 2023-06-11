@@ -1,5 +1,9 @@
 use crate::expr::{Expr, Prop};
 use crate::{Ident, IntoAllocated};
+
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// All of the different ways you can declare an identifier
 /// and/or value
 #[derive(Debug, Clone, PartialEq)]
@@ -36,8 +40,10 @@ impl<T> Pat<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum ArrayPatPart<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub enum ArrayPatPart<T> {
     Pat(Pat<T>),
     Expr(Expr<T>),
 }
@@ -57,8 +63,10 @@ impl<T> IntoAllocated for ArrayPatPart<T> where T: ToString {
 pub type ObjPat<T> = Vec<ObjPatPart<T>>;
 /// A single part of an ObjectPat
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
-pub enum ObjPatPart<T> {
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]pub enum ObjPatPart<T> {
     Assign(Prop<T>),
     Rest(Box<Pat<T>>),
 }
