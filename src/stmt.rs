@@ -6,10 +6,9 @@ use crate::{Ident, ProgramPart};
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum Stmt<T> {
     /// Any expression
     Expr(Expr<T>),
@@ -325,10 +324,9 @@ impl<T> IntoAllocated for SwitchStmt<T> where T: ToString {
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct SwitchCase<T> {
     pub test: Option<Expr<T>>,
     pub consequent: Vec<ProgramPart<T>>,
@@ -348,10 +346,9 @@ impl<T> IntoAllocated for SwitchCase<T> where T: ToString {
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct BlockStmt<T>(pub Vec<ProgramPart<T>>);
 
 impl<T> IntoAllocated for BlockStmt<T> where T: ToString {
@@ -395,10 +392,9 @@ impl<T> IntoAllocated for TryStmt<T> where T: ToString {
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct CatchClause<T> {
     pub param: Option<Pat<T>>,
     pub body: BlockStmt<T>,
@@ -506,10 +502,9 @@ impl<T> IntoAllocated for ForStmt<T> where T: ToString {
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LoopInit<T> {
     Variable(VarKind, Vec<VarDecl<T>>),
     Expr(Expr<T>),
@@ -592,10 +587,9 @@ impl<T> IntoAllocated for ForOfStmt<T> where T: ToString {
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
-    all(feature = "serde", not(feature = "esprima")),
+    feature = "serde",
     derive(Deserialize, Serialize)
 )]
-#[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub enum LoopLeft<T> {
     Expr(Expr<T>),
     Variable(VarKind, VarDecl<T>),
