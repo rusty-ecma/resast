@@ -4,6 +4,9 @@ pub mod pat;
 pub mod spanned;
 pub mod stmt;
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 use std::{borrow::Cow, fmt::Debug};
 
 use decl::Decl;
@@ -156,7 +159,10 @@ impl<T> IntoAllocated for Dir<T> where T: ToString {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Func<T> {
     pub id: Option<Ident<T>>,
     pub params: Vec<FuncArg<T>>,
@@ -271,7 +277,10 @@ impl<T> IntoAllocated for FuncBody<T> where T: ToString {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct Class<T> {
     pub id: Option<Ident<T>>,
     pub super_class: Option<Box<Expr<T>>>,

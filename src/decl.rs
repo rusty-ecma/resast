@@ -3,6 +3,9 @@ use crate::pat::Pat;
 use crate::{VarKind, IntoAllocated};
 use crate::{Class, Func, Ident};
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// The declaration of a variable, function, class, import or export
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
@@ -83,7 +86,10 @@ impl<T> IntoAllocated for VarDecl<T> where T: ToString {
 /// import {Thing} from './stuff.js';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct ModImport<T> {
     pub specifiers: Vec<ImportSpecifier<T>>,
     pub source: Lit<T>,
@@ -144,7 +150,10 @@ impl<T> IntoAllocated for ImportSpecifier<T> where T: ToString {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub struct NormalImportSpec<T> {
     pub alias: Option<Ident<T>>,
     pub imported: Ident<T>,
@@ -211,7 +220,10 @@ impl<T> IntoAllocated for ModExport<T> where T: ToString {
 /// export function thing() {}
 /// export {stuff} from 'place';
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(all(feature = "serialization"), derive(Deserialize, Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize)
+)]
 pub enum NamedExportDecl<T> {
     Decl(Decl<T>),
     Specifier(Vec<ExportSpecifier<T>>, Option<Lit<T>>),
