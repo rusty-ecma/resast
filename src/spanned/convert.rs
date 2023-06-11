@@ -156,7 +156,7 @@ mod decl {
         fn from(other: ExportSpecifier<T>) -> Self {
             let local: crate::Ident<T> = other.local.into();
             Self {
-                local: local,
+                local,
                 alias: other.alias.map(|a| a.ident.into()),
             }
         }
@@ -361,12 +361,11 @@ mod expr {
 
     impl<T> From<UpdateExpr<T>> for crate::expr::UpdateExpr<T> {
         fn from(other: UpdateExpr<T>) -> Self {
-            let ret = Self {
+            Self {
                 prefix: other.prefix(),
                 operator: other.operator.into(),
                 argument: Box::new(From::from(*other.argument)),
-            };
-            ret
+            }
         }
     }
 

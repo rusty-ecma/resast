@@ -1,9 +1,9 @@
-use crate::IntoAllocated;
 use crate::spanned::decl::VarDecl;
 use crate::spanned::expr::Expr;
 use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
 use crate::spanned::{Ident, ProgramPart};
+use crate::IntoAllocated;
 
 use super::decl::VarDecls;
 use super::tokens::{
@@ -13,14 +13,11 @@ use super::tokens::{
 };
 use super::{ListEntry, Node, SourceLocation};
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// A slightly more granular part of an es program than ProgramPart
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Stmt<T> {
     /// Any expression
     Expr {
@@ -212,29 +209,76 @@ pub enum Stmt<T> {
     },
 }
 
-impl<T> IntoAllocated for Stmt<T> where T: ToString {
+impl<T> IntoAllocated for Stmt<T>
+where
+    T: ToString,
+{
     type Allocated = Stmt<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
-            Stmt::Expr { expr, semi_colon } => Stmt::Expr { expr: expr.into_allocated(), semi_colon },
+            Stmt::Expr { expr, semi_colon } => Stmt::Expr {
+                expr: expr.into_allocated(),
+                semi_colon,
+            },
             Stmt::Block(inner) => Stmt::Block(inner.into_allocated()),
             Stmt::Empty(inner) => Stmt::Empty(inner),
-            Stmt::Debugger { keyword, semi_colon } => Stmt::Debugger { keyword, semi_colon },
+            Stmt::Debugger {
+                keyword,
+                semi_colon,
+            } => Stmt::Debugger {
+                keyword,
+                semi_colon,
+            },
             Stmt::With(inner) => Stmt::With(inner.into_allocated()),
-            Stmt::Return { keyword, value, semi_colon } => Stmt::Return { keyword, value: value.into_allocated(), semi_colon },
+            Stmt::Return {
+                keyword,
+                value,
+                semi_colon,
+            } => Stmt::Return {
+                keyword,
+                value: value.into_allocated(),
+                semi_colon,
+            },
             Stmt::Labeled(inner) => Stmt::Labeled(inner.into_allocated()),
-            Stmt::Break { keyword, label, semi_colon } => Stmt::Break { keyword, label: label.into_allocated(), semi_colon},
-            Stmt::Continue { keyword, label, semi_colon } => Stmt::Continue { keyword, label: label.into_allocated(), semi_colon },
+            Stmt::Break {
+                keyword,
+                label,
+                semi_colon,
+            } => Stmt::Break {
+                keyword,
+                label: label.into_allocated(),
+                semi_colon,
+            },
+            Stmt::Continue {
+                keyword,
+                label,
+                semi_colon,
+            } => Stmt::Continue {
+                keyword,
+                label: label.into_allocated(),
+                semi_colon,
+            },
             Stmt::If(inner) => Stmt::If(inner.into_allocated()),
             Stmt::Switch(inner) => Stmt::Switch(inner.into_allocated()),
-            Stmt::Throw { keyword, expr, semi_colon } => Stmt::Throw { keyword, expr: expr.into_allocated(), semi_colon },
+            Stmt::Throw {
+                keyword,
+                expr,
+                semi_colon,
+            } => Stmt::Throw {
+                keyword,
+                expr: expr.into_allocated(),
+                semi_colon,
+            },
             Stmt::Try(inner) => Stmt::Try(inner.into_allocated()),
             Stmt::While(inner) => Stmt::While(inner.into_allocated()),
             Stmt::DoWhile(inner) => Stmt::DoWhile(inner.into_allocated()),
             Stmt::For(inner) => Stmt::For(inner.into_allocated()),
             Stmt::ForIn(inner) => Stmt::ForIn(inner.into_allocated()),
             Stmt::ForOf(inner) => Stmt::ForOf(inner.into_allocated()),
-            Stmt::Var { decls, semi_colon } => Stmt::Var { decls: decls.into_allocated(), semi_colon },
+            Stmt::Var { decls, semi_colon } => Stmt::Var {
+                decls: decls.into_allocated(),
+                semi_colon,
+            },
         }
     }
 }
@@ -375,10 +419,7 @@ impl<T> Node for Stmt<T> {
 /// //rand !== 0
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WithStmt<T> {
     pub keyword: With,
     pub open_paren: OpenParen,
@@ -387,7 +428,10 @@ pub struct WithStmt<T> {
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for WithStmt<T> where T: ToString {
+impl<T> IntoAllocated for WithStmt<T>
+where
+    T: ToString,
+{
     type Allocated = WithStmt<String>;
     fn into_allocated(self) -> Self::Allocated {
         WithStmt {
@@ -417,17 +461,17 @@ impl<T> Node for WithStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct LabeledStmt<T> {
     pub label: Ident<T>,
     pub colon: Colon,
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for LabeledStmt<T> where T: ToString {
+impl<T> IntoAllocated for LabeledStmt<T>
+where
+    T: ToString,
+{
     type Allocated = LabeledStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -457,10 +501,7 @@ impl<T> Node for LabeledStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct IfStmt<T> {
     pub keyword: If,
     pub open_paren: OpenParen,
@@ -470,7 +511,10 @@ pub struct IfStmt<T> {
     pub alternate: Option<Box<ElseStmt<T>>>,
 }
 
-impl<T> IntoAllocated for IfStmt<T> where T: ToString {
+impl<T> IntoAllocated for IfStmt<T>
+where
+    T: ToString,
+{
     type Allocated = IfStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -498,16 +542,16 @@ impl<T> Node for IfStmt<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ElseStmt<T> {
     pub keyword: Else,
     pub body: Stmt<T>,
 }
 
-impl<T> IntoAllocated for ElseStmt<T> where T: ToString {
+impl<T> IntoAllocated for ElseStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ElseStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -542,10 +586,7 @@ impl<T> Node for ElseStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SwitchStmt<T> {
     pub keyword: Switch,
     pub open_paren: OpenParen,
@@ -556,7 +597,10 @@ pub struct SwitchStmt<T> {
     pub close_brace: CloseBrace,
 }
 
-impl<T> IntoAllocated for SwitchStmt<T> where T: ToString {
+impl<T> IntoAllocated for SwitchStmt<T>
+where
+    T: ToString,
+{
     type Allocated = SwitchStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -566,7 +610,11 @@ impl<T> IntoAllocated for SwitchStmt<T> where T: ToString {
             discriminant: self.discriminant.into_allocated(),
             close_paren: self.close_paren,
             open_brace: self.open_brace,
-            cases: self.cases.into_iter().map(IntoAllocated::into_allocated).collect(),
+            cases: self
+                .cases
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_brace: self.close_brace,
         }
     }
@@ -583,10 +631,7 @@ impl<T> Node for SwitchStmt<T> {
 
 /// A single case part of a switch statement
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SwitchCase<T> {
     pub keyword: SwitchCaseKeyword,
     pub test: Option<Expr<T>>,
@@ -608,14 +653,21 @@ impl<T> Node for SwitchCase<T> {
     }
 }
 
-impl<T> IntoAllocated for SwitchCase<T> where T: ToString {
+impl<T> IntoAllocated for SwitchCase<T>
+where
+    T: ToString,
+{
     type Allocated = SwitchCase<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         SwitchCase {
             keyword: self.keyword,
             colon: self.colon,
-            consequent: self.consequent.into_iter().map(IntoAllocated::into_allocated).collect(),
+            consequent: self
+                .consequent
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             test: self.test.into_allocated(),
         }
     }
@@ -623,23 +675,27 @@ impl<T> IntoAllocated for SwitchCase<T> where T: ToString {
 
 /// A collection of program parts wrapped in curly braces
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BlockStmt<T> {
     pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
     pub close_brace: CloseBrace,
 }
 
-impl<T> IntoAllocated for BlockStmt<T> where T: ToString {
+impl<T> IntoAllocated for BlockStmt<T>
+where
+    T: ToString,
+{
     type Allocated = BlockStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         BlockStmt {
             open_brace: self.open_brace,
-            stmts: self.stmts.into_iter().map(IntoAllocated::into_allocated).collect(),
+            stmts: self
+                .stmts
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_brace: self.close_brace,
         }
     }
@@ -665,10 +721,7 @@ impl<T> Node for BlockStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct TryStmt<T> {
     pub keyword: Try,
     pub block: BlockStmt<T>,
@@ -676,7 +729,10 @@ pub struct TryStmt<T> {
     pub finalizer: Option<FinallyClause<T>>,
 }
 
-impl<T> IntoAllocated for TryStmt<T> where T: ToString {
+impl<T> IntoAllocated for TryStmt<T>
+where
+    T: ToString,
+{
     type Allocated = TryStmt<String>;
     fn into_allocated(self) -> Self::Allocated {
         TryStmt {
@@ -706,17 +762,17 @@ impl<T> Node for TryStmt<T> {
 
 /// The error handling part of a `TryStmt`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CatchClause<T> {
     pub keyword: Catch,
     pub param: Option<CatchArg<T>>,
     pub body: BlockStmt<T>,
 }
 
-impl<T> IntoAllocated for CatchClause<T> where T: ToString {
+impl<T> IntoAllocated for CatchClause<T>
+where
+    T: ToString,
+{
     type Allocated = CatchClause<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -738,17 +794,17 @@ impl<T> Node for CatchClause<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CatchArg<T> {
     pub open_paren: OpenParen,
     pub param: Pat<T>,
     pub close_paren: CloseParen,
 }
 
-impl<T> IntoAllocated for CatchArg<T> where T: ToString {
+impl<T> IntoAllocated for CatchArg<T>
+where
+    T: ToString,
+{
     type Allocated = CatchArg<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -770,16 +826,16 @@ impl<T> Node for CatchArg<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct FinallyClause<T> {
     pub keyword: Finally,
     pub body: BlockStmt<T>,
 }
 
-impl<T> IntoAllocated for FinallyClause<T> where T: ToString {
+impl<T> IntoAllocated for FinallyClause<T>
+where
+    T: ToString,
+{
     type Allocated = FinallyClause<String>;
     fn into_allocated(self) -> Self::Allocated {
         FinallyClause {
@@ -813,10 +869,7 @@ impl<T> Node for FinallyClause<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WhileStmt<T> {
     pub keyword: While,
     pub open_paren: OpenParen,
@@ -825,7 +878,10 @@ pub struct WhileStmt<T> {
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for WhileStmt<T> where T: ToString {
+impl<T> IntoAllocated for WhileStmt<T>
+where
+    T: ToString,
+{
     type Allocated = WhileStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -834,7 +890,7 @@ impl<T> IntoAllocated for WhileStmt<T> where T: ToString {
             open_paren: self.open_paren,
             test: self.test.into_allocated(),
             close_paren: self.close_paren,
-            body: self.body.into_allocated()
+            body: self.body.into_allocated(),
         }
     }
 }
@@ -855,10 +911,7 @@ impl<T> Node for WhileStmt<T> {
 /// } while (Math.floor(Math.random() * 100) < 75)
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct DoWhileStmt<T> {
     pub keyword_do: Do,
     pub body: Box<Stmt<T>>,
@@ -869,7 +922,10 @@ pub struct DoWhileStmt<T> {
     pub semi_colon: Option<Semicolon>,
 }
 
-impl<T> IntoAllocated for DoWhileStmt<T> where T: ToString {
+impl<T> IntoAllocated for DoWhileStmt<T>
+where
+    T: ToString,
+{
     type Allocated = DoWhileStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -907,10 +963,7 @@ impl<T> Node for DoWhileStmt<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForStmt<T> {
     pub keyword: For,
     pub open_paren: OpenParen,
@@ -923,7 +976,10 @@ pub struct ForStmt<T> {
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for ForStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -955,21 +1011,24 @@ impl<T> Node for ForStmt<T> {
 ///  //  vvvvvvvvv
 /// for (var i = 0;i < 100; i++)
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopInit<T> {
     Variable(VarKind, Vec<ListEntry<VarDecl<T>>>),
     Expr(Expr<T>),
 }
 
-impl<T> IntoAllocated for LoopInit<T> where T: ToString {
+impl<T> IntoAllocated for LoopInit<T>
+where
+    T: ToString,
+{
     type Allocated = LoopInit<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
-            LoopInit::Variable(k, v) => LoopInit::Variable(k, v.into_iter().map(IntoAllocated::into_allocated).collect()),
-            LoopInit::Expr(inner) => LoopInit::Expr(inner.into_allocated())
+            LoopInit::Variable(k, v) => LoopInit::Variable(
+                k,
+                v.into_iter().map(IntoAllocated::into_allocated).collect(),
+            ),
+            LoopInit::Expr(inner) => LoopInit::Expr(inner.into_allocated()),
         }
     }
 }
@@ -1005,10 +1064,7 @@ impl<T> Node for LoopInit<T> {
 /// //prints a, b
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForInStmt<T> {
     pub keyword_for: For,
     pub open_paren: OpenParen,
@@ -1019,7 +1075,10 @@ pub struct ForInStmt<T> {
     pub body: Box<Stmt<T>>,
 }
 
-impl<T> IntoAllocated for ForInStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForInStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForInStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -1053,10 +1112,7 @@ impl<T> Node for ForInStmt<T> {
 /// //prints 2, 3, 4, 5, 6
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ForOfStmt<T> {
     pub keyword_for: For,
     pub open_paren: OpenParen,
@@ -1068,7 +1124,10 @@ pub struct ForOfStmt<T> {
     pub is_await: bool,
 }
 
-impl<T> IntoAllocated for ForOfStmt<T> where T: ToString {
+impl<T> IntoAllocated for ForOfStmt<T>
+where
+    T: ToString,
+{
     type Allocated = ForOfStmt<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -1097,17 +1156,17 @@ impl<T> Node for ForOfStmt<T> {
 /// The values on the left hand side of the keyword
 /// in a for in or for of loop
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum LoopLeft<T> {
     Expr(Expr<T>),
     Variable(VarKind, VarDecl<T>),
     Pat(Pat<T>),
 }
 
-impl<T> IntoAllocated for LoopLeft<T> where T: ToString {
+impl<T> IntoAllocated for LoopLeft<T>
+where
+    T: ToString,
+{
     type Allocated = LoopLeft<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {

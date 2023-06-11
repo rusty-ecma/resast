@@ -1,6 +1,6 @@
-use crate::IntoAllocated;
 use crate::spanned::pat::Pat;
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
+use crate::IntoAllocated;
 
 use super::tokens::{
     AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon, Comma,
@@ -10,14 +10,11 @@ use super::tokens::{
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// A slightly more granular program part that a statement
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Expr<T> {
     /// `[0,,]`
     Array(ArrayExpr<T>),
@@ -102,13 +99,18 @@ pub enum Expr<T> {
     Yield(YieldExpr<T>),
 }
 
-impl<T> IntoAllocated for Expr<T> where T: ToString {
+impl<T> IntoAllocated for Expr<T>
+where
+    T: ToString,
+{
     type Allocated = Expr<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
             Expr::Array(inner) => Expr::Array(inner.into_allocated()),
             Expr::ArrowFunc(inner) => Expr::ArrowFunc(inner.into_allocated()),
-            Expr::ArrowParamPlaceHolder(inner) => Expr::ArrowParamPlaceHolder(inner.into_allocated()),
+            Expr::ArrowParamPlaceHolder(inner) => {
+                Expr::ArrowParamPlaceHolder(inner.into_allocated())
+            }
             Expr::Assign(inner) => Expr::Assign(inner.into_allocated()),
             Expr::Await(inner) => Expr::Await(inner.into_allocated()),
             Expr::Binary(inner) => Expr::Binary(inner.into_allocated()),
@@ -123,7 +125,12 @@ impl<T> IntoAllocated for Expr<T> where T: ToString {
             Expr::MetaProp(inner) => Expr::MetaProp(inner.into_allocated()),
             Expr::New(inner) => Expr::New(inner.into_allocated()),
             Expr::Obj(inner) => Expr::Obj(inner.into_allocated()),
-            Expr::Sequence(inner) => Expr::Sequence(inner.into_iter().map(IntoAllocated::into_allocated).collect()),
+            Expr::Sequence(inner) => Expr::Sequence(
+                inner
+                    .into_iter()
+                    .map(IntoAllocated::into_allocated)
+                    .collect(),
+            ),
             Expr::Spread(inner) => Expr::Spread(inner.into_allocated()),
             Expr::Super(inner) => Expr::Super(inner),
             Expr::TaggedTemplate(inner) => Expr::TaggedTemplate(inner.into_allocated()),
@@ -173,22 +180,26 @@ type ArrayExprEntry<T> = ListEntry<Option<Expr<T>>>;
 
 /// `[a, b, c]`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ArrayExpr<T> {
     pub open_bracket: OpenBracket,
     pub elements: Vec<ArrayExprEntry<T>>,
     pub close_bracket: CloseBracket,
 }
 
-impl<T> IntoAllocated for ArrayExpr<T> where T: ToString {
+impl<T> IntoAllocated for ArrayExpr<T>
+where
+    T: ToString,
+{
     type Allocated = ArrayExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         ArrayExpr {
             open_bracket: self.open_bracket,
-            elements: self.elements.into_iter().map(IntoAllocated::into_allocated).collect(),
+            elements: self
+                .elements
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_bracket: self.close_bracket,
         }
     }
@@ -205,23 +216,27 @@ impl<T> Node for ArrayExpr<T> {
 
 /// `{a: 'b', c, ...d}`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ObjExpr<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<ListEntry<ObjProp<T>>>,
     pub close_brace: CloseBrace,
 }
 
-impl<T> IntoAllocated for ObjExpr<T> where T: ToString {
+impl<T> IntoAllocated for ObjExpr<T>
+where
+    T: ToString,
+{
     type Allocated = ObjExpr<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         ObjExpr {
             open_brace: self.open_brace,
-            props: self.props.into_iter().map(IntoAllocated::into_allocated).collect(),
+            props: self
+                .props
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_brace: self.close_brace,
         }
     }
@@ -238,16 +253,16 @@ impl<T> Node for ObjExpr<T> {
 
 /// A single part of an object literal
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum ObjProp<T> {
     Prop(Prop<T>),
     Spread(SpreadExpr<T>),
 }
 
-impl<T> IntoAllocated for ObjProp<T> where T: ToString {
+impl<T> IntoAllocated for ObjProp<T>
+where
+    T: ToString,
+{
     type Allocated = ObjProp<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -267,16 +282,16 @@ impl<T> Node for ObjProp<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SpreadExpr<T> {
     pub dots: Ellipsis,
     pub expr: Expr<T>,
 }
 
-impl<T> IntoAllocated for SpreadExpr<T> where T: ToString {
+impl<T> IntoAllocated for SpreadExpr<T>
+where
+    T: ToString,
+{
     type Allocated = SpreadExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         SpreadExpr {
@@ -296,10 +311,7 @@ impl<T> Node for SpreadExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Prop<T> {
     Init(PropInit<T>),
     Method(PropMethod<T>),
@@ -308,7 +320,10 @@ pub enum Prop<T> {
     Set(PropSet<T>),
 }
 
-impl<T> IntoAllocated for Prop<T> where T: ToString {
+impl<T> IntoAllocated for Prop<T>
+where
+    T: ToString,
+{
     type Allocated = Prop<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -358,23 +373,23 @@ impl<T> Prop<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropInit<T> {
     pub key: PropInitKey<T>,
     pub colon: Option<Colon>,
     pub value: Option<PropValue<T>>,
 }
 
-impl<T> IntoAllocated for PropInit<T> where T: ToString {
+impl<T> IntoAllocated for PropInit<T>
+where
+    T: ToString,
+{
     type Allocated = PropInit<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropInit {
             key: self.key.into_allocated(),
             colon: self.colon,
-            value: self.value.into_allocated()
+            value: self.value.into_allocated(),
         }
     }
 }
@@ -402,16 +417,16 @@ impl<T> PropInit<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropInitKey<T> {
     pub value: PropKey<T>,
     pub brackets: Option<(OpenBracket, CloseBracket)>,
 }
 
-impl<T> IntoAllocated for PropInitKey<T> where T: ToString {
+impl<T> IntoAllocated for PropInitKey<T>
+where
+    T: ToString,
+{
     type Allocated = PropInitKey<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropInitKey {
@@ -435,10 +450,7 @@ impl<T> Node for PropInitKey<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropMethod<T> {
     pub keyword_static: Option<Static>,
     pub keyword_async: Option<Async>,
@@ -450,7 +462,10 @@ pub struct PropMethod<T> {
     pub body: FuncBody<T>,
 }
 
-impl<T> IntoAllocated for PropMethod<T> where T: ToString {
+impl<T> IntoAllocated for PropMethod<T>
+where
+    T: ToString,
+{
     type Allocated = PropMethod<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropMethod {
@@ -459,7 +474,11 @@ impl<T> IntoAllocated for PropMethod<T> where T: ToString {
             id: self.id.into_allocated(),
             star: self.star,
             open_paren: self.open_paren,
-            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            params: self
+                .params
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
             body: self.body.into_allocated(),
         }
@@ -483,10 +502,7 @@ impl<T> Node for PropMethod<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropCtor<T> {
     pub keyword: PropInitKey<T>,
     pub open_paren: OpenParen,
@@ -495,13 +511,20 @@ pub struct PropCtor<T> {
     pub body: FuncBody<T>,
 }
 
-impl<T> IntoAllocated for PropCtor<T> where T: ToString {
+impl<T> IntoAllocated for PropCtor<T>
+where
+    T: ToString,
+{
     type Allocated = PropCtor<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropCtor {
             keyword: self.keyword.into_allocated(),
             open_paren: self.open_paren,
-            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            params: self
+                .params
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
             body: self.body.into_allocated(),
         }
@@ -518,10 +541,7 @@ impl<T> Node for PropCtor<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropGet<T> {
     pub keyword_static: Option<Static>,
     pub keyword_get: Get,
@@ -531,7 +551,10 @@ pub struct PropGet<T> {
     pub body: FuncBody<T>,
 }
 
-impl<T> IntoAllocated for PropGet<T> where T: ToString {
+impl<T> IntoAllocated for PropGet<T>
+where
+    T: ToString,
+{
     type Allocated = PropGet<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropGet {
@@ -561,10 +584,7 @@ impl<T> Node for PropGet<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PropSet<T> {
     pub keyword_static: Option<Static>,
     pub keyword_set: Set,
@@ -575,7 +595,10 @@ pub struct PropSet<T> {
     pub body: FuncBody<T>,
 }
 
-impl<T> IntoAllocated for PropSet<T> where T: ToString {
+impl<T> IntoAllocated for PropSet<T>
+where
+    T: ToString,
+{
     type Allocated = PropSet<String>;
     fn into_allocated(self) -> Self::Allocated {
         PropSet {
@@ -607,17 +630,17 @@ impl<T> Node for PropSet<T> {
 
 /// An object literal or class property identifier
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum PropKey<T> {
     Lit(Lit<T>),
     Expr(Expr<T>),
     Pat(Pat<T>),
 }
 
-impl<T> IntoAllocated for PropKey<T> where T: ToString {
+impl<T> IntoAllocated for PropKey<T>
+where
+    T: ToString,
+{
     type Allocated = PropKey<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -640,17 +663,17 @@ impl<T> Node for PropKey<T> {
 
 /// The value of an object literal or class property
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum PropValue<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
     Method(PropMethod<T>),
 }
 
-impl<T> IntoAllocated for PropValue<T> where T: ToString {
+impl<T> IntoAllocated for PropValue<T>
+where
+    T: ToString,
+{
     type Allocated = PropValue<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -673,16 +696,16 @@ impl<T> Node for PropValue<T> {
 
 /// An operation that takes one argument
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct UnaryExpr<T> {
     pub operator: UnaryOp,
     pub argument: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for UnaryExpr<T> where T: ToString {
+impl<T> IntoAllocated for UnaryExpr<T>
+where
+    T: ToString,
+{
     type Allocated = UnaryExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         UnaryExpr {
@@ -711,16 +734,16 @@ impl<T> Node for UnaryExpr<T> {
 
 /// Increment or decrementing a value
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct UpdateExpr<T> {
     pub operator: UpdateOp,
     pub argument: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for UpdateExpr<T> where T: ToString {
+impl<T> IntoAllocated for UpdateExpr<T>
+where
+    T: ToString,
+{
     type Allocated = UpdateExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         UpdateExpr {
@@ -756,17 +779,17 @@ impl<T> Node for UpdateExpr<T> {
 
 /// An operation that requires 2 arguments
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BinaryExpr<T> {
     pub operator: BinaryOp,
     pub left: Box<Expr<T>>,
     pub right: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for BinaryExpr<T> where T: ToString {
+impl<T> IntoAllocated for BinaryExpr<T>
+where
+    T: ToString,
+{
     type Allocated = BinaryExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         BinaryExpr {
@@ -788,17 +811,17 @@ impl<T> Node for BinaryExpr<T> {
 
 /// An assignment or update + assignment operation
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct AssignExpr<T> {
     pub operator: AssignOp,
     pub left: AssignLeft<T>,
     pub right: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for AssignExpr<T> where T: ToString {
+impl<T> IntoAllocated for AssignExpr<T>
+where
+    T: ToString,
+{
     type Allocated = AssignExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         AssignExpr {
@@ -819,16 +842,16 @@ impl<T> Node for AssignExpr<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct AwaitExpr<T> {
     pub keyword: Await,
     pub expr: Expr<T>,
 }
 
-impl<T> IntoAllocated for AwaitExpr<T> where T: ToString {
+impl<T> IntoAllocated for AwaitExpr<T>
+where
+    T: ToString,
+{
     type Allocated = AwaitExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         AwaitExpr {
@@ -849,16 +872,16 @@ impl<T> Node for AwaitExpr<T> {
 
 /// The value being assigned to
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum AssignLeft<T> {
     Pat(Pat<T>),
     Expr(Box<Expr<T>>),
 }
 
-impl<T> IntoAllocated for AssignLeft<T> where T: ToString {
+impl<T> IntoAllocated for AssignLeft<T>
+where
+    T: ToString,
+{
     type Allocated = AssignLeft<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -883,17 +906,17 @@ impl<T> Node for AssignLeft<T> {
 /// false || true
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct LogicalExpr<T> {
     pub operator: LogicalOp,
     pub left: Box<Expr<T>>,
     pub right: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for LogicalExpr<T> where T: ToString {
+impl<T> IntoAllocated for LogicalExpr<T>
+where
+    T: ToString,
+{
     type Allocated = LogicalExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         LogicalExpr {
@@ -919,24 +942,24 @@ impl<T> Node for LogicalExpr<T> {
 /// c.stuff;
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct MemberExpr<T> {
     pub object: Box<Expr<T>>,
     pub property: Box<Expr<T>>,
     pub indexer: MemberIndexer,
 }
 
-impl<T> IntoAllocated for MemberExpr<T> where T: ToString {
+impl<T> IntoAllocated for MemberExpr<T>
+where
+    T: ToString,
+{
     type Allocated = MemberExpr<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         MemberExpr {
             object: self.object.into_allocated(),
             property: self.property.into_allocated(),
-            indexer: self.indexer
+            indexer: self.indexer,
         }
     }
 }
@@ -961,10 +984,7 @@ impl<T> Node for MemberExpr<T> {
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum MemberIndexer {
     Period(Period),
     Computed {
@@ -993,10 +1013,7 @@ impl Node for MemberIndexer {
 /// var a = true ? 'stuff' : 'things';
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ConditionalExpr<T> {
     pub test: Box<Expr<T>>,
     pub question_mark: QuestionMark,
@@ -1005,7 +1022,10 @@ pub struct ConditionalExpr<T> {
     pub consequent: Box<Expr<T>>,
 }
 
-impl<T> IntoAllocated for ConditionalExpr<T> where T: ToString {
+impl<T> IntoAllocated for ConditionalExpr<T>
+where
+    T: ToString,
+{
     type Allocated = ConditionalExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         ConditionalExpr {
@@ -1031,10 +1051,7 @@ impl<T> Node for ConditionalExpr<T> {
 /// Math.random()
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallExpr<T> {
     pub callee: Box<Expr<T>>,
     pub open_paren: OpenParen,
@@ -1042,14 +1059,21 @@ pub struct CallExpr<T> {
     pub close_paren: CloseParen,
 }
 
-impl<T> IntoAllocated for CallExpr<T> where T: ToString {
+impl<T> IntoAllocated for CallExpr<T>
+where
+    T: ToString,
+{
     type Allocated = CallExpr<String>;
 
     fn into_allocated(self) -> Self::Allocated {
         CallExpr {
             callee: self.callee.into_allocated(),
             open_paren: self.open_paren,
-            arguments: self.arguments.into_iter().map(IntoAllocated::into_allocated).collect(),
+            arguments: self
+                .arguments
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
         }
     }
@@ -1069,10 +1093,7 @@ impl<T> Node for CallExpr<T> {
 /// new Uint8Array(32);
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct NewExpr<T> {
     pub keyword: New,
     pub callee: Box<Expr<T>>,
@@ -1081,7 +1102,10 @@ pub struct NewExpr<T> {
     pub close_paren: Option<CloseParen>,
 }
 
-impl<T> IntoAllocated for NewExpr<T> where T: ToString {
+impl<T> IntoAllocated for NewExpr<T>
+where
+    T: ToString,
+{
     type Allocated = NewExpr<String>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -1089,7 +1113,11 @@ impl<T> IntoAllocated for NewExpr<T> where T: ToString {
             keyword: self.keyword,
             callee: self.callee.into_allocated(),
             open_paren: self.open_paren,
-            arguments: self.arguments.into_iter().map(IntoAllocated::into_allocated).collect(),
+            arguments: self
+                .arguments
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
         }
     }
@@ -1106,7 +1134,7 @@ impl<T> Node for NewExpr<T> {
         };
         SourceLocation {
             start: self.keyword.start(),
-            end: end,
+            end,
         }
     }
 }
@@ -1134,10 +1162,7 @@ impl<T> Node for SequenceExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ArrowParamPlaceHolder<T> {
     // async keyword
     pub keyword: Option<Async>,
@@ -1146,13 +1171,20 @@ pub struct ArrowParamPlaceHolder<T> {
     pub close_paren: Option<CloseParen>,
 }
 
-impl<T> IntoAllocated for ArrowParamPlaceHolder<T> where T: ToString {
+impl<T> IntoAllocated for ArrowParamPlaceHolder<T>
+where
+    T: ToString,
+{
     type Allocated = ArrowParamPlaceHolder<String>;
     fn into_allocated(self) -> Self::Allocated {
         ArrowParamPlaceHolder {
             keyword: self.keyword,
             open_paren: self.open_paren,
-            args: self.args.into_iter().map(IntoAllocated::into_allocated).collect(),
+            args: self
+                .args
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
         }
     }
@@ -1188,10 +1220,7 @@ impl<T> Node for ArrowParamPlaceHolder<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ArrowFuncExpr<T> {
     pub keyword: Option<Async>,
     pub star: Option<Asterisk>,
@@ -1202,17 +1231,24 @@ pub struct ArrowFuncExpr<T> {
     pub body: ArrowFuncBody<T>,
 }
 
-impl<T> IntoAllocated for ArrowFuncExpr<T> where T: ToString {
+impl<T> IntoAllocated for ArrowFuncExpr<T>
+where
+    T: ToString,
+{
     type Allocated = ArrowFuncExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         ArrowFuncExpr {
             keyword: self.keyword,
             star: self.star,
             open_paren: self.open_paren,
-            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            params: self
+                .params
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
             close_paren: self.close_paren,
             arrow: self.arrow,
-            body: self.body.into_allocated()
+            body: self.body.into_allocated(),
         }
     }
 }
@@ -1237,16 +1273,16 @@ impl<T> Node for ArrowFuncExpr<T> {
 
 /// The body portion of an arrow function can be either an expression or a block of statements
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum ArrowFuncBody<T> {
     FuncBody(FuncBody<T>),
     Expr(Box<Expr<T>>),
 }
 
-impl<T> IntoAllocated for ArrowFuncBody<T> where T: ToString {
+impl<T> IntoAllocated for ArrowFuncBody<T>
+where
+    T: ToString,
+{
     type Allocated = ArrowFuncBody<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -1274,17 +1310,17 @@ impl<T> Node for ArrowFuncBody<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct YieldExpr<T> {
     pub keyword: Yield,
     pub argument: Option<Box<Expr<T>>>,
     pub star: Option<Asterisk>,
 }
 
-impl<T> IntoAllocated for YieldExpr<T> where T: ToString {
+impl<T> IntoAllocated for YieldExpr<T>
+where
+    T: ToString,
+{
     type Allocated = YieldExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         YieldExpr {
@@ -1312,16 +1348,16 @@ impl<T> Node for YieldExpr<T> {
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct TaggedTemplateExpr<T> {
     pub tag: Box<Expr<T>>,
     pub quasi: TemplateLit<T>,
 }
 
-impl<T> IntoAllocated for TaggedTemplateExpr<T> where T: ToString {
+impl<T> IntoAllocated for TaggedTemplateExpr<T>
+where
+    T: ToString,
+{
     type Allocated = TaggedTemplateExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         TaggedTemplateExpr {
@@ -1345,25 +1381,32 @@ impl<T> Node for TaggedTemplateExpr<T> {
 /// `I own ${0} birds`;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct TemplateLit<T> {
     pub quasis: Vec<TemplateElement<T>>,
     pub expressions: Vec<Expr<T>>,
 }
 
-impl<T> IntoAllocated for TemplateLit<T> where T: ToString {
+impl<T> IntoAllocated for TemplateLit<T>
+where
+    T: ToString,
+{
     type Allocated = TemplateLit<String>;
     fn into_allocated(self) -> Self::Allocated {
         TemplateLit {
-            quasis: self.quasis.into_iter().map(IntoAllocated::into_allocated).collect(),
-            expressions: self.expressions.into_iter().map(IntoAllocated::into_allocated).collect(),
+            quasis: self
+                .quasis
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
+            expressions: self
+                .expressions
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
         }
     }
 }
-
 
 impl<T> Node for TemplateLit<T> {
     fn loc(&self) -> SourceLocation {
@@ -1386,17 +1429,17 @@ impl<T> Node for TemplateLit<T> {
 
 /// The text part of a `TemplateLiteral`
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
     pub content: Slice<T>,
     pub close_quote: QuasiQuote,
 }
 
-impl<T> IntoAllocated for TemplateElement<T> where T: ToString {
+impl<T> IntoAllocated for TemplateElement<T>
+where
+    T: ToString,
+{
     type Allocated = TemplateElement<String>;
     fn into_allocated(self) -> Self::Allocated {
         TemplateElement {
@@ -1439,17 +1482,17 @@ impl<T> Node for TemplateElement<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct MetaProp<T> {
     pub meta: Ident<T>,
     pub dot: Period,
     pub property: Ident<T>,
 }
 
-impl<T> IntoAllocated for MetaProp<T> where T: ToString {
+impl<T> IntoAllocated for MetaProp<T>
+where
+    T: ToString,
+{
     type Allocated = MetaProp<String>;
     fn into_allocated(self) -> Self::Allocated {
         MetaProp {
@@ -1471,10 +1514,7 @@ impl<T> Node for MetaProp<T> {
 
 /// A literal value
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Lit<T> {
     /// `null`
     Null(Null),
@@ -1501,7 +1541,10 @@ pub enum Lit<T> {
     Template(TemplateLit<T>),
 }
 
-impl<T> IntoAllocated for Lit<T> where T: ToString {
+impl<T> IntoAllocated for Lit<T>
+where
+    T: ToString,
+{
     type Allocated = Lit<String>;
     fn into_allocated(self) -> Self::Allocated {
         match self {
@@ -1526,10 +1569,7 @@ impl<T> Lit<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Boolean {
     True(True),
     False(False),
@@ -1582,17 +1622,17 @@ impl<T> Node for Lit<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct StringLit<T> {
     pub open_quote: Quote,
     pub content: Slice<T>,
     pub close_quote: Quote,
 }
 
-impl<T> IntoAllocated for StringLit<T> where T: ToString {
+impl<T> IntoAllocated for StringLit<T>
+where
+    T: ToString,
+{
     type Allocated = StringLit<String>;
     fn into_allocated(self) -> Self::Allocated {
         StringLit {
@@ -1614,10 +1654,7 @@ impl<T> Node for StringLit<T> {
 
 /// A regular expression literal
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct RegEx<T> {
     pub open_slash: ForwardSlash,
     pub pattern: Slice<T>,
@@ -1625,7 +1662,10 @@ pub struct RegEx<T> {
     pub flags: Option<Slice<T>>,
 }
 
-impl<T> IntoAllocated for RegEx<T> where T: ToString {
+impl<T> IntoAllocated for RegEx<T>
+where
+    T: ToString,
+{
     type Allocated = RegEx<String>;
     fn into_allocated(self) -> Self::Allocated {
         RegEx {
@@ -1652,17 +1692,17 @@ impl<T> Node for RegEx<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct WrappedExpr<T> {
     pub open_paren: OpenParen,
     pub expr: Expr<T>,
     pub close_paren: CloseParen,
 }
 
-impl<T> IntoAllocated for WrappedExpr<T> where T: ToString {
+impl<T> IntoAllocated for WrappedExpr<T>
+where
+    T: ToString,
+{
     type Allocated = WrappedExpr<String>;
     fn into_allocated(self) -> Self::Allocated {
         WrappedExpr {
@@ -1683,16 +1723,16 @@ impl<T> Node for WrappedExpr<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SequenceExprEntry<T> {
     pub expr: Expr<T>,
     pub comma: Option<Comma>,
 }
 
-impl<T> IntoAllocated for SequenceExprEntry<T> where T: ToString {
+impl<T> IntoAllocated for SequenceExprEntry<T>
+where
+    T: ToString,
+{
     type Allocated = SequenceExprEntry<String>;
     fn into_allocated(self) -> Self::Allocated {
         SequenceExprEntry {

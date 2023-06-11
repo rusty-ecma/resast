@@ -13,7 +13,7 @@ use stmt::Stmt;
 use crate::IntoAllocated;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use self::{
     pat::RestPat,
@@ -28,10 +28,7 @@ pub trait Node {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Ident<T> {
     pub slice: Slice<T>,
 }
@@ -45,7 +42,6 @@ where
         Slice::new(source, line, start_col, line, start_col + len).into()
     }
 }
-
 
 impl<T> IntoAllocated for Ident<T>
 where
@@ -83,10 +79,7 @@ impl<T> Ident<T> {
 /// with a flag denoting if the representation is
 /// a ES6 Mod or a Script.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Program<T> {
     /// An ES6 Mod
     Mod(Vec<ProgramPart<T>>),
@@ -94,12 +87,25 @@ pub enum Program<T> {
     Script(Vec<ProgramPart<T>>),
 }
 
-impl<T> IntoAllocated for Program<T> where T: ToString {
+impl<T> IntoAllocated for Program<T>
+where
+    T: ToString,
+{
     type Allocated = Program<String>;
     fn into_allocated(self) -> Program<String> {
         match self {
-            Program::Mod(parts) => Program::Mod(parts.into_iter().map(IntoAllocated::into_allocated).collect()),
-            Program::Script(parts) => Program::Script(parts.into_iter().map(IntoAllocated::into_allocated).collect()),
+            Program::Mod(parts) => Program::Mod(
+                parts
+                    .into_iter()
+                    .map(IntoAllocated::into_allocated)
+                    .collect(),
+            ),
+            Program::Script(parts) => Program::Script(
+                parts
+                    .into_iter()
+                    .map(IntoAllocated::into_allocated)
+                    .collect(),
+            ),
         }
     }
 }
@@ -139,10 +145,7 @@ impl<T> Node for Vec<ProgramPart<T>> {
 /// A single part of a Javascript program.
 /// This will be either a Directive, Decl or a Stmt
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum ProgramPart<T> {
     /// A Directive like `'use strict';`
     Dir(Dir<T>),
@@ -152,7 +155,10 @@ pub enum ProgramPart<T> {
     Stmt(Stmt<T>),
 }
 
-impl<T> IntoAllocated for ProgramPart<T> where T: ToString {
+impl<T> IntoAllocated for ProgramPart<T>
+where
+    T: ToString,
+{
     type Allocated = ProgramPart<String>;
     fn into_allocated(self) -> ProgramPart<String> {
         match self {
@@ -185,17 +191,17 @@ impl<T> ProgramPart<T> {
 /// pretty much always `'use strict'`, this can appear at the
 /// top of a file or function
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Dir<T> {
     pub expr: Lit<T>,
     pub dir: T,
     pub semi_colon: Option<Semicolon>,
 }
 
-impl<T> IntoAllocated for Dir<T> where T: ToString {
+impl<T> IntoAllocated for Dir<T>
+where
+    T: ToString,
+{
     type Allocated = Dir<String>;
     fn into_allocated(self) -> Dir<String> {
         Dir {
@@ -230,10 +236,7 @@ impl<T> Node for Dir<T> {
 /// let y = function q() {}
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Func<T> {
     pub keyword: Function,
     pub id: Option<Ident<T>>,
@@ -254,7 +257,6 @@ impl<T> Func<T> {
     }
 }
 
-
 impl<T> IntoAllocated for Func<T>
 where
     T: ToString,
@@ -265,7 +267,11 @@ where
             keyword: self.keyword,
             id: self.id.map(|i| i.into_allocated()),
             open_paren: self.open_paren,
-            params: self.params.into_iter().map(|p| p.into_allocated()).collect(),
+            params: self
+                .params
+                .into_iter()
+                .map(|p| p.into_allocated())
+                .collect(),
             close_paren: self.close_paren,
             body: self.body.into_allocated(),
             star: self.star,
@@ -287,19 +293,22 @@ impl<T> Node for Func<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct FuncArgEntry<T> {
     pub value: FuncArg<T>,
     pub comma: Option<Comma>,
 }
 
-impl<T> IntoAllocated for FuncArgEntry<T> where T: ToString {
+impl<T> IntoAllocated for FuncArgEntry<T>
+where
+    T: ToString,
+{
     type Allocated = FuncArgEntry<String>;
     fn into_allocated(self) -> FuncArgEntry<String> {
-        FuncArgEntry { value: self.value.into_allocated(), comma: self.comma }
+        FuncArgEntry {
+            value: self.value.into_allocated(),
+            comma: self.comma,
+        }
     }
 }
 
@@ -317,17 +326,17 @@ impl<T> Node for FuncArgEntry<T> {
 
 /// A single function argument from a function signature
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum FuncArg<T> {
     Expr(Expr<T>),
     Pat(Pat<T>),
     Rest(Box<RestPat<T>>),
 }
 
-impl<T> IntoAllocated for FuncArg<T> where T: ToString {
+impl<T> IntoAllocated for FuncArg<T>
+where
+    T: ToString,
+{
     type Allocated = FuncArg<String>;
     fn into_allocated(self) -> FuncArg<String> {
         match self {
@@ -350,20 +359,24 @@ impl<T> Node for FuncArg<T> {
 
 /// The block statement that makes up the function's body
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct FuncBody<T> {
     pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
     pub close_brace: CloseBrace,
 }
 
-impl<T> IntoAllocated for FuncBody<T> where T: ToString {
+impl<T> IntoAllocated for FuncBody<T>
+where
+    T: ToString,
+{
     type Allocated = FuncBody<String>;
     fn into_allocated(self) -> FuncBody<String> {
-        FuncBody { open_brace: self.open_brace, stmts: self.stmts.into_iter().map(|s| s.into_allocated()).collect(), close_brace: self.close_brace }
+        FuncBody {
+            open_brace: self.open_brace,
+            stmts: self.stmts.into_iter().map(|s| s.into_allocated()).collect(),
+            close_brace: self.close_brace,
+        }
     }
 }
 
@@ -403,10 +416,7 @@ impl<T> Node for FuncBody<T> {
 /// }
 /// ```
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Class<T> {
     pub keyword: tokens::Class,
     pub id: Option<Ident<T>>,
@@ -414,12 +424,14 @@ pub struct Class<T> {
     pub body: ClassBody<T>,
 }
 
-
-impl<T> IntoAllocated for Class<T> where T: ToString {
+impl<T> IntoAllocated for Class<T>
+where
+    T: ToString,
+{
     type Allocated = Class<String>;
     fn into_allocated(self) -> Class<String> {
         Class {
-            keyword: self.keyword, 
+            keyword: self.keyword,
             id: self.id.map(|i| i.into_allocated()),
             super_class: self.super_class.map(|s| s.into_allocated()),
             body: self.body.into_allocated(),
@@ -437,37 +449,48 @@ impl<T> Node for Class<T> {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SuperClass<T> {
     pub keyword_extends: Extends,
     pub expr: Expr<T>,
 }
 
-impl<T> IntoAllocated for SuperClass<T> where T: ToString {
+impl<T> IntoAllocated for SuperClass<T>
+where
+    T: ToString,
+{
     type Allocated = SuperClass<String>;
     fn into_allocated(self) -> SuperClass<String> {
-        SuperClass { keyword_extends: self.keyword_extends, expr: self.expr.into_allocated() }
+        SuperClass {
+            keyword_extends: self.keyword_extends,
+            expr: self.expr.into_allocated(),
+        }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ClassBody<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<Prop<T>>,
     pub close_brace: CloseBrace,
 }
 
-impl<T> IntoAllocated for ClassBody<T> where T: ToString {
+impl<T> IntoAllocated for ClassBody<T>
+where
+    T: ToString,
+{
     type Allocated = ClassBody<String>;
     fn into_allocated(self) -> ClassBody<String> {
-        ClassBody { open_brace: self.open_brace, props: self.props.into_iter().map(IntoAllocated::into_allocated).collect(), close_brace: self.close_brace }
+        ClassBody {
+            open_brace: self.open_brace,
+            props: self
+                .props
+                .into_iter()
+                .map(IntoAllocated::into_allocated)
+                .collect(),
+            close_brace: self.close_brace,
+        }
     }
 }
 
@@ -481,10 +504,7 @@ impl<T> Node for ClassBody<T> {
 
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum VarKind {
     Var(Option<Var>),
     Let(Let),
@@ -514,13 +534,14 @@ impl VarKind {
             VarKind::Const(_) => 4,
         }
     }
+
+    pub const fn is_empty(&self) -> bool {
+        matches!(self, VarKind::Var(None))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Slice<T> {
     pub source: T,
     pub loc: SourceLocation,
@@ -542,17 +563,14 @@ where
 impl<T> Slice<T> {
     pub fn new(source: T, start_line: u32, start_col: u32, end_line: u32, end_column: u32) -> Self {
         Self {
-            source: source,
+            source,
             loc: SourceLocation::new(start_line, start_col, end_line, end_column),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SourceLocation {
     pub start: Position,
     pub end: Position,
@@ -587,10 +605,7 @@ impl core::cmp::PartialOrd for SourceLocation {
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Position {
     pub line: u32,
     pub column: u32,
@@ -657,16 +672,16 @@ impl std::ops::Sub<u32> for Position {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Deserialize, Serialize)
-)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ListEntry<Item> {
     pub item: Item,
     pub comma: Option<Comma>,
 }
 
-impl<Item> IntoAllocated for ListEntry<Item> where Item: IntoAllocated {
+impl<Item> IntoAllocated for ListEntry<Item>
+where
+    Item: IntoAllocated,
+{
     type Allocated = ListEntry<Item::Allocated>;
 
     fn into_allocated(self) -> Self::Allocated {
@@ -678,7 +693,6 @@ impl<Item> IntoAllocated for ListEntry<Item> where Item: IntoAllocated {
 }
 
 impl<Item> ListEntry<Item> {
-
     pub fn no_comma(item: Item) -> Self {
         Self { item, comma: None }
     }
