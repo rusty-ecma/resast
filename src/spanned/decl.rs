@@ -1,3 +1,4 @@
+use crate::IntoAllocated;
 use crate::spanned::expr::{Expr, Lit};
 use crate::spanned::pat::Pat;
 use crate::spanned::VarKind;
@@ -50,6 +51,26 @@ pub enum Decl<T> {
     },
 }
 
+
+impl<T> IntoAllocated for Decl<T>
+where
+    T: ToString,
+{
+    type Allocated = Decl<String>;
+    fn into_allocated(self) -> Decl<String> {
+        match self {
+            Decl::Var { decls, semi_colon } => Decl::Var {
+                decls: decls.into_allocated(),
+                semi_colon: semi_colon,
+            },
+            Decl::Func(f) => Decl::Func(f.into_allocated()),
+            Decl::Class(c) => Decl::Class(c.into_allocated()),
+            Decl::Import { import, semi_colon } => Decl::Import { import: import.into_allocated(), semi_colon },
+            Decl::Export { export, semi_colon } => Decl::Export { export: export.into_allocated(), semi_colon },
+        }
+    }
+}
+
 impl<T> Node for Decl<T> {
     fn loc(&self) -> super::SourceLocation {
         match self {
@@ -92,6 +113,20 @@ pub struct VarDecls<T> {
     pub decls: Vec<ListEntry<VarDecl<T>>>,
 }
 
+
+impl<T> IntoAllocated for VarDecls<T>
+where
+    T: ToString,
+{
+    type Allocated = VarDecls<String>;
+    fn into_allocated(self) -> VarDecls<String> {
+        VarDecls {
+            keyword: self.keyword,
+            decls: self.decls.into_iter().map(|d| d.into_allocated()).collect(),
+        }
+    }
+}
+
 impl<T> Node for VarDecls<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(last) = self.decls.last() {
@@ -111,6 +146,21 @@ pub struct VarDecl<T> {
     pub id: Pat<T>,
     pub eq: Option<Equal>,
     pub init: Option<Expr<T>>,
+}
+
+
+impl<T> IntoAllocated for VarDecl<T>
+where
+    T: ToString,
+{
+    type Allocated = VarDecl<String>;
+    fn into_allocated(self) -> VarDecl<String> {
+        VarDecl {
+            id: self.id.into_allocated(),
+            eq: self.eq,
+            init: self.init.map(|i| i.into_allocated()),
+        }
+    }
 }
 
 impl<T> Node for VarDecl<T> {
@@ -135,6 +185,16 @@ pub enum ModDecl<T> {
     Export(ModExport<T>),
 }
 
+impl<T> IntoAllocated for ModDecl<T> where T: ToString {
+    type Allocated = ModDecl<String>;
+    fn into_allocated(self) -> ModDecl<String> {
+        match self {
+            ModDecl::Import(inner) => ModDecl::Import(inner.into_allocated()),
+            ModDecl::Export(inner) => ModDecl::Export(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ModDecl<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -156,6 +216,13 @@ pub struct ModImport<T> {
     pub specifiers: Vec<ListEntry<ImportSpecifier<T>>>,
     pub keyword_from: Option<From>,
     pub source: Lit<T>,
+}
+
+impl<T> IntoAllocated for ModImport<T> where T: ToString {
+    type Allocated = ModImport<String>;
+    fn into_allocated(self) -> ModImport<String> {
+        ModImport { keyword_import:self.keyword_import, specifiers: self.specifiers.into_iter().map(|s| s.into_allocated()).collect(), keyword_from: self.keyword_from, source: self.source.into_allocated() }
+    }
 }
 
 impl<T> Node for ModImport<T> {
@@ -196,6 +263,17 @@ pub enum ImportSpecifier<T> {
     Namespace(NamespaceImportSpec<T>),
 }
 
+impl<T> IntoAllocated for ImportSpecifier<T> where T: ToString {
+    type Allocated = ImportSpecifier<String>;
+    fn into_allocated(self) -> ImportSpecifier<String> {
+        match self {
+            ImportSpecifier::Normal(inner) => ImportSpecifier::Normal(inner.into_allocated()),
+            ImportSpecifier::Default(inner) => ImportSpecifier::Default(inner.into_allocated()),
+            ImportSpecifier::Namespace(inner) => ImportSpecifier::Namespace(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ImportSpecifier<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -213,6 +291,17 @@ pub struct NormalImportSpecs<T> {
     pub close_brace: CloseBrace,
 }
 
+impl<T> IntoAllocated for NormalImportSpecs<T> where T: ToString {
+    type Allocated = NormalImportSpecs<String>;
+    fn into_allocated(self) -> NormalImportSpecs<String> {
+        NormalImportSpecs {
+            open_brace: self.open_brace,
+            specs: self.specs.into_iter().map(|s| s.into_allocated()).collect(),
+            close_brace: self.close_brace,
+        }
+    }
+}
+
 impl<T> Node for NormalImportSpecs<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -226,6 +315,13 @@ impl<T> Node for NormalImportSpecs<T> {
 pub struct NormalImportSpec<T> {
     pub imported: Ident<T>,
     pub alias: Option<Alias<T>>,
+}
+
+impl<T> IntoAllocated for NormalImportSpec<T> where T: ToString {
+    type Allocated = NormalImportSpec<String>;
+    fn into_allocated(self) -> NormalImportSpec<String> {
+        NormalImportSpec { imported: self.imported.into_allocated(), alias: self.alias.map(|a| a.into_allocated()) }
+    }
 }
 
 impl<T> Node for NormalImportSpec<T> {
@@ -246,6 +342,13 @@ pub struct DefaultImportSpec<T> {
     pub id: Ident<T>,
 }
 
+impl<T> IntoAllocated for DefaultImportSpec<T> where T: ToString {
+    type Allocated = DefaultImportSpec<String>;
+    fn into_allocated(self) -> DefaultImportSpec<String> {
+        DefaultImportSpec { id: self.id.into_allocated() }
+    }
+}
+
 impl<T> Node for DefaultImportSpec<T> {
     fn loc(&self) -> SourceLocation {
         self.id.loc()
@@ -257,6 +360,17 @@ pub struct NamespaceImportSpec<T> {
     pub star: Asterisk,
     pub keyword: As,
     pub ident: Ident<T>,
+}
+
+impl<T> IntoAllocated for NamespaceImportSpec<T> where T: ToString {
+    type Allocated = NamespaceImportSpec<String>;
+    fn into_allocated(self) -> NamespaceImportSpec<String> {
+        NamespaceImportSpec {
+            star: self.star,
+            keyword: self.keyword,
+            ident: self.ident.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for NamespaceImportSpec<T> {
@@ -272,6 +386,13 @@ impl<T> Node for NamespaceImportSpec<T> {
 pub struct ModExport<T> {
     pub keyword: Export,
     pub spec: ModExportSpecifier<T>,
+}
+
+impl<T> IntoAllocated for ModExport<T> where T: ToString {
+    type Allocated = ModExport<String>;
+    fn into_allocated(self) -> ModExport<String> {
+        ModExport { keyword: self.keyword, spec: self.spec.into_allocated() }
+    }
 }
 
 impl<T> Node for ModExport<T> {
@@ -317,6 +438,17 @@ pub enum ModExportSpecifier<T> {
     },
 }
 
+impl<T> IntoAllocated for ModExportSpecifier<T> where T: ToString {
+    type Allocated = ModExportSpecifier<String>;
+    fn into_allocated(self) -> ModExportSpecifier<String> {
+        match self {
+            ModExportSpecifier::Default { keyword, value } => ModExportSpecifier::Default {keyword, value: value.into_allocated()},
+            ModExportSpecifier::Named(inner) => ModExportSpecifier::Named(inner.into_allocated()),
+            ModExportSpecifier::All { star, alias, keyword, name } => ModExportSpecifier::All { star, alias: alias.map(|a| a.into_allocated()), keyword: keyword, name: name.into_allocated()},
+        }
+    }
+}
+
 impl<T> Node for ModExportSpecifier<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -343,6 +475,16 @@ pub enum NamedExportDecl<T> {
     Specifier(NamedExportSpec<T>),
 }
 
+impl<T> IntoAllocated for NamedExportDecl<T> where T: ToString {
+    type Allocated = NamedExportDecl<String>;
+    fn into_allocated(self) -> NamedExportDecl<String> {
+        match self {
+            NamedExportDecl::Decl(inner) => NamedExportDecl::Decl(inner.into_allocated()),
+            NamedExportDecl::Specifier(inner) => NamedExportDecl::Specifier(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for NamedExportDecl<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -356,6 +498,16 @@ impl<T> Node for NamedExportDecl<T> {
 pub struct DefaultExportDecl<T> {
     pub keyword: Default,
     pub value: DefaultExportDeclValue<T>,
+}
+
+impl<T> IntoAllocated for DefaultExportDecl<T> where T: ToString {
+    type Allocated = DefaultExportDecl<String>;
+    fn into_allocated(self) -> DefaultExportDecl<String> {
+        DefaultExportDecl {
+            keyword: self.keyword,
+            value: self.value.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for DefaultExportDecl<T> {
@@ -378,6 +530,17 @@ pub enum ExportDeclValue<T> {
     List(ExportList<T>),
 }
 
+impl<T> IntoAllocated for ExportDeclValue<T> where T: ToString {
+    type Allocated = ExportDeclValue<String>;
+    fn into_allocated(self) -> ExportDeclValue<String> {
+        match self {
+            ExportDeclValue::Decl(inner) => ExportDeclValue::Decl(inner.into_allocated()),
+            ExportDeclValue::Expr(inner) => ExportDeclValue::Expr(inner.into_allocated()),
+            ExportDeclValue::List(inner) => ExportDeclValue::List(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ExportDeclValue<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -394,6 +557,16 @@ pub enum DefaultExportDeclValue<T> {
     Expr(Expr<T>),
 }
 
+impl<T> IntoAllocated for DefaultExportDeclValue<T> where T: ToString {
+    type Allocated = DefaultExportDeclValue<String>;
+    fn into_allocated(self) -> DefaultExportDeclValue<String> {
+        match self {
+            DefaultExportDeclValue::Decl(inner) => DefaultExportDeclValue::Decl(inner.into_allocated()),
+            DefaultExportDeclValue::Expr(inner) => DefaultExportDeclValue::Expr(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for DefaultExportDeclValue<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -407,6 +580,16 @@ impl<T> Node for DefaultExportDeclValue<T> {
 pub struct NamedExportSpec<T> {
     pub list: ExportList<T>,
     pub source: Option<NamedExportSource<T>>,
+}
+
+impl<T> IntoAllocated for NamedExportSpec<T> where T: ToString {
+    type Allocated = NamedExportSpec<String>;
+    fn into_allocated(self) -> NamedExportSpec<String> {
+        NamedExportSpec {
+            list: self.list.into_allocated(),
+            source: self.source.map(|s| s.into_allocated()),
+        }
+    }
 }
 
 impl<T> Node for NamedExportSpec<T> {
@@ -428,6 +611,16 @@ pub struct NamedExportSource<T> {
     pub module: Lit<T>,
 }
 
+impl<T> IntoAllocated for NamedExportSource<T> where T: ToString {
+    type Allocated = NamedExportSource<String>;
+    fn into_allocated(self) -> NamedExportSource<String> {
+        NamedExportSource {
+            keyword_from: self.keyword_from,
+            module: self.module.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for NamedExportSource<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -442,6 +635,13 @@ pub struct ExportList<T> {
     pub open_brace: OpenBrace,
     pub elements: Vec<ListEntry<ExportSpecifier<T>>>,
     pub close_brace: CloseBrace,
+}
+
+impl<T> IntoAllocated for ExportList<T> where T: ToString {
+    type Allocated = ExportList<String>;
+    fn into_allocated(self) -> ExportList<String> {
+        ExportList { open_brace: self.open_brace, elements: self.elements.into_iter().map(|e| e.into_allocated()).collect(), close_brace: self.close_brace }
+    }
 }
 
 impl<T> Node for ExportList<T> {
@@ -467,6 +667,17 @@ pub struct ExportSpecifier<T> {
     pub alias: Option<Alias<T>>,
 }
 
+impl<T> IntoAllocated for ExportSpecifier<T> where T: ToString {
+    type Allocated = ExportSpecifier<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ExportSpecifier {
+            local: self.local.into_allocated(),
+            alias: self.alias.map(|a| a.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ExportSpecifier<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(alias) = &self.alias {
@@ -484,6 +695,17 @@ impl<T> Node for ExportSpecifier<T> {
 pub struct Alias<T> {
     pub keyword: As,
     pub ident: Ident<T>,
+}
+
+impl<T> IntoAllocated for Alias<T> where T: ToString {
+    type Allocated = Alias<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Alias {
+            keyword: self.keyword,
+            ident: self.ident.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for Alias<T> {

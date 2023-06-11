@@ -10,6 +10,8 @@ use expr::{Expr, Lit, Prop};
 use pat::Pat;
 use stmt::Stmt;
 
+use crate::IntoAllocated;
+
 use self::{
     pat::RestPat,
     tokens::{
@@ -34,6 +36,19 @@ where
     pub fn new_from_source(source: T, line: u32, start_col: u32) -> Self {
         let len = source.as_ref().len() as u32;
         Slice::new(source, line, start_col, line, start_col + len).into()
+    }
+}
+
+
+impl<T> IntoAllocated for Ident<T>
+where
+    T: ToString,
+{
+    type Allocated = Ident<String>;
+    fn into_allocated(self) -> Ident<String> {
+        Ident {
+            slice: self.slice.into_allocated(),
+        }
     }
 }
 
@@ -66,6 +81,16 @@ pub enum Program<T> {
     Mod(Vec<ProgramPart<T>>),
     /// Not an ES6 Mod
     Script(Vec<ProgramPart<T>>),
+}
+
+impl<T> IntoAllocated for Program<T> where T: ToString {
+    type Allocated = Program<String>;
+    fn into_allocated(self) -> Program<String> {
+        match self {
+            Program::Mod(parts) => Program::Mod(parts.into_iter().map(IntoAllocated::into_allocated).collect()),
+            Program::Script(parts) => Program::Script(parts.into_iter().map(IntoAllocated::into_allocated).collect()),
+        }
+    }
 }
 
 impl<T> Node for Program<T> {
@@ -112,6 +137,17 @@ pub enum ProgramPart<T> {
     Stmt(Stmt<T>),
 }
 
+impl<T> IntoAllocated for ProgramPart<T> where T: ToString {
+    type Allocated = ProgramPart<String>;
+    fn into_allocated(self) -> ProgramPart<String> {
+        match self {
+            ProgramPart::Dir(part) => ProgramPart::Dir(part.into_allocated()),
+            ProgramPart::Decl(part) => ProgramPart::Decl(part.into_allocated()),
+            ProgramPart::Stmt(part) => ProgramPart::Stmt(part.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ProgramPart<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -138,6 +174,17 @@ pub struct Dir<T> {
     pub expr: Lit<T>,
     pub dir: T,
     pub semi_colon: Option<Semicolon>,
+}
+
+impl<T> IntoAllocated for Dir<T> where T: ToString {
+    type Allocated = Dir<String>;
+    fn into_allocated(self) -> Dir<String> {
+        Dir {
+            expr: self.expr.into_allocated(),
+            dir: self.dir.to_string(),
+            semi_colon: self.semi_colon,
+        }
+    }
 }
 
 impl<T> Node for Dir<T> {
@@ -184,6 +231,26 @@ impl<T> Func<T> {
     }
 }
 
+
+impl<T> IntoAllocated for Func<T>
+where
+    T: ToString,
+{
+    type Allocated = Func<String>;
+    fn into_allocated(self) -> Func<String> {
+        Func {
+            keyword: self.keyword,
+            id: self.id.map(|i| i.into_allocated()),
+            open_paren: self.open_paren,
+            params: self.params.into_iter().map(|p| p.into_allocated()).collect(),
+            close_paren: self.close_paren,
+            body: self.body.into_allocated(),
+            star: self.star,
+            keyword_async: self.keyword_async,
+        }
+    }
+}
+
 impl<T> Node for Func<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = self.keyword_async {
@@ -200,6 +267,13 @@ impl<T> Node for Func<T> {
 pub struct FuncArgEntry<T> {
     pub value: FuncArg<T>,
     pub comma: Option<Comma>,
+}
+
+impl<T> IntoAllocated for FuncArgEntry<T> where T: ToString {
+    type Allocated = FuncArgEntry<String>;
+    fn into_allocated(self) -> FuncArgEntry<String> {
+        FuncArgEntry { value: self.value.into_allocated(), comma: self.comma }
+    }
 }
 
 impl<T> Node for FuncArgEntry<T> {
@@ -222,6 +296,17 @@ pub enum FuncArg<T> {
     Rest(Box<RestPat<T>>),
 }
 
+impl<T> IntoAllocated for FuncArg<T> where T: ToString {
+    type Allocated = FuncArg<String>;
+    fn into_allocated(self) -> FuncArg<String> {
+        match self {
+            FuncArg::Expr(inner) => FuncArg::Expr(inner.into_allocated()),
+            FuncArg::Pat(inner) => FuncArg::Pat(inner.into_allocated()),
+            FuncArg::Rest(inner) => FuncArg::Rest(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for FuncArg<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -238,6 +323,13 @@ pub struct FuncBody<T> {
     pub open_brace: OpenBrace,
     pub stmts: Vec<ProgramPart<T>>,
     pub close_brace: CloseBrace,
+}
+
+impl<T> IntoAllocated for FuncBody<T> where T: ToString {
+    type Allocated = FuncBody<String>;
+    fn into_allocated(self) -> FuncBody<String> {
+        FuncBody { open_brace: self.open_brace, stmts: self.stmts.into_iter().map(|s| s.into_allocated()).collect(), close_brace: self.close_brace }
+    }
 }
 
 impl<T> Node for FuncBody<T> {
@@ -283,6 +375,19 @@ pub struct Class<T> {
     pub body: ClassBody<T>,
 }
 
+
+impl<T> IntoAllocated for Class<T> where T: ToString {
+    type Allocated = Class<String>;
+    fn into_allocated(self) -> Class<String> {
+        Class {
+            keyword: self.keyword, 
+            id: self.id.map(|i| i.into_allocated()),
+            super_class: self.super_class.map(|s| s.into_allocated()),
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for Class<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -298,11 +403,25 @@ pub struct SuperClass<T> {
     pub expr: Expr<T>,
 }
 
+impl<T> IntoAllocated for SuperClass<T> where T: ToString {
+    type Allocated = SuperClass<String>;
+    fn into_allocated(self) -> SuperClass<String> {
+        SuperClass { keyword_extends: self.keyword_extends, expr: self.expr.into_allocated() }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClassBody<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<Prop<T>>,
     pub close_brace: CloseBrace,
+}
+
+impl<T> IntoAllocated for ClassBody<T> where T: ToString {
+    type Allocated = ClassBody<String>;
+    fn into_allocated(self) -> ClassBody<String> {
+        ClassBody { open_brace: self.open_brace, props: self.props.into_iter().map(IntoAllocated::into_allocated).collect(), close_brace: self.close_brace }
+    }
 }
 
 impl<T> Node for ClassBody<T> {
@@ -350,6 +469,19 @@ impl VarKind {
 pub struct Slice<T> {
     pub source: T,
     pub loc: SourceLocation,
+}
+
+impl<T> IntoAllocated for Slice<T>
+where
+    T: ToString,
+{
+    type Allocated = Slice<String>;
+    fn into_allocated(self) -> Slice<String> {
+        Slice {
+            loc: self.loc,
+            source: self.source.to_string(),
+        }
+    }
 }
 
 impl<T> Slice<T> {
@@ -467,7 +599,19 @@ pub struct ListEntry<Item> {
     pub comma: Option<Comma>,
 }
 
+impl<Item> IntoAllocated for ListEntry<Item> where Item: IntoAllocated {
+    type Allocated = ListEntry<Item::Allocated>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ListEntry {
+            item: self.item.into_allocated(),
+            comma: self.comma,
+        }
+    }
+}
+
 impl<Item> ListEntry<Item> {
+
     pub fn no_comma(item: Item) -> Self {
         Self { item, comma: None }
     }
