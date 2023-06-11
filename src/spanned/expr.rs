@@ -1,3 +1,4 @@
+use crate::IntoAllocated;
 use crate::spanned::pat::Pat;
 use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 
@@ -95,6 +96,40 @@ pub enum Expr<T> {
     Yield(YieldExpr<T>),
 }
 
+impl<T> IntoAllocated for Expr<T> where T: ToString {
+    type Allocated = Expr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            Expr::Array(inner) => Expr::Array(inner.into_allocated()),
+            Expr::ArrowFunc(inner) => Expr::ArrowFunc(inner.into_allocated()),
+            Expr::ArrowParamPlaceHolder(inner) => Expr::ArrowParamPlaceHolder(inner.into_allocated()),
+            Expr::Assign(inner) => Expr::Assign(inner.into_allocated()),
+            Expr::Await(inner) => Expr::Await(inner.into_allocated()),
+            Expr::Binary(inner) => Expr::Binary(inner.into_allocated()),
+            Expr::Class(inner) => Expr::Class(inner.into_allocated()),
+            Expr::Call(inner) => Expr::Call(inner.into_allocated()),
+            Expr::Conditional(inner) => Expr::Conditional(inner.into_allocated()),
+            Expr::Func(inner) => Expr::Func(inner.into_allocated()),
+            Expr::Ident(inner) => Expr::Ident(inner.into_allocated()),
+            Expr::Lit(inner) => Expr::Lit(inner.into_allocated()),
+            Expr::Logical(inner) => Expr::Logical(inner.into_allocated()),
+            Expr::Member(inner) => Expr::Member(inner.into_allocated()),
+            Expr::MetaProp(inner) => Expr::MetaProp(inner.into_allocated()),
+            Expr::New(inner) => Expr::New(inner.into_allocated()),
+            Expr::Obj(inner) => Expr::Obj(inner.into_allocated()),
+            Expr::Sequence(inner) => Expr::Sequence(inner.into_iter().map(IntoAllocated::into_allocated).collect()),
+            Expr::Spread(inner) => Expr::Spread(inner.into_allocated()),
+            Expr::Super(inner) => Expr::Super(inner),
+            Expr::TaggedTemplate(inner) => Expr::TaggedTemplate(inner.into_allocated()),
+            Expr::This(inner) => Expr::This(inner),
+            Expr::Unary(inner) => Expr::Unary(inner.into_allocated()),
+            Expr::Update(inner) => Expr::Update(inner.into_allocated()),
+            Expr::Wrapped(inner) => Expr::Wrapped(inner.into_allocated()),
+            Expr::Yield(inner) => Expr::Yield(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for Expr<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -138,6 +173,17 @@ pub struct ArrayExpr<T> {
     pub close_bracket: CloseBracket,
 }
 
+impl<T> IntoAllocated for ArrayExpr<T> where T: ToString {
+    type Allocated = ArrayExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        ArrayExpr {
+            open_bracket: self.open_bracket,
+            elements: self.elements.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_bracket: self.close_bracket,
+        }
+    }
+}
+
 impl<T> Node for ArrayExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -153,6 +199,18 @@ pub struct ObjExpr<T> {
     pub open_brace: OpenBrace,
     pub props: Vec<ListEntry<ObjProp<T>>>,
     pub close_brace: CloseBrace,
+}
+
+impl<T> IntoAllocated for ObjExpr<T> where T: ToString {
+    type Allocated = ObjExpr<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ObjExpr {
+            open_brace: self.open_brace,
+            props: self.props.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_brace: self.close_brace,
+        }
+    }
 }
 
 impl<T> Node for ObjExpr<T> {
@@ -171,6 +229,16 @@ pub enum ObjProp<T> {
     Spread(SpreadExpr<T>),
 }
 
+impl<T> IntoAllocated for ObjProp<T> where T: ToString {
+    type Allocated = ObjProp<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            ObjProp::Prop(inner) => ObjProp::Prop(inner.into_allocated()),
+            ObjProp::Spread(inner) => ObjProp::Spread(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for ObjProp<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -184,6 +252,16 @@ impl<T> Node for ObjProp<T> {
 pub struct SpreadExpr<T> {
     pub dots: Ellipsis,
     pub expr: Expr<T>,
+}
+
+impl<T> IntoAllocated for SpreadExpr<T> where T: ToString {
+    type Allocated = SpreadExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        SpreadExpr {
+            dots: self.dots,
+            expr: self.expr.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for SpreadExpr<T> {
@@ -202,6 +280,19 @@ pub enum Prop<T> {
     Ctor(PropCtor<T>),
     Get(PropGet<T>),
     Set(PropSet<T>),
+}
+
+impl<T> IntoAllocated for Prop<T> where T: ToString {
+    type Allocated = Prop<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            Prop::Init(inner) => Prop::Init(inner.into_allocated()),
+            Prop::Method(inner) => Prop::Method(inner.into_allocated()),
+            Prop::Ctor(inner) => Prop::Ctor(inner.into_allocated()),
+            Prop::Get(inner) => Prop::Get(inner.into_allocated()),
+            Prop::Set(inner) => Prop::Set(inner.into_allocated()),
+        }
+    }
 }
 
 impl<T> Node for Prop<T> {
@@ -247,6 +338,17 @@ pub struct PropInit<T> {
     pub value: Option<PropValue<T>>,
 }
 
+impl<T> IntoAllocated for PropInit<T> where T: ToString {
+    type Allocated = PropInit<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropInit {
+            key: self.key.into_allocated(),
+            colon: self.colon,
+            value: self.value.into_allocated()
+        }
+    }
+}
+
 impl<T> Node for PropInit<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(value) = &self.value {
@@ -275,6 +377,16 @@ pub struct PropInitKey<T> {
     pub brackets: Option<(OpenBracket, CloseBracket)>,
 }
 
+impl<T> IntoAllocated for PropInitKey<T> where T: ToString {
+    type Allocated = PropInitKey<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropInitKey {
+            value: self.value.into_allocated(),
+            brackets: self.brackets,
+        }
+    }
+}
+
 impl<T> Node for PropInitKey<T> {
     fn loc(&self) -> SourceLocation {
         if let Some((open, close)) = &self.brackets {
@@ -298,6 +410,22 @@ pub struct PropMethod<T> {
     pub params: Vec<ListEntry<FuncArg<T>>>,
     pub close_paren: CloseParen,
     pub body: FuncBody<T>,
+}
+
+impl<T> IntoAllocated for PropMethod<T> where T: ToString {
+    type Allocated = PropMethod<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropMethod {
+            keyword_static: self.keyword_static,
+            keyword_async: self.keyword_async,
+            id: self.id.into_allocated(),
+            star: self.star,
+            open_paren: self.open_paren,
+            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for PropMethod<T> {
@@ -325,6 +453,19 @@ pub struct PropCtor<T> {
     pub body: FuncBody<T>,
 }
 
+impl<T> IntoAllocated for PropCtor<T> where T: ToString {
+    type Allocated = PropCtor<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropCtor {
+            keyword: self.keyword.into_allocated(),
+            open_paren: self.open_paren,
+            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for PropCtor<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -342,6 +483,20 @@ pub struct PropGet<T> {
     pub open_paren: OpenParen,
     pub close_paren: CloseParen,
     pub body: FuncBody<T>,
+}
+
+impl<T> IntoAllocated for PropGet<T> where T: ToString {
+    type Allocated = PropGet<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropGet {
+            keyword_static: self.keyword_static,
+            keyword_get: self.keyword_get,
+            id: self.id.into_allocated(),
+            open_paren: self.open_paren,
+            close_paren: self.close_paren,
+            body: self.body.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for PropGet<T> {
@@ -370,6 +525,21 @@ pub struct PropSet<T> {
     pub body: FuncBody<T>,
 }
 
+impl<T> IntoAllocated for PropSet<T> where T: ToString {
+    type Allocated = PropSet<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        PropSet {
+            keyword_static: self.keyword_static,
+            keyword_set: self.keyword_set,
+            id: self.id.into_allocated(),
+            open_paren: self.open_paren,
+            arg: self.arg.into_allocated(),
+            close_paren: self.close_paren,
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for PropSet<T> {
     fn loc(&self) -> SourceLocation {
         if let Some(keyword_static) = &self.keyword_static {
@@ -393,6 +563,17 @@ pub enum PropKey<T> {
     Pat(Pat<T>),
 }
 
+impl<T> IntoAllocated for PropKey<T> where T: ToString {
+    type Allocated = PropKey<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            PropKey::Lit(inner) => PropKey::Lit(inner.into_allocated()),
+            PropKey::Expr(inner) => PropKey::Expr(inner.into_allocated()),
+            PropKey::Pat(inner) => PropKey::Pat(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for PropKey<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -411,6 +592,17 @@ pub enum PropValue<T> {
     Method(PropMethod<T>),
 }
 
+impl<T> IntoAllocated for PropValue<T> where T: ToString {
+    type Allocated = PropValue<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            PropValue::Expr(inner) => PropValue::Expr(inner.into_allocated()),
+            PropValue::Pat(inner) => PropValue::Pat(inner.into_allocated()),
+            PropValue::Method(inner) => PropValue::Method(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> Node for PropValue<T> {
     fn loc(&self) -> SourceLocation {
         match self {
@@ -426,6 +618,16 @@ impl<T> Node for PropValue<T> {
 pub struct UnaryExpr<T> {
     pub operator: UnaryOp,
     pub argument: Box<Expr<T>>,
+}
+
+impl<T> IntoAllocated for UnaryExpr<T> where T: ToString {
+    type Allocated = UnaryExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        UnaryExpr {
+            operator: self.operator,
+            argument: self.argument.into_allocated(),
+        }
+    }
 }
 
 impl<T> UnaryExpr<T> {
@@ -450,6 +652,16 @@ impl<T> Node for UnaryExpr<T> {
 pub struct UpdateExpr<T> {
     pub operator: UpdateOp,
     pub argument: Box<Expr<T>>,
+}
+
+impl<T> IntoAllocated for UpdateExpr<T> where T: ToString {
+    type Allocated = UpdateExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        UpdateExpr {
+            operator: self.operator,
+            argument: self.argument.into_allocated(),
+        }
+    }
 }
 
 impl<T> UpdateExpr<T> {
@@ -484,6 +696,17 @@ pub struct BinaryExpr<T> {
     pub right: Box<Expr<T>>,
 }
 
+impl<T> IntoAllocated for BinaryExpr<T> where T: ToString {
+    type Allocated = BinaryExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        BinaryExpr {
+            operator: self.operator,
+            left: self.left.into_allocated(),
+            right: self.right.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for BinaryExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -501,6 +724,17 @@ pub struct AssignExpr<T> {
     pub right: Box<Expr<T>>,
 }
 
+impl<T> IntoAllocated for AssignExpr<T> where T: ToString {
+    type Allocated = AssignExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        AssignExpr {
+            operator: self.operator,
+            left: self.left.into_allocated(),
+            right: self.right.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for AssignExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -514,6 +748,16 @@ impl<T> Node for AssignExpr<T> {
 pub struct AwaitExpr<T> {
     pub keyword: Await,
     pub expr: Expr<T>,
+}
+
+impl<T> IntoAllocated for AwaitExpr<T> where T: ToString {
+    type Allocated = AwaitExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        AwaitExpr {
+            keyword: self.keyword,
+            expr: self.expr.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for AwaitExpr<T> {
@@ -530,6 +774,16 @@ impl<T> Node for AwaitExpr<T> {
 pub enum AssignLeft<T> {
     Pat(Pat<T>),
     Expr(Box<Expr<T>>),
+}
+
+impl<T> IntoAllocated for AssignLeft<T> where T: ToString {
+    type Allocated = AssignLeft<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            AssignLeft::Pat(inner) => AssignLeft::Pat(inner.into_allocated()),
+            AssignLeft::Expr(inner) => AssignLeft::Expr(inner.into_allocated()),
+        }
+    }
 }
 
 impl<T> Node for AssignLeft<T> {
@@ -553,6 +807,17 @@ pub struct LogicalExpr<T> {
     pub right: Box<Expr<T>>,
 }
 
+impl<T> IntoAllocated for LogicalExpr<T> where T: ToString {
+    type Allocated = LogicalExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        LogicalExpr {
+            operator: self.operator,
+            left: self.left.into_allocated(),
+            right: self.right.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for LogicalExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -574,6 +839,18 @@ pub struct MemberExpr<T> {
     pub indexer: MemberIndexer,
 }
 
+impl<T> IntoAllocated for MemberExpr<T> where T: ToString {
+    type Allocated = MemberExpr<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        MemberExpr {
+            object: self.object.into_allocated(),
+            property: self.property.into_allocated(),
+            indexer: self.indexer
+        }
+    }
+}
+
 impl<T> MemberExpr<T> {
     pub fn computed(&self) -> bool {
         matches!(self.indexer, MemberIndexer::Computed { .. })
@@ -593,7 +870,7 @@ impl<T> Node for MemberExpr<T> {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum MemberIndexer {
     Period(Period),
     Computed {
@@ -630,6 +907,19 @@ pub struct ConditionalExpr<T> {
     pub consequent: Box<Expr<T>>,
 }
 
+impl<T> IntoAllocated for ConditionalExpr<T> where T: ToString {
+    type Allocated = ConditionalExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        ConditionalExpr {
+            test: self.test.into_allocated(),
+            question_mark: self.question_mark,
+            alternate: self.alternate.into_allocated(),
+            colon: self.colon,
+            consequent: self.consequent.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for ConditionalExpr<T> {
     fn loc(&self) -> SourceLocation {
         let start = self.test.loc().start;
@@ -648,6 +938,19 @@ pub struct CallExpr<T> {
     pub open_paren: OpenParen,
     pub arguments: Vec<ListEntry<Expr<T>>>,
     pub close_paren: CloseParen,
+}
+
+impl<T> IntoAllocated for CallExpr<T> where T: ToString {
+    type Allocated = CallExpr<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        CallExpr {
+            callee: self.callee.into_allocated(),
+            open_paren: self.open_paren,
+            arguments: self.arguments.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+        }
+    }
 }
 
 impl<T> Node for CallExpr<T> {
@@ -670,6 +973,20 @@ pub struct NewExpr<T> {
     pub open_paren: Option<OpenParen>,
     pub arguments: Vec<ListEntry<Expr<T>>>,
     pub close_paren: Option<CloseParen>,
+}
+
+impl<T> IntoAllocated for NewExpr<T> where T: ToString {
+    type Allocated = NewExpr<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        NewExpr {
+            keyword: self.keyword,
+            callee: self.callee.into_allocated(),
+            open_paren: self.open_paren,
+            arguments: self.arguments.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+        }
+    }
 }
 
 impl<T> Node for NewExpr<T> {
@@ -719,6 +1036,18 @@ pub struct ArrowParamPlaceHolder<T> {
     pub close_paren: Option<CloseParen>,
 }
 
+impl<T> IntoAllocated for ArrowParamPlaceHolder<T> where T: ToString {
+    type Allocated = ArrowParamPlaceHolder<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        ArrowParamPlaceHolder {
+            keyword: self.keyword,
+            open_paren: self.open_paren,
+            args: self.args.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+        }
+    }
+}
+
 impl<T> Node for ArrowParamPlaceHolder<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = &self.keyword {
@@ -759,6 +1088,21 @@ pub struct ArrowFuncExpr<T> {
     pub body: ArrowFuncBody<T>,
 }
 
+impl<T> IntoAllocated for ArrowFuncExpr<T> where T: ToString {
+    type Allocated = ArrowFuncExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        ArrowFuncExpr {
+            keyword: self.keyword,
+            star: self.star,
+            open_paren: self.open_paren,
+            params: self.params.into_iter().map(IntoAllocated::into_allocated).collect(),
+            close_paren: self.close_paren,
+            arrow: self.arrow,
+            body: self.body.into_allocated()
+        }
+    }
+}
+
 impl<T> Node for ArrowFuncExpr<T> {
     fn loc(&self) -> SourceLocation {
         let start = if let Some(keyword) = &self.keyword {
@@ -782,6 +1126,16 @@ impl<T> Node for ArrowFuncExpr<T> {
 pub enum ArrowFuncBody<T> {
     FuncBody(FuncBody<T>),
     Expr(Box<Expr<T>>),
+}
+
+impl<T> IntoAllocated for ArrowFuncBody<T> where T: ToString {
+    type Allocated = ArrowFuncBody<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            ArrowFuncBody::FuncBody(inner) => ArrowFuncBody::FuncBody(inner.into_allocated()),
+            ArrowFuncBody::Expr(inner) => ArrowFuncBody::Expr(inner.into_allocated()),
+        }
+    }
 }
 
 impl<T> Node for ArrowFuncBody<T> {
@@ -808,6 +1162,17 @@ pub struct YieldExpr<T> {
     pub star: Option<Asterisk>,
 }
 
+impl<T> IntoAllocated for YieldExpr<T> where T: ToString {
+    type Allocated = YieldExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        YieldExpr {
+            keyword: self.keyword,
+            argument: self.argument.into_allocated(),
+            star: self.star,
+        }
+    }
+}
+
 impl<T> Node for YieldExpr<T> {
     fn loc(&self) -> SourceLocation {
         let end = if let Some(arg) = &self.argument {
@@ -830,6 +1195,16 @@ pub struct TaggedTemplateExpr<T> {
     pub quasi: TemplateLit<T>,
 }
 
+impl<T> IntoAllocated for TaggedTemplateExpr<T> where T: ToString {
+    type Allocated = TaggedTemplateExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        TaggedTemplateExpr {
+            tag: self.tag.into_allocated(),
+            quasi: self.quasi.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for TaggedTemplateExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -848,6 +1223,17 @@ pub struct TemplateLit<T> {
     pub quasis: Vec<TemplateElement<T>>,
     pub expressions: Vec<Expr<T>>,
 }
+
+impl<T> IntoAllocated for TemplateLit<T> where T: ToString {
+    type Allocated = TemplateLit<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        TemplateLit {
+            quasis: self.quasis.into_iter().map(IntoAllocated::into_allocated).collect(),
+            expressions: self.expressions.into_iter().map(IntoAllocated::into_allocated).collect(),
+        }
+    }
+}
+
 
 impl<T> Node for TemplateLit<T> {
     fn loc(&self) -> SourceLocation {
@@ -874,6 +1260,17 @@ pub struct TemplateElement<T> {
     pub open_quote: QuasiQuote,
     pub content: Slice<T>,
     pub close_quote: QuasiQuote,
+}
+
+impl<T> IntoAllocated for TemplateElement<T> where T: ToString {
+    type Allocated = TemplateElement<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        TemplateElement {
+            open_quote: self.open_quote,
+            content: self.content.into_allocated(),
+            close_quote: self.close_quote,
+        }
+    }
 }
 
 impl<T> TemplateElement<T>
@@ -914,6 +1311,17 @@ pub struct MetaProp<T> {
     pub property: Ident<T>,
 }
 
+impl<T> IntoAllocated for MetaProp<T> where T: ToString {
+    type Allocated = MetaProp<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        MetaProp {
+            meta: self.meta.into_allocated(),
+            dot: self.dot,
+            property: self.property.into_allocated(),
+        }
+    }
+}
+
 impl<T> Node for MetaProp<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -949,6 +1357,20 @@ pub enum Lit<T> {
     /// `I have ${0} apples`
     /// ```
     Template(TemplateLit<T>),
+}
+
+impl<T> IntoAllocated for Lit<T> where T: ToString {
+    type Allocated = Lit<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            Lit::Null(inner) => Lit::Null(inner),
+            Lit::String(inner) => Lit::String(inner.into_allocated()),
+            Lit::Number(inner) => Lit::Number(inner.into_allocated()),
+            Lit::Boolean(inner) => Lit::Boolean(inner),
+            Lit::RegEx(inner) => Lit::RegEx(inner.into_allocated()),
+            Lit::Template(inner) => Lit::Template(inner.into_allocated()),
+        }
+    }
 }
 
 impl<T> Lit<T> {
@@ -1020,6 +1442,17 @@ pub struct StringLit<T> {
     pub close_quote: Quote,
 }
 
+impl<T> IntoAllocated for StringLit<T> where T: ToString {
+    type Allocated = StringLit<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        StringLit {
+            open_quote: self.open_quote,
+            content: self.content.into_allocated(),
+            close_quote: self.close_quote,
+        }
+    }
+}
+
 impl<T> Node for StringLit<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -1036,6 +1469,18 @@ pub struct RegEx<T> {
     pub pattern: Slice<T>,
     pub close_slash: ForwardSlash,
     pub flags: Option<Slice<T>>,
+}
+
+impl<T> IntoAllocated for RegEx<T> where T: ToString {
+    type Allocated = RegEx<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        RegEx {
+            open_slash: self.open_slash,
+            pattern: self.pattern.into_allocated(),
+            close_slash: self.close_slash,
+            flags: self.flags.into_allocated(),
+        }
+    }
 }
 
 impl<T> Node for RegEx<T> {
@@ -1059,6 +1504,17 @@ pub struct WrappedExpr<T> {
     pub close_paren: CloseParen,
 }
 
+impl<T> IntoAllocated for WrappedExpr<T> where T: ToString {
+    type Allocated = WrappedExpr<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        WrappedExpr {
+            open_paren: self.open_paren,
+            expr: self.expr.into_allocated(),
+            close_paren: self.close_paren,
+        }
+    }
+}
+
 impl<T> Node for WrappedExpr<T> {
     fn loc(&self) -> SourceLocation {
         SourceLocation {
@@ -1072,6 +1528,16 @@ impl<T> Node for WrappedExpr<T> {
 pub struct SequenceExprEntry<T> {
     pub expr: Expr<T>,
     pub comma: Option<Comma>,
+}
+
+impl<T> IntoAllocated for SequenceExprEntry<T> where T: ToString {
+    type Allocated = SequenceExprEntry<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        SequenceExprEntry {
+            expr: self.expr.into_allocated(),
+            comma: self.comma,
+        }
+    }
 }
 
 impl<T> SequenceExprEntry<T> {

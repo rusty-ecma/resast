@@ -27,27 +27,31 @@ pub struct Ident<T> {
     pub name: T,
 }
 
+impl<T> IntoAllocated for Ident<T> where T: ToString {
+    type Allocated = Ident<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Ident {
+            name: self.name.to_string(),
+        }
+    }
+}
+
 impl<'a> From<&'a str> for Ident<&'a str> {
     fn from(value: &'a str) -> Self {
-        Self {
-            name: value,
-        }
+        Self { name: value }
     }
 }
 
 impl From<String> for Ident<String> {
     fn from(value: String) -> Self {
-        Self {
-            name: value,
-        }
+        Self { name: value }
     }
 }
 
 impl<'a> From<Cow<'a, str>> for Ident<Cow<'a, str>> {
     fn from(value: Cow<'a, str>) -> Self {
-        Self {
-            name: value,
-        }
+        Self { name: value }
     }
 }
 
@@ -67,6 +71,17 @@ pub enum Program<T> {
     Mod(Vec<ProgramPart<T>>),
     /// Not an ES6 Mod
     Script(Vec<ProgramPart<T>>),
+}
+
+impl<T> IntoAllocated for Program<T> where T: ToString  {
+    type Allocated = Program<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            Program::Mod(inner) => Program::Mod(inner.into_iter().map(|p| p.into_allocated()).collect()),
+            Program::Script(inner) => Program::Script(inner.into_iter().map(|p| p.into_allocated()).collect()),
+        }
+    }
 }
 
 impl<T> Program<T> {
@@ -96,6 +111,18 @@ pub enum ProgramPart<T> {
     Stmt(Stmt<T>),
 }
 
+impl<T> IntoAllocated for ProgramPart<T> where T: ToString {
+    type Allocated = ProgramPart<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            ProgramPart::Dir(inner) => ProgramPart::Dir(inner.into_allocated()),
+            ProgramPart::Decl(inner) => ProgramPart::Decl(inner.into_allocated()),
+            ProgramPart::Stmt(inner) => ProgramPart::Stmt(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> ProgramPart<T> {
     pub fn decl(inner: Decl<T>) -> Self {
         ProgramPart::Decl(inner)
@@ -118,6 +145,17 @@ pub struct Dir<T> {
     pub dir: T,
 }
 
+impl<T> IntoAllocated for Dir<T> where T: ToString {
+    type Allocated = Dir<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Dir {
+            expr: self.expr.into_allocated(),
+            dir: self.dir.to_string(),
+        }
+    }
+}
+
 /// A function, this will be part of either a function
 /// declaration (ID is required) or a function expression
 /// (ID is optional)
@@ -136,6 +174,20 @@ pub struct Func<T> {
     pub body: FuncBody<T>,
     pub generator: bool,
     pub is_async: bool,
+}
+
+impl<T> IntoAllocated for Func<T> where T: ToString {
+    type Allocated = Func<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Func {
+            id: self.id.map(IntoAllocated::into_allocated),
+            params: self.params.into_iter().map(|p| p.into_allocated()).collect(),
+            body: self.body.into_allocated(),
+            generator: self.generator,
+            is_async: self.is_async,
+        }
+    }
 }
 
 impl<T> Func<T> {
@@ -169,6 +221,17 @@ pub enum FuncArg<T> {
     Pat(Pat<T>),
 }
 
+impl<T> IntoAllocated for FuncArg<T> where T: ToString {
+    type Allocated = FuncArg<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        match self {
+            FuncArg::Expr(inner) => FuncArg::Expr(inner.into_allocated()),
+            FuncArg::Pat(inner) => FuncArg::Pat(inner.into_allocated()),
+        }
+    }
+}
+
 impl<T> FuncArg<T> {
     pub fn expr(expr: Expr<T>) -> FuncArg<T> {
         FuncArg::Expr(expr)
@@ -186,6 +249,15 @@ impl<T> FuncArg<T> {
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct FuncBody<T>(pub Vec<ProgramPart<T>>);
+
+impl<T> IntoAllocated for FuncBody<T> where T: ToString {
+    type Allocated = FuncBody<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        FuncBody(self.0.into_iter().map(|p| p.into_allocated()).collect())
+    }
+}
+
 /// A way to declare object templates
 /// ```js
 /// class Thing {
@@ -219,6 +291,19 @@ pub struct Class<T> {
     pub super_class: Option<Box<Expr<T>>>,
     pub body: ClassBody<T>,
 }
+
+impl<T> IntoAllocated for Class<T> where T: ToString {
+    type Allocated = Class<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Class {
+            id: self.id.map(IntoAllocated::into_allocated),
+            super_class: self.super_class.map(IntoAllocated::into_allocated),
+            body: self.body.into_allocated(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
     all(feature = "serde", not(feature = "esprima")),
@@ -226,6 +311,14 @@ pub struct Class<T> {
 )]
 #[cfg_attr(all(feature = "serde", feature = "esprima"), derive(Deserialize))]
 pub struct ClassBody<T>(pub Vec<Prop<T>>);
+
+impl<T> IntoAllocated for ClassBody<T> where T: ToString {
+    type Allocated = ClassBody<String>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        ClassBody(self.0.into_iter().map(IntoAllocated::into_allocated).collect())
+    }
+}
 
 impl<T> Class<T> {
     pub fn new(id: Option<Ident<T>>, super_class: Option<Expr<T>>, body: Vec<Prop<T>>) -> Class<T> {
@@ -369,6 +462,27 @@ pub enum PropKind {
     Ctor,
     /// A standard method
     Method,
+}
+
+pub trait IntoAllocated {
+    type Allocated;
+
+    fn into_allocated(self) -> Self::Allocated;
+}
+
+impl<T> IntoAllocated for Box<T> where T: IntoAllocated {
+    type Allocated = Box<T::Allocated>;
+
+    fn into_allocated(self) -> Self::Allocated {
+        Box::new((*self).into_allocated())
+    }
+}
+
+impl<T> IntoAllocated for Option<T> where T: IntoAllocated {
+    type Allocated = Option<T::Allocated>;
+    fn into_allocated(self) -> Self::Allocated {
+        self.map(IntoAllocated::into_allocated)
+    }
 }
 
 pub mod prelude {
