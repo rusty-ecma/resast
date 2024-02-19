@@ -219,6 +219,7 @@ mod expr {
                 Expr::Update(inner) => Self::Update(inner.into()),
                 Expr::Yield(inner) => Self::Yield(inner.into()),
                 Expr::Wrapped(inner) => inner.expr.into(),
+                Expr::OptionalChain(inner) => Self::OptionalChain(Box::new((*inner.expr).into())),
             }
         }
     }
@@ -692,6 +693,9 @@ impl From<AssignOp> for crate::AssignOp {
             AssignOp::XOrEqual(_) => Self::XOrEqual,
             AssignOp::AndEqual(_) => Self::AndEqual,
             AssignOp::PowerOfEqual(_) => Self::PowerOfEqual,
+            AssignOp::DoubleAmpersandEqual(_) => Self::DoubleAmpersandEqual,
+            AssignOp::DoublePipeEqual(_) => Self::DoublePipeEqual,
+            AssignOp::DoubleQuestionmarkEqual(_) => Self::DoubleQuestionmarkEqual,
         }
     }
 }
@@ -701,6 +705,7 @@ impl From<LogicalOp> for crate::LogicalOp {
         match other {
             LogicalOp::Or(_) => Self::Or,
             LogicalOp::And(_) => Self::And,
+            LogicalOp::NullishCoalescing(_) => Self::NullishCoalescing,
         }
     }
 }

@@ -367,6 +367,9 @@ pub enum AssignOp {
     XOrEqual,
     AndEqual,
     PowerOfEqual,
+    DoubleAmpersandEqual,
+    DoublePipeEqual,
+    DoubleQuestionmarkEqual,
 }
 
 /// The available logical operators
@@ -375,6 +378,7 @@ pub enum AssignOp {
 pub enum LogicalOp {
     Or,
     And,
+    NullishCoalescing,
 }
 
 /// The available operations for `Binary` Exprs
