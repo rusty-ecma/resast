@@ -162,6 +162,7 @@ define_token!(CloseBracket, "]");
 define_token!(Colon, ":");
 define_token!(Comma, ",");
 define_token!(DoubleAmpersand, "&&");
+define_token!(DoubleAmpersandEqual, "&&=");
 define_token!(DoubleAsterisk, "**");
 define_token!(DoubleAsteriskEqual, "**=");
 define_token!(DoubleEqual, "==");
@@ -171,6 +172,9 @@ define_token!(DoubleGreaterThanEqual, ">>=");
 define_token!(DoubleLessThan, "<<");
 define_token!(DoubleLessThanEqual, "<<=");
 define_token!(DoublePipe, "||");
+define_token!(DoublePipeEqual, "||=");
+define_token!(DoubleQuestionmark, "??");
+define_token!(DoubleQuestionmarkEqual, "??=");
 define_token!(DoubleQuote, "\"");
 define_token!(Ellipsis, "...");
 define_token!(Equal, "=");
@@ -194,6 +198,7 @@ define_token!(PipeEqual, "|=");
 define_token!(Plus, "+");
 define_token!(PlusEqual, "+=");
 define_token!(QuestionMark, "?");
+define_token!(QuestionMarkDot, "?.");
 define_token!(Semicolon, ";");
 define_token!(SingleQuote, "'");
 define_token!(Tilde, "~");
@@ -282,6 +287,9 @@ pub enum AssignOp {
     XOrEqual(CaretEqual),
     AndEqual(AmpersandEqual),
     PowerOfEqual(DoubleAsteriskEqual),
+    DoubleAmpersandEqual(DoubleAmpersandEqual),
+    DoublePipeEqual(DoublePipeEqual),
+    DoubleQuestionmarkEqual(DoubleQuestionmarkEqual),
 }
 
 impl Node for AssignOp {
@@ -300,6 +308,9 @@ impl Node for AssignOp {
             AssignOp::XOrEqual(tok) => tok.loc(),
             AssignOp::AndEqual(tok) => tok.loc(),
             AssignOp::PowerOfEqual(tok) => tok.loc(),
+            AssignOp::DoubleAmpersandEqual(tok) => tok.loc(),
+            AssignOp::DoublePipeEqual(tok) => tok.loc(),
+            AssignOp::DoubleQuestionmarkEqual(tok) => tok.loc(),
         }
     }
 }
@@ -310,6 +321,7 @@ impl Node for AssignOp {
 pub enum LogicalOp {
     Or(DoublePipe),
     And(DoubleAmpersand),
+    NullishCoalescing(DoubleQuestionmark),
 }
 
 impl Node for LogicalOp {
@@ -317,6 +329,7 @@ impl Node for LogicalOp {
         match self {
             LogicalOp::Or(tok) => tok.loc(),
             LogicalOp::And(tok) => tok.loc(),
+            LogicalOp::NullishCoalescing(tok) => tok.loc(),
         }
     }
 }

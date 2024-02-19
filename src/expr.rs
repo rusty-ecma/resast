@@ -89,6 +89,7 @@ pub enum Expr<T> {
     Update(UpdateExpr<T>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<T>),
+    OptionalChain(Box<Expr<T>>),
 }
 
 impl<T> IntoAllocated for Expr<T>
@@ -134,6 +135,7 @@ where
             Expr::Unary(inner) => Expr::Unary(inner.into_allocated()),
             Expr::Update(inner) => Expr::Update(inner.into_allocated()),
             Expr::Yield(inner) => Expr::Yield(inner.into_allocated()),
+            Expr::OptionalChain(inner) => Expr::OptionalChain(inner.into_allocated()),
         }
     }
 }
@@ -602,6 +604,7 @@ where
         }
     }
 }
+
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]

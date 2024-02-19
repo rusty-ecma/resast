@@ -3,10 +3,10 @@ use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 use crate::IntoAllocated;
 
 use super::tokens::{
-    AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon, Comma,
-    Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace, OpenBracket,
-    OpenParen, Period, QuasiQuote, QuestionMark, Quote, Set, Static, Super, This, Token, True,
-    UnaryOp, UpdateOp, Yield,
+    self, AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon,
+    Comma, Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace,
+    OpenBracket, OpenParen, Period, QuasiQuote, QuestionMark, Quote, Set, Static, Super, This,
+    Token, True, UnaryOp, UpdateOp, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 #[cfg(feature = "serde")]
@@ -97,6 +97,7 @@ pub enum Expr<T> {
     Wrapped(Box<WrappedExpr<T>>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<T>),
+    OptionalChain(OptionalChain<T>),
 }
 
 impl<T> IntoAllocated for Expr<T>
@@ -139,6 +140,7 @@ where
             Expr::Update(inner) => Expr::Update(inner.into_allocated()),
             Expr::Wrapped(inner) => Expr::Wrapped(inner.into_allocated()),
             Expr::Yield(inner) => Expr::Yield(inner.into_allocated()),
+            Expr::OptionalChain(inner) => Expr::OptionalChain(inner.into_allocated()),
         }
     }
 }
@@ -172,6 +174,7 @@ impl<T> Node for Expr<T> {
             Expr::Update(inner) => inner.loc(),
             Expr::Yield(inner) => inner.loc(),
             Expr::Wrapped(inner) => inner.loc(),
+            Expr::OptionalChain(inner) => inner.loc(),
         }
     }
 }
@@ -1005,6 +1008,34 @@ impl Node for MemberIndexer {
                 end: close_bracket.end(),
             },
         }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct OptionalChain<T> {
+    pub expr: Box<Expr<T>>,
+    pub op: tokens::QuestionMarkDot,
+}
+
+impl<T> IntoAllocated for OptionalChain<T>
+where
+    T: ToString,
+{
+    type Allocated = OptionalChain<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        OptionalChain {
+            expr: Box::new((*self.expr).into_allocated()),
+            op: self.op,
+        }
+    }
+}
+
+impl<T> Node for OptionalChain<T> {
+    fn loc(&self) -> SourceLocation {
+        let start = self.expr.loc().start;
+        let end = self.op.end();
+        SourceLocation { start, end }
     }
 }
 
