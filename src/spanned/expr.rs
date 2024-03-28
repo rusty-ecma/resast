@@ -5,8 +5,8 @@ use crate::IntoAllocated;
 use super::tokens::{
     self, AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon,
     Comma, Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace,
-    OpenBracket, OpenParen, Period, QuasiQuote, QuestionMark, Quote, Set, Static, Super, This,
-    Token, True, UnaryOp, UpdateOp, Yield,
+    OpenBracket, OpenParen, Period, QuasiQuote, QuestionMark, QuestionMarkDot, Quote, Set, Static,
+    Super, This, Token, True, UnaryOp, UpdateOp, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 #[cfg(feature = "serde")]
@@ -986,11 +986,26 @@ impl<T> Node for MemberExpr<T> {
     }
 }
 
+/// An indexer
+/// Either a Period ".", Computed "[..]", Optional "?." or optional computed "?.[..]"
+/// ```js
+/// var a = {b: 'c'};
+/// a.b
+/// a["b"]
+/// a?.b
+/// a?.["b"]
+/// ```
 #[derive(PartialEq, Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum MemberIndexer {
     Period(Period),
     Computed {
+        open_bracket: OpenBracket,
+        close_bracket: CloseBracket,
+    },
+    Optional(QuestionMarkDot),
+    OptionalComputed {
+        optional: QuestionMarkDot,
         open_bracket: OpenBracket,
         close_bracket: CloseBracket,
     },
@@ -1005,6 +1020,15 @@ impl Node for MemberIndexer {
                 close_bracket,
             } => SourceLocation {
                 start: open_bracket.start(),
+                end: close_bracket.end(),
+            },
+            MemberIndexer::Optional(inner) => inner.loc(),
+            MemberIndexer::OptionalComputed {
+                optional,
+                open_bracket: _,
+                close_bracket,
+            } => SourceLocation {
+                start: optional.start(),
                 end: close_bracket.end(),
             },
         }
@@ -1080,11 +1104,13 @@ impl<T> Node for ConditionalExpr<T> {
 /// Calling a function or method
 /// ```js
 /// Math.random()
+/// Math.random?.()
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallExpr<T> {
     pub callee: Box<Expr<T>>,
+    pub optional: Option<QuestionMarkDot>,
     pub open_paren: OpenParen,
     pub arguments: Vec<ListEntry<Expr<T>>>,
     pub close_paren: CloseParen,
@@ -1099,6 +1125,7 @@ where
     fn into_allocated(self) -> Self::Allocated {
         CallExpr {
             callee: self.callee.into_allocated(),
+            optional: self.optional,
             open_paren: self.open_paren,
             arguments: self
                 .arguments
