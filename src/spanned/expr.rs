@@ -970,6 +970,7 @@ where
 impl<T> MemberExpr<T> {
     pub fn computed(&self) -> bool {
         matches!(self.indexer, MemberIndexer::Computed { .. })
+            || matches!(self.indexer, MemberIndexer::OptionalComputed { .. })
     }
 }
 
