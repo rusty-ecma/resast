@@ -337,6 +337,17 @@ impl<T> Class<T> {
     }
 }
 
+/// The ways to access the member of a value
+/// Either a Period `.`, Computed `[ ]`, Optional `?.` or optional computed `?.[ ]`
+#[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub enum MemberIndexer {
+    Period,
+    Computed,
+    Optional,
+    OptionalComputed,
+}
+
 /// The kind of variable being defined (`var`/`let`/`const`)
 #[derive(Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
