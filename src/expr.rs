@@ -1,5 +1,7 @@
 use crate::pat::Pat;
-use crate::{AssignOp, BinaryOp, IntoAllocated, LogicalOp, PropKind, UnaryOp, UpdateOp};
+use crate::{
+    AssignOp, BinaryOp, IntoAllocated, LogicalOp, MemberIndexer, PropKind, UnaryOp, UpdateOp,
+};
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
 
 #[cfg(feature = "serde")]
@@ -89,6 +91,7 @@ pub enum Expr<T> {
     Update(UpdateExpr<T>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<T>),
+    OptionalChain(Box<Expr<T>>),
 }
 
 impl<T> IntoAllocated for Expr<T>
@@ -134,6 +137,7 @@ where
             Expr::Unary(inner) => Expr::Unary(inner.into_allocated()),
             Expr::Update(inner) => Expr::Update(inner.into_allocated()),
             Expr::Yield(inner) => Expr::Yield(inner.into_allocated()),
+            Expr::OptionalChain(inner) => Expr::OptionalChain(inner.into_allocated()),
         }
     }
 }
@@ -406,7 +410,7 @@ where
 pub struct MemberExpr<T> {
     pub object: Box<Expr<T>>,
     pub property: Box<Expr<T>>,
-    pub computed: bool,
+    pub indexer: MemberIndexer,
 }
 
 impl<T> IntoAllocated for MemberExpr<T>
@@ -419,7 +423,7 @@ where
         MemberExpr {
             object: self.object.into_allocated(),
             property: self.property.into_allocated(),
-            computed: self.computed,
+            indexer: self.indexer,
         }
     }
 }
@@ -458,6 +462,7 @@ where
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallExpr<T> {
+    pub optional: bool,
     pub callee: Box<Expr<T>>,
     pub arguments: Vec<Expr<T>>,
 }
@@ -470,6 +475,7 @@ where
 
     fn into_allocated(self) -> Self::Allocated {
         CallExpr {
+            optional: self.optional,
             callee: self.callee.into_allocated(),
             arguments: self
                 .arguments
@@ -602,6 +608,7 @@ where
         }
     }
 }
+
 /// A Template literal preceded by a function identifier
 /// see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) for more details
 #[derive(PartialEq, Debug, Clone)]

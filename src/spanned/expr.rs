@@ -3,10 +3,10 @@ use crate::spanned::{Class, Func, FuncArg, FuncBody, Ident};
 use crate::IntoAllocated;
 
 use super::tokens::{
-    AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon, Comma,
-    Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace, OpenBracket,
-    OpenParen, Period, QuasiQuote, QuestionMark, Quote, Set, Static, Super, This, Token, True,
-    UnaryOp, UpdateOp, Yield,
+    self, AssignOp, Asterisk, Async, Await, BinaryOp, CloseBrace, CloseBracket, CloseParen, Colon,
+    Comma, Ellipsis, False, FatArrow, ForwardSlash, Get, LogicalOp, New, Null, OpenBrace,
+    OpenBracket, OpenParen, Period, QuasiQuote, QuestionMark, QuestionMarkDot, Quote, Set, Static,
+    Super, This, Token, True, UnaryOp, UpdateOp, Yield,
 };
 use super::{FuncArgEntry, ListEntry, Node, Slice, SourceLocation};
 #[cfg(feature = "serde")]
@@ -97,6 +97,7 @@ pub enum Expr<T> {
     Wrapped(Box<WrappedExpr<T>>),
     /// yield a value from inside of a generator function
     Yield(YieldExpr<T>),
+    OptionalChain(OptionalChain<T>),
 }
 
 impl<T> IntoAllocated for Expr<T>
@@ -139,6 +140,7 @@ where
             Expr::Update(inner) => Expr::Update(inner.into_allocated()),
             Expr::Wrapped(inner) => Expr::Wrapped(inner.into_allocated()),
             Expr::Yield(inner) => Expr::Yield(inner.into_allocated()),
+            Expr::OptionalChain(inner) => Expr::OptionalChain(inner.into_allocated()),
         }
     }
 }
@@ -172,6 +174,7 @@ impl<T> Node for Expr<T> {
             Expr::Update(inner) => inner.loc(),
             Expr::Yield(inner) => inner.loc(),
             Expr::Wrapped(inner) => inner.loc(),
+            Expr::OptionalChain(inner) => inner.loc(),
         }
     }
 }
@@ -967,6 +970,7 @@ where
 impl<T> MemberExpr<T> {
     pub fn computed(&self) -> bool {
         matches!(self.indexer, MemberIndexer::Computed { .. })
+            || matches!(self.indexer, MemberIndexer::OptionalComputed { .. })
     }
 }
 
@@ -983,11 +987,26 @@ impl<T> Node for MemberExpr<T> {
     }
 }
 
+/// An indexer
+/// Either a Period ".", Computed "[..]", Optional "?." or optional computed "?.[..]"
+/// ```js
+/// var a = {b: 'c'};
+/// a.b
+/// a["b"]
+/// a?.b
+/// a?.["b"]
+/// ```
 #[derive(PartialEq, Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum MemberIndexer {
     Period(Period),
     Computed {
+        open_bracket: OpenBracket,
+        close_bracket: CloseBracket,
+    },
+    Optional(QuestionMarkDot),
+    OptionalComputed {
+        optional: QuestionMarkDot,
         open_bracket: OpenBracket,
         close_bracket: CloseBracket,
     },
@@ -1004,7 +1023,44 @@ impl Node for MemberIndexer {
                 start: open_bracket.start(),
                 end: close_bracket.end(),
             },
+            MemberIndexer::Optional(inner) => inner.loc(),
+            MemberIndexer::OptionalComputed {
+                optional,
+                open_bracket: _,
+                close_bracket,
+            } => SourceLocation {
+                start: optional.start(),
+                end: close_bracket.end(),
+            },
         }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+pub struct OptionalChain<T> {
+    pub expr: Box<Expr<T>>,
+    pub op: tokens::QuestionMarkDot,
+}
+
+impl<T> IntoAllocated for OptionalChain<T>
+where
+    T: ToString,
+{
+    type Allocated = OptionalChain<String>;
+    fn into_allocated(self) -> Self::Allocated {
+        OptionalChain {
+            expr: Box::new((*self.expr).into_allocated()),
+            op: self.op,
+        }
+    }
+}
+
+impl<T> Node for OptionalChain<T> {
+    fn loc(&self) -> SourceLocation {
+        let start = self.expr.loc().start;
+        let end = self.op.end();
+        SourceLocation { start, end }
     }
 }
 
@@ -1049,11 +1105,13 @@ impl<T> Node for ConditionalExpr<T> {
 /// Calling a function or method
 /// ```js
 /// Math.random()
+/// Math.random?.()
 /// ```
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallExpr<T> {
     pub callee: Box<Expr<T>>,
+    pub optional: Option<QuestionMarkDot>,
     pub open_paren: OpenParen,
     pub arguments: Vec<ListEntry<Expr<T>>>,
     pub close_paren: CloseParen,
@@ -1068,6 +1126,7 @@ where
     fn into_allocated(self) -> Self::Allocated {
         CallExpr {
             callee: self.callee.into_allocated(),
+            optional: self.optional,
             open_paren: self.open_paren,
             arguments: self
                 .arguments
