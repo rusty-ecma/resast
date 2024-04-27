@@ -8,10 +8,3 @@ repository = "https://github.com/rusty-ecma/resast"
 license = "MIT"
 keywords = ["JavaScript", "parsing", "JS", "ES", "ECMA"]
 categories = ["parsing", "text-processing", "web-programming"]
-
-[dependencies]
-serde = { version = "1", optional = true, features = ["derive"] }
-
-[features]
-default = []
-serde = ["dep:serde"]
