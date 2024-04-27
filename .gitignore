@@ -2,10 +2,8 @@
 **/*.rs.bk
 Cargo.lock
 .vscode/*
-/node_modules
 *.es.json
 *.rs.json
 *.js.json
 *.log
-package-lock.json
 *.ron
