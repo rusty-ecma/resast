@@ -1,5 +1,7 @@
 use crate::pat::Pat;
-use crate::{AssignOp, BinaryOp, IntoAllocated, LogicalOp, PropKind, UnaryOp, UpdateOp};
+use crate::{
+    AssignOp, BinaryOp, IntoAllocated, LogicalOp, MemberIndexer, PropKind, UnaryOp, UpdateOp,
+};
 use crate::{Class, Func, FuncArg, FuncBody, Ident};
 
 #[cfg(feature = "serde")]
@@ -408,7 +410,7 @@ where
 pub struct MemberExpr<T> {
     pub object: Box<Expr<T>>,
     pub property: Box<Expr<T>>,
-    pub computed: bool,
+    pub indexer: MemberIndexer,
 }
 
 impl<T> IntoAllocated for MemberExpr<T>
@@ -421,7 +423,7 @@ where
         MemberExpr {
             object: self.object.into_allocated(),
             property: self.property.into_allocated(),
-            computed: self.computed,
+            indexer: self.indexer,
         }
     }
 }
@@ -460,6 +462,7 @@ where
 #[derive(PartialEq, Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallExpr<T> {
+    pub optional: bool,
     pub callee: Box<Expr<T>>,
     pub arguments: Vec<Expr<T>>,
 }
@@ -472,6 +475,7 @@ where
 
     fn into_allocated(self) -> Self::Allocated {
         CallExpr {
+            optional: self.optional,
             callee: self.callee.into_allocated(),
             arguments: self
                 .arguments

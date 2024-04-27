@@ -170,6 +170,7 @@ mod decl {
 }
 
 mod expr {
+    use crate::spanned::expr::MemberIndexer;
     use crate::spanned::{
         expr::Boolean,
         tokens::{QuasiQuote, Quote},
@@ -409,13 +410,23 @@ mod expr {
         }
     }
 
+    impl From<MemberIndexer> for crate::MemberIndexer {
+        fn from(other: MemberIndexer) -> Self {
+            match other {
+                MemberIndexer::Period(_) => crate::MemberIndexer::Period,
+                MemberIndexer::Computed { .. } => crate::MemberIndexer::Computed,
+                MemberIndexer::Optional(_) => crate::MemberIndexer::Optional,
+                MemberIndexer::OptionalComputed { .. } => crate::MemberIndexer::OptionalComputed,
+            }
+        }
+    }
+
     impl<T> From<MemberExpr<T>> for crate::expr::MemberExpr<T> {
         fn from(other: MemberExpr<T>) -> Self {
-            let computed = other.computed();
             Self {
                 object: Box::new(From::from(*other.object)),
                 property: Box::new(From::from(*other.property)),
-                computed,
+                indexer: From::from(other.indexer),
             }
         }
     }
@@ -433,6 +444,7 @@ mod expr {
     impl<T> From<CallExpr<T>> for crate::expr::CallExpr<T> {
         fn from(other: CallExpr<T>) -> Self {
             Self {
+                optional: other.optional.is_some(),
                 callee: Box::new(From::from(*other.callee)),
                 arguments: other.arguments.into_iter().map(|e| e.item.into()).collect(),
             }
